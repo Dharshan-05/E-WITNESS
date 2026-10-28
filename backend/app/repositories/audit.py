@@ -55,6 +55,7 @@ class AuditRepository:
         actor_ip: str | None = None,
         actor_user_agent: str | None = None,
         department_id: UUID | None = None,
+        case_id: UUID | None = None,
         details: dict[str, Any] | None = None,
     ) -> SecurityAuditEvent:
         """Append a new tamper-evident security audit event into the ledger."""
@@ -78,6 +79,20 @@ class AuditRepository:
 
         details_json = json.dumps(details, sort_keys=True) if details else None
 
+        inferred_case_id: UUID | None = case_id
+        if inferred_case_id is None:
+            t_type = target_type.value if hasattr(target_type, "value") else str(target_type)
+            if t_type.lower() == "case":
+                try:
+                    inferred_case_id = UUID(str(target_id))
+                except (ValueError, TypeError):
+                    pass
+            elif details and "case_id" in details and details["case_id"]:
+                try:
+                    inferred_case_id = UUID(str(details["case_id"]))
+                except (ValueError, TypeError):
+                    pass
+
         event = SecurityAuditEvent(
             sequence_number=next_seq,
             action=action,
@@ -86,6 +101,7 @@ class AuditRepository:
             actor_ip=actor_ip,
             actor_user_agent=actor_user_agent,
             department_id=department_id,
+            case_id=inferred_case_id,
             target_type=target_type,
             target_id=target_id,
             outcome=outcome,
@@ -184,8 +200,10 @@ class AuditRepository:
     ) -> Sequence[SecurityAuditEvent]:
         """Query security audit events associated with a case entity or having case_id in details (Phase 88)."""
         case_id_str = str(case_id)
-        case_filter = (SecurityAuditEvent.target_id == case_id_str) | (
-            SecurityAuditEvent.details.like(f'%"case_id": "{case_id_str}"%')
+        case_filter = (
+            (SecurityAuditEvent.case_id == case_id)
+            | (SecurityAuditEvent.target_id == case_id_str)
+            | (SecurityAuditEvent.details.like(f'%"case_id": "{case_id_str}"%'))
         )
         predicates = [case_filter]
 
