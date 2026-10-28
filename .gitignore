@@ -138,3 +138,4 @@ data/splits/
 *.onnx
 *.bin
 scratch/
+node_modules/

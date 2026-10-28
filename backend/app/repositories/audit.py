@@ -81,17 +81,21 @@ class AuditRepository:
 
         inferred_case_id: UUID | None = case_id
         if inferred_case_id is None:
-            t_type = target_type.value if hasattr(target_type, "value") else str(target_type)
-            if t_type.lower() == "case":
-                try:
-                    inferred_case_id = UUID(str(target_id))
-                except (ValueError, TypeError):
-                    pass
-            elif details and "case_id" in details and details["case_id"]:
+            if details and "case_id" in details and details["case_id"]:
                 try:
                     inferred_case_id = UUID(str(details["case_id"]))
                 except (ValueError, TypeError):
                     pass
+            elif target_type is not None:
+                t_type = target_type.value if hasattr(target_type, "value") else str(target_type)
+                if t_type.lower() == "case" and target_id is not None:
+                    sub_ids = {"note_id", "finding_id", "approval_id", "export_id", "ai_segment_id"}
+                    has_sub = details and any(k in details for k in sub_ids)
+                    if not has_sub:
+                        try:
+                            inferred_case_id = UUID(str(target_id))
+                        except (ValueError, TypeError):
+                            pass
 
         event = SecurityAuditEvent(
             sequence_number=next_seq,

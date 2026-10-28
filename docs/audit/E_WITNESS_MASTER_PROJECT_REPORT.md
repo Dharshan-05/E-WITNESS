@@ -76,7 +76,7 @@ E-WITNESS is an enterprise digital evidence repository and investigation managem
 ### 3.1 Working Tree & Commit Log
 - **Root Directory**: `D:\PROJECT\E-WITTNESS`
 - **Current Branch**: `main` (synchronized with `origin/main`)
-- **Remote URL**: `https://github.com/tharani1611/E-WITTNESS.git`
+- **Remote URL**: `https://github.com/Dharshan-05/E-WITNESS.git`
 - **Working Tree State**: Clean (`nothing to commit, working tree clean`).
 - **Commit History**:
   ```text

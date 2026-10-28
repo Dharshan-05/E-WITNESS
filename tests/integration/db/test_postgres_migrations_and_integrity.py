@@ -117,7 +117,7 @@ class TestAlembicMigrationsOnPostgreSQL:
         engine = create_db_engine(postgres_settings)
         try:
             expected_head = get_expected_head_revision()
-            assert expected_head == "20261021_0015"
+            assert expected_head == "20261028_0021"
 
             # 1. Downgrade to base (clean slate)
             await run_migrations_downgrade(engine, "base")
