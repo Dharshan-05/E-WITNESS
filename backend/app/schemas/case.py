@@ -10,7 +10,7 @@ Enforces:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -490,8 +490,7 @@ class LegalHoldRead(BaseModel):
     @field_validator("created_at", "updated_at", mode="before")
     @classmethod
     def _coerce_timestamps(cls, v: Any) -> Any:
-        from backend.app.models.base import utc_now
-        return v or utc_now()
+        return v or datetime.now(UTC)
 
     # Contextual references
     case_reference: str | None = None
@@ -622,8 +621,7 @@ class CaseAISegmentRead(BaseModel):
     @field_validator("created_at", mode="before")
     @classmethod
     def _coerce_created_at(cls, v: Any) -> Any:
-        from backend.app.models.base import utc_now
-        return v or utc_now()
+        return v or datetime.now(UTC)
 
     @field_validator("original_evidence_digest", mode="before")
     @classmethod

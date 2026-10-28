@@ -11,6 +11,9 @@ export const AI_ADVISORY_DISCLAIMER =
 export type SegmentReviewStatus =
   | 'pending_review'
   | 'confirmed'
+  | 'rejected'
+  | 'inconclusive'
+  | 'escalated'
   | 'corrected'
   | 'overridden'
   | 'dismissed';

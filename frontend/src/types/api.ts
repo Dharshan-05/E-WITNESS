@@ -1,6 +1,7 @@
 /**
  * Standardized API Error and Response Types.
- * Matches backend `backend/app/schemas/common.py` ErrorResponse envelope.
+ * Matches backend `backend/app/schemas/common.py` ErrorResponse envelope
+ * and `backend/app/schemas/pagination.py` PaginatedResponse envelope.
  */
 
 export interface ApiErrorDetail {
@@ -40,10 +41,20 @@ export class ApiError extends Error {
   }
 }
 
+export interface PaginationMetadata {
+  page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
-  total: number;
-  limit: number;
+  pagination?: PaginationMetadata;
+  total?: number;
+  limit?: number;
   offset?: number;
   next_cursor?: string | null;
   has_more?: boolean;

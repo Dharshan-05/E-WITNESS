@@ -224,11 +224,11 @@ The E-WITNESS development lifecycle is governed by a 12-batch, 120-phase sequent
 | Phase | Phase Requirement / Title | Status | Implementation Files | Relevant Tests | Gaps / Missing Items | Dependencies | Recommended Next Action |
 | :---: | :--- | :---: | :--- | :--- | :--- | :--- | :--- |
 | **111**| Frontend Project Architecture & Tooling | **PASS** | `frontend/src/` (Vite, React 18, TS 5.6, Tailwind, Router, API client) | `frontend/src/test/` (19 Vitest unit tests) | None (Phases 112–120 deferred to respective phases) | Phase 25 | Implement Phase 112: Authentication & Session Guards UI. |
-| **112**| Authentication & Session Guards UI | **FAIL** | None | None | No login, refresh, MFA, or route guards | Phase 111 | Implement JWT auth provider and role-based route guards. |
-| **113**| Incident Intake & Triage UI | **FAIL** | None | None | No student submission form, no triage queue | Phase 112 | Build accessible incident reporting form and reviewer table. |
-| **114**| Evidence Upload & Chunking UI | **FAIL** | None | None | No chunked upload worker, no checksum view | Phase 113 | Implement client-side SHA-256 hashing and chunk uploader. |
-| **115**| Case Management & Custody Timeline UI | **FAIL** | None | None | No case dossier view, no timeline component | Phase 114 | Build case file view, note editor, and custody ledger. |
-| **116**| AI Analysis Review & Decision Workflows | **FAIL** | None | None | No candidate segment player, no review form | Phase 115 | Build video player with timeline markers for AI segments. |
+| **112**| Authentication & Session Guards UI | **PASS** | `frontend/src/auth/`, `frontend/src/api/auth.ts`, `frontend/src/pages/LoginPage.tsx` | `frontend/src/test/` (46 Vitest unit tests) | None (Phases 113–120 deferred to respective phases) | Phase 111 | Implement Phase 113: Incident Intake & Triage UI. |
+| **113**| Incident Intake & Triage UI | **PASS** | `frontend/src/components/incident/`, `api/incident.ts`, `pages/IncidentsPage.tsx` | `frontend/src/test/` (63 Vitest tests across 11 suites) | None (Phases 114–120 deferred to respective phases) | Phase 112 | Implement Phase 114: Evidence Upload & Chunking UI. |
+| **114**| Evidence Upload & Chunking UI | **PASS** | `frontend/src/components/evidence/`, `api/evidence.ts`, `pages/EvidencePlaceholderPage.tsx` | `frontend/src/test/` (83 Vitest tests across 13 suites) | None (Phases 115–120 deferred to respective phases) | Phase 113 | Implement Phase 115: Case Management & Custody Timeline UI. |
+| **115**| Case Management & Custody Timeline UI | **PASS** | `frontend/src/components/case/`, `api/case.ts`, `pages/CasesPage.tsx` | `frontend/src/test/` (103 Vitest tests across 16 suites) | None (Phases 116–120 deferred to respective phases) | Phase 114 | Implement Phase 116: AI Analysis Review & Decision Workflows. |
+| **116**| AI Analysis Review & Decision Workflows | **PASS** | `frontend/src/components/video/` (VideoPlayer, AIAnnotationOverlay, AISegmentsList, AISegmentReviewModal, AISegmentHistoryModal, VideoEvidenceReviewModal), `frontend/src/api/case.ts` | `frontend/src/test/` (33 AI/video tests across 4 suites; 138 total frontend tests) | None (weights missing from Phase 64, but review workflow & contracts complete) | Phase 115 | Implement Phase 117: Analytics & Operations Dashboards UI. |
 | **117**| Analytics & Operations Dashboards UI | **FAIL** | None | None | No metrics charts, workload graphs, or KPIs | Phase 116 | Integrate charting library (Recharts) with `/analytics`. |
 | **118**| Audit Log & Administration UI | **FAIL** | None | None | No security audit viewer, user admin tables | Phase 117 | Build department settings, user list, and audit viewer. |
 | **119**| End-to-End System & Browser Testing | **FAIL** | None | None | No Playwright or Cypress E2E test suites | Phase 118 | Create automated Playwright integration test suite. |
@@ -240,10 +240,10 @@ The E-WITNESS development lifecycle is governed by a 12-batch, 120-phase sequent
 
 ```text
 Total Phases in Roadmap:      120
-Implemented Phases:           111 (Phases 01–110 Backend Scope + Phase 111 Frontend Foundation)
-Unimplemented Frontend Phases: 9 (Phases 112–120)
+Implemented Phases:           116 (Phases 01–110 Backend Scope + Phases 111–116 Frontend Scope)
+Unimplemented Frontend Phases: 4 (Phases 117–120)
 Existing Backend Code Status: COMPLETE & SEALED
 Existing Backend Test Status: 976 tests present (Validated in historical audits)
-Frontend Test Status:         19 Vitest unit tests passing; TypeScript & ESLint clean; Vite build clean
+Frontend Test Status:         138 Vitest unit tests passing; TypeScript & ESLint clean; Vite build clean
 AI / ML Classifier Status:    Architecture COMPLETE; PyTorch weights & training pipeline MISSING
 ```

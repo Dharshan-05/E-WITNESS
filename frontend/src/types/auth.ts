@@ -1,9 +1,14 @@
 /**
  * Authentication and User Identity Types.
- * Matches backend `backend/app/schemas/auth.py` and `identity.py`.
+ * Matches backend `backend/app/schemas/auth.py` and `backend/app/core/identity.py`.
  */
 
 export type RoleCode =
+  | 'ROLE_STUDENT'
+  | 'ROLE_STAFF'
+  | 'ROLE_DEPT_ADMIN'
+  | 'ROLE_INVESTIGATOR'
+  | 'ROLE_SUPER_ADMIN'
   | 'student'
   | 'staff'
   | 'investigator'
@@ -13,6 +18,8 @@ export type RoleCode =
 export type AccountStatus =
   | 'active'
   | 'pending_verification'
+  | 'suspended'
+  | 'disabled'
   | 'deactivated';
 
 export interface User {
@@ -59,6 +66,32 @@ export interface TokenResponse {
 
 export interface CurrentUserResponse {
   user: User;
+  role: Role;
+  department?: Department | null;
+  session_id: string;
+}
+
+export interface GenericActionResponse {
+  status: string;
+  message: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RefreshTokenRequest {
+  refresh_token: string;
+}
+
+export type AuthStatus =
+  | 'initializing'
+  | 'authenticated'
+  | 'unauthenticated'
+  | 'error';
+
+export interface AuthenticatedUser extends Omit<User, 'role_id'> {
   role: Role;
   department?: Department | null;
   session_id: string;

@@ -6,6 +6,7 @@ import {
   FolderLock,
   FileCheck2,
   ScrollText,
+  BarChart3,
   Activity,
   Lock,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ const navigation: NavItem[] = [
   { name: 'Incident Intake', href: '/incidents', icon: AlertTriangle, phase: 'Phase 113' },
   { name: 'Investigation Cases', href: '/cases', icon: FolderLock, phase: 'Phase 115' },
   { name: 'Evidence Custody', href: '/evidence', icon: FileCheck2, phase: 'Phase 114' },
+  { name: 'Analytics & Metrics', href: '/analytics', icon: BarChart3, phase: 'Phase 117' },
   { name: 'Audit & Traceability', href: '/audit', icon: ScrollText, phase: 'Phase 118' },
   { name: 'System Diagnostics', href: '/health', icon: Activity },
 ];

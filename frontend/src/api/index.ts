@@ -1,2 +1,11 @@
 export * from './client';
 export * from './health';
+export * as authApi from './auth';
+export * as incidentApi from './incident';
+export * from './incident';
+export * as evidenceApi from './evidence';
+export * from './evidence';
+export * as caseApi from './case';
+export * from './case';
+export * as analyticsApi from './analytics';
+export * from './analytics';

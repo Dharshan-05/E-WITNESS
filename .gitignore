@@ -139,3 +139,5 @@ data/splits/
 *.bin
 scratch/
 node_modules/
+
+.playwright-mcp/

@@ -1,5 +1,5 @@
 {
-  "validation_timestamp": "2026-10-27T05:30:52.396222+00:00",
+  "validation_timestamp": "2026-10-28T18:50:59.361354+00:00",
   "model_name": "violence-r3d18",
   "model_version": "1.0.0",
   "manifest_sha256": "synthetic-manifest-sha256",
@@ -266,7 +266,7 @@
   },
   "leakage_audit": {
     "status": "MANIFEST_NOT_FOUND",
-    "manifest_path": "D:\\pytest_temp\\test_training_and_evaluation_s0\\data\\manifest.json",
+    "manifest_path": "C:\\Users\\Dharshan\\AppData\\Local\\Temp\\pytest-of-Dharshan\\pytest-0\\test_training_and_evaluation_s0\\data\\manifest.json",
     "cross_split_hash_leakage": false,
     "verifiable_scene_leakage": false
   },

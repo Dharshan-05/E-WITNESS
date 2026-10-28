@@ -1,7 +1,8 @@
 import React from 'react';
-import { Shield, Menu, X, Activity } from 'lucide-react';
+import { Shield, Menu, X, Activity, LogOut, LogIn } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '../ui/Badge';
+import { useAuth } from '../../auth/useAuth';
 
 export interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -10,6 +11,7 @@ export interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen = false }) => {
   const location = useLocation();
+  const { status, user, role, logout } = useAuth();
   const envName = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_ENV) || 'development';
 
   return (
@@ -45,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen =
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
         <Link
           to="/health"
           className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors ${
@@ -55,15 +57,43 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen =
           }`}
         >
           <Activity className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-          <span className="hidden md:inline">System Diagnostics</span>
+          <span className="hidden md:inline">Diagnostics</span>
         </Link>
 
-        <div className="hidden md:block h-4 w-px bg-slate-200" aria-hidden="true" />
+        <div className="h-4 w-px bg-slate-200" aria-hidden="true" />
 
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-          <span className="hidden sm:inline font-mono">Backend Ready</span>
-        </div>
+        {status === 'authenticated' && user ? (
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-semibold text-slate-900 leading-tight">
+                {user.full_name || user.email}
+              </span>
+              <div className="flex items-center gap-1">
+                <Badge variant="primary" size="sm" className="text-[9px] py-0 px-1 font-medium">
+                  {role?.name || role?.code || 'User'}
+                </Badge>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => logout()}
+              title="Sign out of active session"
+              className="inline-flex items-center gap-1 rounded-md p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors"
+              aria-label="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-colors"
+          >
+            <LogIn className="h-3.5 w-3.5" />
+            <span>Sign In</span>
+          </Link>
+        )}
       </div>
     </header>
   );

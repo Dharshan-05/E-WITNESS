@@ -1,5 +1,5 @@
 {
-  "report_id": "eval-violence-r3d18-1.0.0-df2163b7",
+  "report_id": "eval-violence-r3d18-1.0.0-8e7b2801",
   "dataset_name": "yash07yadav-violence-detection-combined",
   "dataset_version": "1.0.0",
   "manifest_sha256": "synthetic-manifest-sha256",
@@ -175,8 +175,8 @@
     }
   },
   "subgroup_metrics": {},
-  "created_at": "2026-10-27T05:30:52.396222+00:00",
-  "reproducibility_hash": "b2d1ceff06ec42004d11a69274aef37ffaa66942e1e8a29156b14a00189d340a",
+  "created_at": "2026-10-28T18:50:59.361354+00:00",
+  "reproducibility_hash": "f6fadf36571f8cd373069f199aebeeddd8177c8525a2058f5898807c31a29671",
   "disclaimer": "NOTICE: AI-assisted violence detection outputs are probabilistic, advisory decision-support signals only. They do not constitute factual determinations of guilt, unlawful conduct, or disciplinary infractions. Every candidate detection requires mandatory independent human review by an authorized investigator or administrator prior to taking any investigative, disciplinary, or administrative action.",
   "evaluation_kind": "SOFTWARE_SMOKE_TEST",
   "evaluation_type": "SOFTWARE_SMOKE_TEST",
@@ -465,7 +465,7 @@
   },
   "data_leakage_and_splits_audit": {
     "status": "MANIFEST_NOT_FOUND",
-    "manifest_path": "D:\\pytest_temp\\test_training_and_evaluation_s0\\data\\manifest.json",
+    "manifest_path": "C:\\Users\\Dharshan\\AppData\\Local\\Temp\\pytest-of-Dharshan\\pytest-0\\test_training_and_evaluation_s0\\data\\manifest.json",
     "cross_split_hash_leakage": false,
     "verifiable_scene_leakage": false
   },
@@ -473,7 +473,7 @@
   "is_authorized_subset_only": false,
   "manifest_compatibility": true,
   "calibration_artifact": {
-    "artifact_id": "calib-violence-r3d18-1.0.0-6b26c9bb",
+    "artifact_id": "calib-violence-r3d18-1.0.0-bf15f50b",
     "method": "platt_scaling",
     "model_name": "violence-r3d18",
     "model_version": "1.0.0",
@@ -491,7 +491,7 @@
     "metrics": {
       "val_uncalibrated_ece": 0.0414004772901535
     },
-    "created_at": "2026-10-27T05:30:10.280059+00:00",
+    "created_at": "2026-10-28T18:50:08.401683+00:00",
     "is_approved": true
   }
 }

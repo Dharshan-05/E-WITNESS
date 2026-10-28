@@ -1,7 +1,7 @@
 # E-WITNESS Violence Detection Model Evaluation Report
 
 **Model Identifier:** `violence-r3d18` (v`1.0.0`)
-**Report Generated:** 2026-10-27T05:30:52.396222+00:00
+**Report Generated:** 2026-10-28T18:50:59.361354+00:00
 **Evaluation Mode:** `SOFTWARE_SMOKE_TEST`
 **Evaluation Level:** `clip_level`
 **Operational Disclaimer:** NOTICE: AI-assisted violence detection outputs are probabilistic, advisory decision-support signals only. They do not constitute factual determinations of guilt, unlawful conduct, or disciplinary infractions. Every candidate detection requires mandatory independent human review by an authorized investigator or administrator prior to taking any investigative, disciplinary, or administrative action.
@@ -79,4 +79,4 @@
 1. **Advisory Segments Only:** All candidate detections remain strictly advisory candidate segments for authorized human review.
 2. **Zero Automated Punishment:** No guilt determination, disciplinary sanction, or punitive action is triggered automatically.
 3. **Biometric Prohibition:** `BIOMETRIC_MATCHING_ENABLED = False` is enforced by code and configuration policy.
-4. **Reproducibility Fingerprint:** `b2d1ceff06ec42004d11a69274aef37ffaa66942e1e8a29156b14a00189d340a`
+4. **Reproducibility Fingerprint:** `f6fadf36571f8cd373069f199aebeeddd8177c8525a2058f5898807c31a29671`
