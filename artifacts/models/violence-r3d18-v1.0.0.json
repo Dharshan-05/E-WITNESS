@@ -1,0 +1,44 @@
+{
+  "model_name": "violence-r3d18",
+  "model_version": "1.0.0",
+  "weight_sha256": "e3b4337bea8b98c0a64b13b471d2d174526a31a29e2dbcc07944b6818eab5af9",
+  "manifest_sha256": "synthetic-manifest-sha256",
+  "architecture": "r3d_18",
+  "input_frames": 16,
+  "resolution": [
+    112,
+    112
+  ],
+  "class_mapping": {
+    "0": "non_violence",
+    "1": "violence"
+  },
+  "random_seed": 42,
+  "start_time": "2026-10-26T16:28:26.785340+00:00",
+  "end_time": "2026-10-26T16:28:51.094289+00:00",
+  "hyperparameters": {
+    "epochs": 1,
+    "micro_batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "effective_batch_size": 8,
+    "learning_rate": 0.0001
+  },
+  "metrics": {
+    "best_val_loss": 0.6904,
+    "best_val_accuracy": 0.625,
+    "training_time_seconds": 23.99
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.7221,
+      "train_accuracy": 0.4375,
+      "val_loss": 0.6904,
+      "val_accuracy": 0.625
+    }
+  ],
+  "device_used": "cpu",
+  "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "saved_checkpoint": "violence-r3d18-v1.0.0.pt",
+  "evaluation_note": "Smoke-test checkpoint only"
+}

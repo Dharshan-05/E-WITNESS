@@ -12,7 +12,15 @@ Houses the layered backend components:
 - services: Domain business logic and authorization enforcement
 """
 
-from backend.app.main import create_app
+from typing import Any
 
 __version__ = "0.1.0"
 __all__ = ["__version__", "create_app"]
+
+
+def __getattr__(name: str) -> Any:
+    if name == "create_app":
+        from backend.app.main import create_app
+
+        return create_app
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -5,6 +5,7 @@ Enforces:
 - Strict input validation, format inspection, and memory/byte bounds.
 - Deterministic synthetic test fixture provider.
 - Zero network transmissions and zero automatic runtime model weight downloads.
+- Decompression bomb protection: max single dimension 8192px, max pixel budget 67.1M pixels.
 """
 
 from __future__ import annotations
@@ -26,6 +27,24 @@ from backend.app.core.exceptions import (
 )
 
 MAX_IMAGE_BYTES: Final[int] = 10 * 1024 * 1024  # 10 MB maximum
+MAX_IMAGE_DIMENSION: Final[int] = 4096  # Single-axis maximum (4096px, 4K DCI compliant)
+MAX_IMAGE_PIXELS: Final[int] = 16_777_216  # 4096 * 4096 pixels (~50MB uncompressed 24-bit RGB)
+
+
+def _validate_dimensions(width: int, height: int) -> None:
+    """Validate image dimensions and total decoded pixel budget against decompression-bomb limits."""
+    if width <= 0 or height <= 0:
+        raise ValueError(
+            f"Image dimensions must be strictly positive (got width={width}, height={height})."
+        )
+    if width * height > MAX_IMAGE_PIXELS:
+        raise ValueError(
+            f"Image pixel count ({width * height} pixels) exceeds maximum permitted pixel budget ({MAX_IMAGE_PIXELS} pixels)."
+        )
+    if width > MAX_IMAGE_DIMENSION or height > MAX_IMAGE_DIMENSION:
+        raise ValueError(
+            f"Image dimension ({max(width, height)}px) exceeds maximum permitted limit ({MAX_IMAGE_DIMENSION}px)."
+        )
 
 
 def inspect_image_dimensions_and_format(image_bytes: bytes) -> tuple[int, int, str]:
@@ -34,8 +53,8 @@ def inspect_image_dimensions_and_format(image_bytes: bytes) -> tuple[int, int, s
     Supports PNG, JPEG, and WebP formats without external decoding libraries.
 
     Raises:
-        ValueError: If payload is empty or exceeds MAX_IMAGE_BYTES.
-        UnsupportedMediaTypeError: If magic bytes are unrecognized or payload is corrupted.
+        ValueError: If payload is empty, exceeds MAX_IMAGE_BYTES, or has non-positive/excessive dimensions.
+        UnsupportedMediaTypeError: If magic bytes are unrecognized, or stream is truncated/corrupted.
     """
     if not image_bytes:
         raise ValueError("Image bytes payload cannot be empty.")
@@ -45,21 +64,27 @@ def inspect_image_dimensions_and_format(image_bytes: bytes) -> tuple[int, int, s
         )
 
     # 1. PNG inspection (8-byte signature: \x89PNG\r\n\x1a\n)
-    if image_bytes.startswith(b"\x89PNG\r\n\x1a\n") and len(image_bytes) >= 24:
+    if image_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+        if len(image_bytes) < 24:
+            raise UnsupportedMediaTypeError("Truncated PNG image header.")
         # IHDR chunk immediately follows: 4 bytes length, 4 bytes "IHDR", 4 bytes width, 4 bytes height
         width, height = struct.unpack(">II", image_bytes[16:24])
+        _validate_dimensions(width, height)
         return width, height, "png"
 
-    # 2. JPEG inspection (\xff\xd8\xff)
-    if image_bytes.startswith(b"\xff\xd8\xff"):
-        # Simple scan for SOF0/SOF2 marker
+    # 2. JPEG inspection (\xff\xd8)
+    if image_bytes.startswith(b"\xff\xd8"):
+        if len(image_bytes) < 4:
+            raise UnsupportedMediaTypeError("Truncated JPEG image stream.")
+        # Scan for SOF0/SOF1/SOF2 marker
         offset = 2
         while offset < len(image_bytes) - 9:
             if image_bytes[offset] == 0xFF:
                 marker = image_bytes[offset + 1]
-                # SOF0 (0xC0) or SOF2 (0xC2) baseline / progressive
+                # SOF0 (0xC0), SOF1 (0xC1), or SOF2 (0xC2) baseline / extended / progressive
                 if marker in {0xC0, 0xC1, 0xC2}:
                     height, width = struct.unpack(">HH", image_bytes[offset + 5 : offset + 9])
+                    _validate_dimensions(width, height)
                     return width, height, "jpeg"
                 # Skip variable-length marker
                 if marker not in {0xD8, 0xD9, 0x00} and offset + 4 <= len(image_bytes):
@@ -67,27 +92,35 @@ def inspect_image_dimensions_and_format(image_bytes: bytes) -> tuple[int, int, s
                     offset += 2 + length
                     continue
             offset += 1
+        if len(image_bytes) < 32:
+            raise UnsupportedMediaTypeError("Truncated or malformed JPEG image stream.")
         # Fallback dimensions if markers are non-standard but valid JPEG header
+        _validate_dimensions(640, 480)
         return 640, 480, "jpeg"
 
     # 3. WebP inspection ("RIFF" .... "WEBP")
-    if image_bytes.startswith(b"RIFF") and len(image_bytes) >= 30 and image_bytes[8:12] == b"WEBP":
+    if image_bytes.startswith(b"RIFF"):
+        if len(image_bytes) < 12 or image_bytes[8:12] != b"WEBP":
+            raise UnsupportedMediaTypeError("Invalid or unsupported WebP container format.")
+        if len(image_bytes) < 30:
+            raise UnsupportedMediaTypeError("Truncated WebP image header.")
         if image_bytes[12:16] == b"VP8 ":
             # Lossy WebP: 10-byte header in chunk, width/height at offset 26
             w, h = struct.unpack("<HH", image_bytes[26:30])
-            return w & 0x3FFF, h & 0x3FFF, "webp"
+            width, height = w & 0x3FFF, h & 0x3FFF
         elif image_bytes[12:16] == b"VP8L":
             # Lossless WebP
             b0, b1, b2, b3 = struct.unpack("BBBB", image_bytes[21:25])
             width = 1 + (((b1 & 0x3F) << 8) | b0)
             height = 1 + (((b3 & 0xF) << 10) | (b2 << 2) | ((b1 & 0xC0) >> 6))
-            return width, height, "webp"
-        elif image_bytes[12:16] == b"VP8X" and len(image_bytes) >= 30:
+        elif image_bytes[12:16] == b"VP8X":
             # Extended WebP: 24-bit Canvas Width at offset 24..27, 24-bit Canvas Height at offset 27..30
             width = 1 + int.from_bytes(image_bytes[24:27], "little")
             height = 1 + int.from_bytes(image_bytes[27:30], "little")
-            return width, height, "webp"
-        return 640, 480, "webp"
+        else:
+            width, height = 640, 480
+        _validate_dimensions(width, height)
+        return width, height, "webp"
 
     raise UnsupportedMediaTypeError(
         "Image payload contains invalid or unsupported image magic bytes."

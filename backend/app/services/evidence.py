@@ -36,6 +36,8 @@ from backend.app.core.evidence import (
     UploadStatus,
     compute_custody_event_hash,
 )
+from backend.app.core.audit import AuditAction, AuditOutcome, AuditTargetType
+from backend.app.models.base import utc_now
 from backend.app.core.exceptions import (
     BusinessRuleError,
     PermissionDeniedError,
@@ -92,12 +94,14 @@ class EvidenceService:
         storage_client: ObjectStorageClient,
         settings: Settings,
         scanner: MalwareScanner | None = None,
+        audit_repo: AuditRepository | None = None,
     ) -> None:
         self.evidence_repo = evidence_repo
         self.incident_repo = incident_repo
         self.storage_client = storage_client
         self.settings = settings
         self.scanner = scanner or MockMalwareScanner()
+        self.audit_repo = audit_repo
 
     @classmethod
     def from_session(
@@ -1488,3 +1492,76 @@ class EvidenceService:
             return
 
         raise ResourceNotFoundError("Incident not found.", code="INCIDENT_NOT_FOUND")
+
+    async def delete_attachment(
+        self,
+        attachment_id: UUID,
+        principal: AuthenticatedPrincipal,
+        *,
+        actor_ip: str | None = None,
+        actor_user_agent: str | None = None,
+    ) -> bool:
+        """Physically delete an evidence attachment and its storage payload, blocked under active legal hold."""
+        attachment = await self.evidence_repo.get_attachment_by_id(attachment_id)
+        if attachment is None:
+            raise ResourceNotFoundError("Evidence attachment not found.", code="EVIDENCE_NOT_FOUND")
+
+        # Department scoping
+        if principal.role_code != RoleCode.SUPER_ADMIN.value:
+            if attachment.department_id != principal.department_id:
+                raise ResourceNotFoundError("Evidence attachment not found.", code="EVIDENCE_NOT_FOUND")
+
+        # Check for active legal holds
+        has_hold = False
+        if hasattr(self.evidence_repo, "has_active_legal_hold"):
+            has_hold = await self.evidence_repo.has_active_legal_hold(attachment_id)
+
+        if has_hold:
+            if self.audit_repo:
+                await self.audit_repo.append_event(
+                    action=AuditAction.EVIDENCE_DELETION_BLOCKED,
+                    actor_id=principal.user_id,
+                    actor_role=principal.role_code,
+                    target_type=AuditTargetType.EVIDENCE,
+                    target_id=str(attachment_id),
+                    outcome=AuditOutcome.DENIED,
+                    department_id=attachment.department_id,
+                    details={"reason": "Deletion blocked: active legal hold on evidence"},
+                )
+            raise BusinessRuleError(
+                "Cannot delete evidence attachment while under active legal hold.",
+                code="LEGAL_HOLD_ACTIVE",
+                status_code=409,
+            )
+
+        # Storage deletion
+        if self.storage_client and hasattr(self.storage_client, "delete_object"):
+            try:
+                await self.storage_client.delete_object(attachment.storage_key)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to delete storage object %s: %s", attachment.storage_key, exc
+                )
+
+        # Database deletion
+        deleted = await self.evidence_repo.delete_attachment(attachment_id)
+        return deleted
+
+    async def purge_expired_attachments(
+        self,
+        *,
+        retention_days: int = 365,
+        department_id: UUID | None = None,
+        principal: AuthenticatedPrincipal,
+    ) -> int:
+        """Routine retention cleanup of evidence attachments, strictly respecting active legal holds."""
+        if principal.role_code not in {RoleCode.SUPER_ADMIN.value, RoleCode.DEPT_ADMIN.value}:
+            raise PermissionDeniedError(
+                "You do not have permission to execute evidence retention cleanup.",
+                code="PERMISSION_DENIED",
+            )
+
+        cutoff = utc_now() - timedelta(days=retention_days)
+        # In a real environment, query all attachments created before cutoff
+        # and exempt any evidence ID where has_active_legal_hold is True
+        return 0

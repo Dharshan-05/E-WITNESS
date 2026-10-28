@@ -99,6 +99,8 @@ class TestAIAnalysisJobService:
         repo.list_for_department.return_value = []
         repo.list_all_unscoped.return_value = []
         repo.count_for_department.return_value = 0
+        repo.get_active_job_for_evidence.return_value = None
+        repo.count_active_for_department.return_value = 0
         return repo
 
     @pytest.fixture

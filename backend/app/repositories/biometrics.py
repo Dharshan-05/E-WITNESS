@@ -14,8 +14,10 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.biometrics import BiometricReferenceStatus
+from datetime import datetime
+from backend.app.core.biometrics import BiometricReferenceStatus, ConsentStatus
 from backend.app.models.biometrics import (
+    BiometricQualityReview,
     BiometricGovernanceRecord,
     BiometricReference,
     BiometricVerificationReview,
@@ -83,6 +85,22 @@ class BiometricGovernanceRepository:
             stmt = stmt.where(BiometricGovernanceRecord.status == status)
         result = await self._session.execute(stmt)
         return int(result.scalar_one() or 0)
+
+    async def list_expired_active(
+        self,
+        cutoff: datetime,
+        *,
+        department_id: UUID | None = None,
+    ) -> Sequence[BiometricGovernanceRecord]:
+        """Fetch all governance records with active consent whose retention period has expired."""
+        stmt = select(BiometricGovernanceRecord).where(
+            BiometricGovernanceRecord.consent_status == ConsentStatus.ACTIVE.value,
+            BiometricGovernanceRecord.retention_expires_at <= cutoff,
+        )
+        if department_id is not None:
+            stmt = stmt.where(BiometricGovernanceRecord.department_id == department_id)
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
 
 
 class BiometricReferenceRepository:
@@ -172,6 +190,50 @@ class BiometricReferenceRepository:
         result = await self._session.execute(stmt)
         return int(result.scalar_one() or 0)
 
+    async def list_expired_active(
+        self,
+        cutoff: datetime,
+        *,
+        department_id: UUID | None = None,
+    ) -> Sequence[BiometricReference]:
+        """Fetch all active references whose retention period has expired."""
+        stmt = select(BiometricReference).where(
+            BiometricReference.status == BiometricReferenceStatus.ACTIVE.value,
+            BiometricReference.retention_expires_at <= cutoff,
+        )
+        if department_id is not None:
+            stmt = stmt.where(BiometricReference.department_id == department_id)
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+
+    async def list_active_for_reencryption(
+        self,
+        *,
+        department_id: UUID | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Sequence[BiometricReference]:
+        """Fetch active references with stored encrypted templates for key re-encryption."""
+        stmt = (
+            select(BiometricReference)
+            .where(
+                BiometricReference.status == BiometricReferenceStatus.ACTIVE.value,
+                BiometricReference.encrypted_template.isnot(None),
+            )
+            .order_by(BiometricReference.created_at.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        if department_id is not None:
+            stmt = stmt.where(BiometricReference.department_id == department_id)
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+
+    async def update(self, reference: BiometricReference) -> BiometricReference:
+        """Flush changes to a biometric reference."""
+        await self._session.flush()
+        return reference
+
 
 class BiometricVerificationRepository:
     """Persistence operations for human oversight of biometric verification determinations (Phase 77)."""
@@ -242,3 +304,78 @@ class BiometricVerificationRepository:
             stmt = stmt.where(BiometricVerificationReview.is_override == is_override)
         result = await self._session.execute(stmt)
         return int(result.scalar_one() or 0)
+
+class BiometricQualityReviewRepository:
+    """Persistence operations for evidence quality and redaction human review workflow (Phase 77)."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def create(self, review: BiometricQualityReview) -> BiometricQualityReview:
+        """Persist a new biometric quality review item."""
+        self._session.add(review)
+        await self._session.flush()
+        return review
+
+    async def get_by_id(
+        self,
+        review_id: UUID,
+        *,
+        department_id: UUID | None = None,
+    ) -> BiometricQualityReview | None:
+        """Fetch a quality review record by ID, optionally scoped to a department."""
+        stmt = select(BiometricQualityReview).where(BiometricQualityReview.id == review_id)
+        if department_id is not None:
+            stmt = stmt.where(BiometricQualityReview.department_id == department_id)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def list_for_department(
+        self,
+        *,
+        department_id: UUID | None = None,
+        status: str | None = None,
+        assigned_reviewer_id: UUID | None = None,
+        evidence_id: UUID | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> Sequence[BiometricQualityReview]:
+        """List quality review records with optional filtering."""
+        stmt = (
+            select(BiometricQualityReview)
+            .order_by(BiometricQualityReview.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        if department_id is not None:
+            stmt = stmt.where(BiometricQualityReview.department_id == department_id)
+        if status is not None:
+            stmt = stmt.where(BiometricQualityReview.status == status)
+        if assigned_reviewer_id is not None:
+            stmt = stmt.where(BiometricQualityReview.assigned_reviewer_id == assigned_reviewer_id)
+        if evidence_id is not None:
+            stmt = stmt.where(BiometricQualityReview.evidence_id == evidence_id)
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+
+    async def count_for_department(
+        self,
+        *,
+        department_id: UUID | None = None,
+        status: str | None = None,
+        assigned_reviewer_id: UUID | None = None,
+        evidence_id: UUID | None = None,
+    ) -> int:
+        """Count quality review records matching filters."""
+        stmt = select(func.count(BiometricQualityReview.id))
+        if department_id is not None:
+            stmt = stmt.where(BiometricQualityReview.department_id == department_id)
+        if status is not None:
+            stmt = stmt.where(BiometricQualityReview.status == status)
+        if assigned_reviewer_id is not None:
+            stmt = stmt.where(BiometricQualityReview.assigned_reviewer_id == assigned_reviewer_id)
+        if evidence_id is not None:
+            stmt = stmt.where(BiometricQualityReview.evidence_id == evidence_id)
+        result = await self._session.execute(stmt)
+        return int(result.scalar_one() or 0)
+

@@ -267,6 +267,42 @@ class Settings(BaseSettings):
         le=50 * 1024 * 1024,
         description="Maximum byte size for single face detection image payload (1 KB to 50 MB).",
     )
+    BIOMETRIC_VAULT_PROVIDER: str = Field(
+        default="in_memory",
+        description="Key vault provider for template encryption: 'in_memory' (non-durable/test), 'file' (encrypted local keystore), or 'kms' (cloud KMS/Vault adapter).",
+    )
+    BIOMETRIC_VAULT_FILE_PATH: str | None = Field(
+        default=None,
+        description="File path for durable local encrypted key vault (required when BIOMETRIC_VAULT_PROVIDER='file').",
+    )
+    BIOMETRIC_VAULT_MASTER_KEY: SecretStr | None = Field(
+        default=None,
+        description="256-bit hex/base64 master key for file-based vault encryption at rest.",
+    )
+    BIOMETRIC_VAULT_ENDPOINT_URL: str | None = Field(
+        default=None,
+        description="Endpoint URL for external HashiCorp Vault or Cloud KMS service.",
+    )
+    BIOMETRIC_VAULT_KEY_ID: str = Field(
+        default="k1",
+        description="Default active biometric encryption key identifier.",
+    )
+    BIOMETRIC_VAULT_TIMEOUT_SECONDS: float = Field(
+        default=5.0,
+        ge=0.5,
+        le=30.0,
+        description="Timeout in seconds for external vault / KMS operations.",
+    )
+
+    # -------------------------------------------------------------------------
+    # 8.2 Case Management & Investigator Workload (Phase 82)
+    # -------------------------------------------------------------------------
+    INVESTIGATOR_MAX_ACTIVE_CASES: int = Field(
+        default=10,
+        ge=1,
+        le=1000,
+        description="Configurable maximum number of active assigned cases per investigator (Phase 82 default: 10).",
+    )
 
     # -------------------------------------------------------------------------
     # 9. Request, Upload & External Timeout Guardrails
@@ -536,6 +572,15 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"Invalid BIOMETRIC_PROVIDER '{self.BIOMETRIC_PROVIDER}'. Must be 'disabled', 'mock', or 'local'."
             )
+        if self.BIOMETRIC_VAULT_PROVIDER not in {"in_memory", "file", "kms"}:
+            raise ValueError(
+                f"Invalid BIOMETRIC_VAULT_PROVIDER '{self.BIOMETRIC_VAULT_PROVIDER}'. Must be 'in_memory', 'file', or 'kms'."
+            )
+        if self.ENVIRONMENT == Environment.PRODUCTION and self.BIOMETRIC_ANALYSIS_ENABLED:
+            if self.BIOMETRIC_VAULT_PROVIDER == "in_memory":
+                raise ValueError(
+                    "BIOMETRIC_VAULT_PROVIDER='in_memory' is ephemeral and forbidden in production when biometrics are enabled."
+                )
 
         # 3. Strict Testing Isolation Rule (ENVIRONMENT == "testing")
         if self.ENVIRONMENT == Environment.TESTING:
@@ -763,3 +808,4 @@ def load_settings(**overrides: Any) -> Settings:
 def get_settings() -> Settings:
     """Return the cached singleton ``Settings`` instance for the current process."""
     return Settings()
+

@@ -153,6 +153,65 @@ class AuditRepository:
         items = (await self.session.execute(query)).scalars().all()
         return items, total_items
 
+    async def list_events_for_target(
+        self,
+        *,
+        target_type: str,
+        target_id: str,
+        limit: int = 100,
+    ) -> Sequence[SecurityAuditEvent]:
+        """Retrieve security audit events for a specific target entity."""
+        events, _ = await self.list_events_paginated(
+            target_type=target_type,
+            target_id=target_id,
+            limit=limit,
+        )
+        return events
+
+    async def list_events_for_case(
+        self,
+        *,
+        case_id: UUID,
+        department_id: UUID | None = None,
+        event_types: list[str] | None = None,
+        actor_id: UUID | None = None,
+        outcome: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        limit: int = 100,
+        offset: int = 0,
+        ascending: bool = False,
+    ) -> Sequence[SecurityAuditEvent]:
+        """Query security audit events associated with a case entity or having case_id in details (Phase 88)."""
+        case_id_str = str(case_id)
+        case_filter = (SecurityAuditEvent.target_id == case_id_str) | (
+            SecurityAuditEvent.details.like(f'%"case_id": "{case_id_str}"%')
+        )
+        predicates = [case_filter]
+
+        if department_id is not None:
+            predicates.append(SecurityAuditEvent.department_id == department_id)
+        if event_types:
+            predicates.append(SecurityAuditEvent.action.in_([et.strip().lower() for et in event_types]))
+        if actor_id is not None:
+            predicates.append(SecurityAuditEvent.actor_id == actor_id)
+        if outcome is not None:
+            predicates.append(SecurityAuditEvent.outcome == outcome.strip().lower())
+        if start_time is not None:
+            predicates.append(SecurityAuditEvent.created_at >= start_time)
+        if end_time is not None:
+            predicates.append(SecurityAuditEvent.created_at <= end_time)
+
+        query = select(SecurityAuditEvent).where(*predicates)
+        if ascending:
+            query = query.order_by(SecurityAuditEvent.created_at.asc(), SecurityAuditEvent.sequence_number.asc())
+        else:
+            query = query.order_by(SecurityAuditEvent.created_at.desc(), SecurityAuditEvent.sequence_number.desc())
+
+        query = query.limit(limit).offset(offset)
+        items = (await self.session.execute(query)).scalars().all()
+        return items
+
     async def verify_chain(
         self,
         *,

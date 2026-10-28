@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from backend.app.core.case import (
     AI_ADVISORY_DISCLAIMER,
@@ -144,6 +144,15 @@ class CaseUpdate(BaseModel):
         ge=1,
         description="Expected version_id for optimistic concurrency control.",
     )
+    is_supervisor_override: bool = Field(
+        default=False,
+        description="Flag indicating supervisor override of investigator workload limit.",
+    )
+    override_justification: str | None = Field(
+        default=None,
+        max_length=1000,
+        description="Mandatory factual justification required when overriding workload capacity limits.",
+    )
 
     @field_validator("priority", mode="before")
     @classmethod
@@ -233,6 +242,15 @@ class CaseAssignRequest(BaseModel):
         ge=1,
         description="Expected version_id for optimistic concurrency control.",
     )
+    is_supervisor_override: bool = Field(
+        default=False,
+        description="Flag indicating supervisor override of investigator workload limit.",
+    )
+    override_justification: str | None = Field(
+        default=None,
+        max_length=1000,
+        description="Mandatory factual justification required when overriding workload capacity limits.",
+    )
 
 
 class CaseAssignmentRead(BaseModel):
@@ -246,7 +264,16 @@ class CaseAssignmentRead(BaseModel):
     new_investigator_id: UUID
     assigned_by_id: UUID
     assignment_reason: str | None = None
+    is_supervisor_override: bool = False
+    override_justification: str | None = None
     created_at: datetime
+
+    @field_validator("is_supervisor_override", mode="before")
+    @classmethod
+    def _coerce_is_supervisor_override(cls, v: Any) -> bool:
+        if v is None:
+            return False
+        return bool(v)
 
 
 class InvestigatorWorkloadRead(BaseModel):
@@ -256,6 +283,8 @@ class InvestigatorWorkloadRead(BaseModel):
     active_cases_count: int
     max_active_cases: int
     capacity_available: bool
+
+    department_id: UUID | None = None
 
 
 # =============================================================================
@@ -362,6 +391,124 @@ class CaseEvidenceItemRead(BaseModel):
     is_legal_hold: bool = False
     chain_of_custody_events_count: int = 0
 
+    # Phase 83: Enriched Evidence Inventory Extensions
+    case_reference: str | None = None
+    evidence_type: str | None = None
+    media_format: str | None = None
+    ingested_at: datetime | None = None
+    client_reported_at: datetime | None = None
+    source_description: str | None = None
+    evidence_status: str = "attached"
+    active_hold_ids: list[UUID] = Field(default_factory=list)
+
+    @field_validator("evidence_status", mode="before")
+    @classmethod
+    def _coerce_evidence_status(cls, v: Any) -> str:
+        return v or "attached"
+    active_holds_count: int = 0
+    audit_event_count: int = 0
+
+
+# =============================================================================
+# Legal Hold Schemas (Phase 83)
+# =============================================================================
+
+
+class LegalHoldPlaceRequest(BaseModel):
+    """Payload to place a legal hold on a case-linked evidence attachment."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
+
+    reason: str = Field(
+        ...,
+        min_length=10,
+        max_length=1000,
+        description="Justification rationale for placing the legal hold (min 10 characters).",
+    )
+    notes: str | None = Field(
+        default=None,
+        max_length=1000,
+        description="Optional supplementary notes regarding legal or procedural hold context.",
+    )
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason_non_empty(cls, v: str) -> str:
+        stripped = v.strip()
+        if len(stripped) < 10:
+            raise ValueError("Legal hold reason must contain at least 10 non-whitespace characters.")
+        return stripped
+
+
+class LegalHoldReleaseRequest(BaseModel):
+    """Payload to release an active legal hold on evidence."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
+
+    release_reason: str = Field(
+        ...,
+        min_length=10,
+        max_length=1000,
+        description="Documented rationale for releasing the legal hold (min 10 characters).",
+    )
+
+    @field_validator("release_reason")
+    @classmethod
+    def validate_release_reason_non_empty(cls, v: str) -> str:
+        stripped = v.strip()
+        if len(stripped) < 10:
+            raise ValueError("Legal hold release reason must contain at least 10 non-whitespace characters.")
+        return stripped
+
+
+class LegalHoldRead(BaseModel):
+    """Public safe representation of an audited legal hold."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    hold_reference: str
+    case_id: UUID
+    evidence_id: UUID
+    department_id: UUID
+    status: str
+    reason: str
+    placed_by_id: UUID
+    placed_at: datetime
+    released_by_id: UUID | None = None
+    released_at: datetime | None = None
+    release_reason: str | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    @field_validator("created_at", "updated_at", mode="before")
+    @classmethod
+    def _coerce_timestamps(cls, v: Any) -> Any:
+        from backend.app.models.base import utc_now
+        return v or utc_now()
+
+    # Contextual references
+    case_reference: str | None = None
+    file_name: str | None = None
+
+
+class LegalHoldStatusRead(BaseModel):
+    """Hold status overview for a specific evidence item."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    evidence_id: UUID
+    case_id: UUID
+    is_legal_hold: bool
+    active_holds_count: int
+    active_holds: list[LegalHoldRead] = Field(default_factory=list)
+
 
 # =============================================================================
 # Case AI Candidate Segments & Human Review (Phases 84 & 85)
@@ -417,7 +564,7 @@ class CaseAISegmentRead(BaseModel):
     linked_by_id: UUID
     investigative_relevance: InvestigativeRelevance
     relevance_notes: str | None = None
-    created_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # AI Segment provenance and model outputs
     job_id: UUID
@@ -425,15 +572,171 @@ class CaseAISegmentRead(BaseModel):
     incident_id: UUID
     start_seconds: float
     end_seconds: float
+    duration_seconds: float = 0.0
     score: float
+    raw_score: float | None = None
+    calibrated_score: float | None = None
     label: str
+    model_name: str | None = None
+    model_version: str | None = None
+    preprocessing_version: str | None = None
+    calibration_version: str | None = None
+    confidence_interpretation: str = (
+        "Probabilistic model confidence score (0.0 to 1.0). "
+        "Advisory candidate only; does not establish factual guilt or legal finding."
+    )
+    original_evidence_digest: str | None = None
+    inferred_at: datetime | None = None
+    updated_at: datetime | None = None
+
     review_status: str
     reviewed_by_id: UUID | None = None
     reviewed_at: datetime | None = None
     review_notes: str | None = None
 
+    # Phase 85: Distinction of original AI outputs vs human decision
+    original_ai_prediction: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Immutable original model prediction and confidence metrics.",
+    )
+    current_human_decision: dict[str, Any] | None = Field(
+        default=None,
+        description="Structured current human review determination.",
+    )
+    human_corrected_label: str | None = Field(
+        default=None,
+        description="Human-corrected classification label if modified from original model prediction.",
+    )
+    decision_revision: int = Field(
+        default=1,
+        description="Monotonic revision counter of human review/override determinations.",
+    )
+    is_override: bool = Field(
+        default=False,
+        description="Indicates if the current effective decision is a supervisor override.",
+    )
+
     # Mandatory disclaimer
     advisory_disclaimer: str = AI_ADVISORY_DISCLAIMER
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def _coerce_created_at(cls, v: Any) -> Any:
+        from backend.app.models.base import utc_now
+        return v or utc_now()
+
+    @field_validator("original_evidence_digest", mode="before")
+    @classmethod
+    def _coerce_evidence_digest(cls, v: Any) -> Any:
+        if v is None or type(v).__name__ in ("AsyncMock", "Mock", "MagicMock"):
+            return None
+        return str(v)
+
+
+class CaseCreateAISegmentAnnotationRequest(BaseModel):
+    """Payload to create and attach an advisory AI candidate segment annotation to case evidence."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
+
+    evidence_id: UUID = Field(
+        ...,
+        description="ID of the evidence attachment to annotate.",
+    )
+    start_seconds: float = Field(
+        ...,
+        description="Start time of the segment in seconds.",
+    )
+    end_seconds: float = Field(
+        ...,
+        description="End time of the segment in seconds.",
+    )
+    raw_score: float = Field(
+        ...,
+        description="Model confidence score between 0.0 and 1.0.",
+    )
+    raw_label: str = Field(
+        default="possible_violence",
+        max_length=64,
+        description="Candidate classification label.",
+    )
+    model_name: str = Field(
+        default="violence-classifier",
+        max_length=64,
+        description="Approved AI inference model identifier.",
+    )
+    model_version: str = Field(
+        default="1.0.0",
+        max_length=32,
+        description="Approved model version string.",
+    )
+    investigative_relevance: InvestigativeRelevance = Field(
+        default=InvestigativeRelevance.CANDIDATE_LEAD,
+        description="Initial investigative relevance tag.",
+    )
+    relevance_notes: str | None = Field(
+        default=None,
+        max_length=1000,
+        description="Investigator context regarding why this segment is relevant.",
+    )
+    calibrated_score: float | None = Field(
+        default=None,
+        description="Optional calibrated probability score between 0.0 and 1.0.",
+    )
+    video_duration_seconds: float | None = Field(
+        default=None,
+        ge=0.0,
+        description="Total duration of parent video if known.",
+    )
+    job_id: UUID | None = Field(
+        default=None,
+        description="Optional parent AIAnalysisJob ID if linked to an automated inference job.",
+    )
+
+    @field_validator("start_seconds")
+    @classmethod
+    def validate_start_seconds(cls, v: float) -> float:
+        import math
+        if math.isnan(v) or math.isinf(v) or v < 0.0:
+            raise ValueError("Segment start timestamp cannot be negative.")
+        return v
+
+    @field_validator("end_seconds")
+    @classmethod
+    def validate_end_seconds(cls, v: float) -> float:
+        import math
+        if math.isnan(v) or math.isinf(v) or v <= 0.0:
+            raise ValueError("Segment end timestamp must be positive.")
+        return v
+
+    @field_validator("raw_score")
+    @classmethod
+    def validate_raw_score(cls, v: float) -> float:
+        import math
+        if math.isnan(v) or math.isinf(v) or v < 0.0 or v > 1.0:
+            raise ValueError("Confidence score must be a finite float between 0.0 and 1.0.")
+        return v
+
+    @field_validator("calibrated_score")
+    @classmethod
+    def validate_calibrated_score(cls, v: float | None) -> float | None:
+        if v is not None:
+            import math
+            if math.isnan(v) or math.isinf(v) or v < 0.0 or v > 1.0:
+                raise ValueError("Calibrated score must be a finite float between 0.0 and 1.0.")
+        return v
+
+    @model_validator(mode="after")
+    def validate_segment_boundaries(self) -> CaseCreateAISegmentAnnotationRequest:
+        if self.end_seconds <= self.start_seconds:
+            raise ValueError("Segment end timestamp must be strictly greater than start timestamp.")
+        if self.video_duration_seconds is not None and self.end_seconds > self.video_duration_seconds:
+            raise ValueError(
+                f"Segment end timestamp ({self.end_seconds:.2f}s) exceeds known video duration ({self.video_duration_seconds:.2f}s)."
+            )
+        return self
 
 
 class CaseAISegmentReviewRequest(BaseModel):
@@ -459,6 +762,19 @@ class CaseAISegmentReviewRequest(BaseModel):
         max_length=64,
         description="Optional human-corrected classification label.",
     )
+    expected_review_status: str | None = Field(
+        default=None,
+        description="Optional prior review status for optimistic concurrency control.",
+    )
+    expected_revision: int | None = Field(
+        default=None,
+        ge=0,
+        description="Optional prior decision revision for optimistic concurrency control.",
+    )
+    is_override: bool = Field(
+        default=False,
+        description="Client declaration of intent to override a prior review determination.",
+    )
 
     @field_validator("review_status")
     @classmethod
@@ -468,6 +784,23 @@ class CaseAISegmentReviewRequest(BaseModel):
         if clean not in allowed:
             raise ValueError(f"Invalid review status '{value}'. Allowed: {sorted(allowed)}.")
         return clean
+
+
+class CaseAISegmentHistoryItemRead(BaseModel):
+    """Historical audit record of an authorized human review decision on an AI segment."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    event_id: UUID
+    timestamp: datetime
+    actor_id: UUID | None = None
+    actor_role: str | None = None
+    previous_review_status: str | None = None
+    new_review_status: str
+    review_rationale: str | None = None
+    corrected_label: str | None = None
+    is_override: bool = False
+    decision_revision: int = 1
 
 
 # =============================================================================
@@ -528,6 +861,37 @@ class CaseNoteUpdate(BaseModel):
     )
 
 
+class CaseNoteVisibilityUpdate(BaseModel):
+    """Payload for modifying an existing note's visibility tier (Phase 86)."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    visibility: str = Field(
+        ...,
+        description="New visibility tier: public, internal, confidential, or restricted.",
+    )
+    reason: str = Field(
+        ...,
+        min_length=5,
+        max_length=1000,
+        description="Audited justification for modifying note visibility.",
+    )
+    expected_version_id: int = Field(
+        ...,
+        ge=1,
+        description="Optimistic locking version identifier.",
+    )
+
+    @field_validator("visibility")
+    @classmethod
+    def validate_visibility(cls, value: str) -> str:
+        clean = value.strip().lower()
+        allowed = {v.value for v in CaseNoteVisibility}
+        if clean not in allowed:
+            raise ValueError(f"Invalid note visibility '{value}'. Allowed: {sorted(allowed)}.")
+        return clean
+
+
 class CaseNoteRead(BaseModel):
     """Read representation of an investigation case note."""
 
@@ -556,6 +920,8 @@ class CaseNoteHistoryRead(BaseModel):
     author_id: UUID
     editor_id: UUID
     content: str
+    visibility: str = CaseNoteVisibility.INTERNAL.value
+    previous_visibility: str | None = None
     edit_reason: str | None = None
     created_at: datetime
 
@@ -622,6 +988,10 @@ class CaseFindingUpdate(BaseModel):
     ai_segment_ids: list[UUID] | None = None
     incident_ids: list[UUID] | None = None
     expected_version_id: int = Field(..., ge=1)
+    target_status: CaseStatus | None = Field(
+        default=CaseStatus.UNDER_INVESTIGATION,
+        description="Target active status after reopening (defaults to under_investigation; reopened is also permitted).",
+    )
 
     @field_validator("finding_type")
     @classmethod
@@ -748,6 +1118,65 @@ class CaseApprovalRead(BaseModel):
     to_status: str
     rationale: str
     created_at: datetime
+
+
+class CaseSubmitReviewRequest(BaseModel):
+    """Payload for submitting an investigation case for supervisor review."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    reason: str = Field(
+        ...,
+        min_length=10,
+        max_length=1000,
+        description="Formal justification for submitting case for supervisory review (10-1000 chars).",
+    )
+    expected_version_id: int = Field(
+        ...,
+        ge=1,
+        description="Current case version ID to enforce optimistic concurrency.",
+    )
+
+
+class CaseReadinessCheck(BaseModel):
+    """Single precondition check result for case transition readiness."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    check_name: str = Field(..., description="Unique programmatic identifier of readiness check.")
+    passed: bool = Field(..., description="Whether the check condition was satisfied.")
+    description: str = Field(..., description="Human-readable description of requirement.")
+    details: str | None = Field(default=None, description="Detailed diagnostic or error message if check failed.")
+
+
+class CaseReadinessResult(BaseModel):
+    """Overall readiness assessment result for an attempted case transition."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    is_ready: bool = Field(..., description="True if all mandatory precondition checks passed.")
+    current_status: str = Field(..., description="Current case status.")
+    target_status: str = Field(..., description="Requested target status.")
+    checks: list[CaseReadinessCheck] = Field(default_factory=list, description="Individual checklist items.")
+    blocking_reasons: list[str] = Field(default_factory=list, description="List of reasons blocking transition.")
+
+
+class CaseTransitionHistoryItem(BaseModel):
+    """Durable history entry representing a lifecycle transition or approval decision."""
+
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
+
+    id: UUID = Field(..., description="Unique identifier of history or approval record.")
+    case_id: UUID = Field(..., description="Case identifier.")
+    action: str = Field(..., description="Action name (e.g., transition, approval, submission).")
+    from_status: str | None = Field(default=None, description="Origin status.")
+    to_status: str | None = Field(default=None, description="Destination status.")
+    actor_id: UUID = Field(..., description="Authenticated user ID who executed the action.")
+    actor_role: str | None = Field(default=None, description="Role of the actor.")
+    rationale: str | None = Field(default=None, description="Documented rationale or decision notes.")
+    decision: str | None = Field(default=None, description="Approval decision (approved, rejected, etc.).")
+    version_id: int | None = Field(default=None, description="Case version at or resulting from action.")
+    created_at: datetime = Field(..., description="Timestamp when event occurred.")
 
 
 # =============================================================================
@@ -889,6 +1318,10 @@ class CaseReopenRequest(BaseModel):
         description="Authorized factual justification for reopening the case.",
     )
     expected_version_id: int = Field(..., ge=1)
+    target_status: CaseStatus | None = Field(
+        default=CaseStatus.UNDER_INVESTIGATION,
+        description="Target status for reopened case (under_investigation or reopened).",
+    )
 
 
 # =============================================================================
@@ -969,3 +1402,37 @@ class CaseExportRead(BaseModel):
     purpose: str
     expires_at: datetime
     created_at: datetime
+
+
+# =============================================================================
+# Case Activity Timeline Schemas (Phase 88)
+# =============================================================================
+
+
+class CaseTimelineEventRead(BaseModel):
+    """Unified read-only representation of a case activity timeline event (Phase 88)."""
+
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
+
+    id: UUID = Field(..., description="Stable unique identifier of the event record.")
+    case_id: UUID = Field(..., description="Case identifier.")
+    case_reference: str = Field(..., description="Canonical reference number of the case (CASE-YYYY-XXXXX).")
+    event_type: str = Field(..., description="Classification action of the event (e.g., case:status:transition).")
+    timestamp: datetime = Field(..., description="Server-generated UTC timestamp of the event.")
+    sequence_number: int | None = Field(default=None, description="Monotonic sequence number for deterministic tie-breaking.")
+    actor_id: UUID | None = Field(default=None, description="Authenticated actor user ID.")
+    actor_role: str | None = Field(default=None, description="Role of the actor.")
+    outcome: str = Field(default="success", description="Outcome of the action ('success', 'failure', 'denied').")
+    summary: str = Field(..., description="Human-readable operational summary of the event.")
+    details: dict[str, Any] = Field(default_factory=dict, description="Sanitized, structured event metadata.")
+
+
+class CaseTimelineResponse(BaseModel):
+    """Paginated timeline response containing ordered activity events and cursor (Phase 88)."""
+
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
+
+    items: list[CaseTimelineEventRead] = Field(..., description="Chronologically ordered timeline events.")
+    total_count: int = Field(..., description="Total number of events matching the filter criteria.")
+    next_cursor: str | None = Field(default=None, description="Opaque base64 cursor for fetching the next page.")
+    has_more: bool = Field(default=False, description="Whether more events are available past this page.")

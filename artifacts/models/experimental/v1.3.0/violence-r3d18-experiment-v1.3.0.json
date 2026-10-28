@@ -1,0 +1,151 @@
+{
+  "model_name": "violence-r3d18-experiment",
+  "model_version": "1.3.0",
+  "weight_sha256": "6c1151f0c9b9d3aed11d02abff034cc103c270253241b2ed91afd1def9b1336e",
+  "manifest_sha256": "9c8f627a15cdaddfde9c665a54a3c1d2c954081edc55c9f59e240c936255356a",
+  "architecture": "r3d_18",
+  "input_frames": 16,
+  "resolution": [
+    112,
+    112
+  ],
+  "class_mapping": {
+    "0": "non_violence",
+    "1": "violence"
+  },
+  "random_seed": 42,
+  "resumed_from": null,
+  "class_weights": [
+    0.9985,
+    1.0015
+  ],
+  "label_smoothing": 0.05,
+  "start_time": "2026-10-27T03:08:30.051608+00:00",
+  "end_time": "2026-10-27T04:12:20.258998+00:00",
+  "hyperparameters": {
+    "epochs": 5,
+    "start_epoch": 1,
+    "end_epoch": 5,
+    "micro_batch_size": 4,
+    "gradient_accumulation_steps": 4,
+    "effective_batch_size": 16,
+    "learning_rate": 0.0001,
+    "label_smoothing": 0.05,
+    "use_class_weights": true,
+    "augmentation": {
+      "enabled": true,
+      "horizontal_flip_prob": 0.5,
+      "brightness_contrast_prob": 0.35,
+      "brightness_range": 0.12,
+      "contrast_range": 0.2,
+      "motion_blur_prob": 0.3,
+      "motion_blur_kernel_size": 5,
+      "spatial_cutout_prob": 0.3,
+      "cutout_min_ratio": 0.15,
+      "cutout_max_ratio": 0.3,
+      "low_res_prob": 0.25,
+      "low_res_factor": 0.5,
+      "sensor_noise_prob": 0.25,
+      "sensor_noise_std": 0.025,
+      "seed": 42
+    }
+  },
+  "metrics": {
+    "best_epoch": 4,
+    "best_val_loss": 0.2842,
+    "best_val_accuracy": 0.9237,
+    "best_val_f1": 0.8969,
+    "training_time_seconds": 3829.69
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.5192,
+      "train_accuracy": 0.7594,
+      "val_loss": 0.37,
+      "val_accuracy": 0.8626,
+      "val_precision": 0.8056,
+      "val_recall": 0.8529,
+      "val_specificity": 0.8688,
+      "val_f1": 0.8286,
+      "confusion_matrix": {
+        "tn": 139,
+        "fp": 21,
+        "fn": 15,
+        "tp": 87
+      }
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.4173,
+      "train_accuracy": 0.8406,
+      "val_loss": 0.336,
+      "val_accuracy": 0.8893,
+      "val_precision": 0.812,
+      "val_recall": 0.9314,
+      "val_specificity": 0.8625,
+      "val_f1": 0.8676,
+      "confusion_matrix": {
+        "tn": 138,
+        "fp": 22,
+        "fn": 7,
+        "tp": 95
+      }
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.3629,
+      "train_accuracy": 0.8687,
+      "val_loss": 0.3386,
+      "val_accuracy": 0.8626,
+      "val_precision": 0.8173,
+      "val_recall": 0.8333,
+      "val_specificity": 0.8812,
+      "val_f1": 0.8252,
+      "confusion_matrix": {
+        "tn": 141,
+        "fp": 19,
+        "fn": 17,
+        "tp": 85
+      }
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.3307,
+      "train_accuracy": 0.8922,
+      "val_loss": 0.2842,
+      "val_accuracy": 0.9237,
+      "val_precision": 0.9457,
+      "val_recall": 0.8529,
+      "val_specificity": 0.9688,
+      "val_f1": 0.8969,
+      "confusion_matrix": {
+        "tn": 155,
+        "fp": 5,
+        "fn": 15,
+        "tp": 87
+      }
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.2838,
+      "train_accuracy": 0.9203,
+      "val_loss": 0.3,
+      "val_accuracy": 0.9122,
+      "val_precision": 0.9341,
+      "val_recall": 0.8333,
+      "val_specificity": 0.9625,
+      "val_f1": 0.8808,
+      "confusion_matrix": {
+        "tn": 154,
+        "fp": 6,
+        "fn": 17,
+        "tp": 85
+      }
+    }
+  ],
+  "device_used": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "saved_checkpoint": "violence-r3d18-experiment-v1.3.0.pt",
+  "evaluation_note": "Full training checkpoint"
+}

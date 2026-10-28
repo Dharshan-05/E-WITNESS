@@ -1,0 +1,263 @@
+{
+  "status": "VERIFIED",
+  "conditions_evaluated": 8,
+  "discrepancy_count": 0,
+  "results": {
+    "baseline": {
+      "condition": "baseline",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 155,
+        "fp": 5,
+        "fn": 15,
+        "tp": 87
+      },
+      "confusion_matrix_array": [
+        155,
+        5,
+        15,
+        87
+      ],
+      "metrics": {
+        "accuracy": 0.9237,
+        "precision": 0.9457,
+        "recall": 0.8529,
+        "specificity": 0.9688,
+        "false_positive_rate": 0.0312,
+        "false_negative_rate": 0.1471,
+        "f1_score": 0.8969,
+        "brier_score": 0.0629,
+        "roc_auc": 0.9763,
+        "pr_auc": 0.968,
+        "ece": 0.0469,
+        "mce": 0.2879,
+        "mean_violence_score": 0.3553
+      },
+      "cm_math_consistent": true
+    },
+    "camera_motion_blur": {
+      "condition": "camera_motion_blur",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 152,
+        "fp": 8,
+        "fn": 15,
+        "tp": 87
+      },
+      "confusion_matrix_array": [
+        152,
+        8,
+        15,
+        87
+      ],
+      "metrics": {
+        "accuracy": 0.9122,
+        "precision": 0.9158,
+        "recall": 0.8529,
+        "specificity": 0.95,
+        "false_positive_rate": 0.05,
+        "false_negative_rate": 0.1471,
+        "f1_score": 0.8832,
+        "brier_score": 0.0676,
+        "roc_auc": 0.9714,
+        "pr_auc": 0.9586,
+        "ece": 0.0564,
+        "mce": 0.3487,
+        "mean_violence_score": 0.3598
+      },
+      "cm_math_consistent": true
+    },
+    "low_resolution": {
+      "condition": "low_resolution",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 155,
+        "fp": 5,
+        "fn": 17,
+        "tp": 85
+      },
+      "confusion_matrix_array": [
+        155,
+        5,
+        17,
+        85
+      ],
+      "metrics": {
+        "accuracy": 0.916,
+        "precision": 0.9444,
+        "recall": 0.8333,
+        "specificity": 0.9688,
+        "false_positive_rate": 0.0312,
+        "false_negative_rate": 0.1667,
+        "f1_score": 0.8854,
+        "brier_score": 0.0592,
+        "roc_auc": 0.9784,
+        "pr_auc": 0.9649,
+        "ece": 0.0434,
+        "mce": 0.3078,
+        "mean_violence_score": 0.3616
+      },
+      "cm_math_consistent": true
+    },
+    "sensor_noise": {
+      "condition": "sensor_noise",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 155,
+        "fp": 5,
+        "fn": 20,
+        "tp": 82
+      },
+      "confusion_matrix_array": [
+        155,
+        5,
+        20,
+        82
+      ],
+      "metrics": {
+        "accuracy": 0.9046,
+        "precision": 0.9425,
+        "recall": 0.8039,
+        "specificity": 0.9688,
+        "false_positive_rate": 0.0312,
+        "false_negative_rate": 0.1961,
+        "f1_score": 0.8677,
+        "brier_score": 0.0669,
+        "roc_auc": 0.9754,
+        "pr_auc": 0.9654,
+        "ece": 0.0563,
+        "mce": 0.4536,
+        "mean_violence_score": 0.3544
+      },
+      "cm_math_consistent": true
+    },
+    "bright_glare": {
+      "condition": "bright_glare",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 156,
+        "fp": 4,
+        "fn": 18,
+        "tp": 84
+      },
+      "confusion_matrix_array": [
+        156,
+        4,
+        18,
+        84
+      ],
+      "metrics": {
+        "accuracy": 0.916,
+        "precision": 0.9545,
+        "recall": 0.8235,
+        "specificity": 0.975,
+        "false_positive_rate": 0.025,
+        "false_negative_rate": 0.1765,
+        "f1_score": 0.8842,
+        "brier_score": 0.0575,
+        "roc_auc": 0.9825,
+        "pr_auc": 0.9751,
+        "ece": 0.0581,
+        "mce": 0.7378,
+        "mean_violence_score": 0.3558
+      },
+      "cm_math_consistent": true
+    },
+    "low_light": {
+      "condition": "low_light",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 159,
+        "fp": 1,
+        "fn": 25,
+        "tp": 77
+      },
+      "confusion_matrix_array": [
+        159,
+        1,
+        25,
+        77
+      ],
+      "metrics": {
+        "accuracy": 0.9008,
+        "precision": 0.9872,
+        "recall": 0.7549,
+        "specificity": 0.9938,
+        "false_positive_rate": 0.0063,
+        "false_negative_rate": 0.2451,
+        "f1_score": 0.8556,
+        "brier_score": 0.0774,
+        "roc_auc": 0.971,
+        "pr_auc": 0.9595,
+        "ece": 0.0663,
+        "mce": 0.4509,
+        "mean_violence_score": 0.3238
+      },
+      "cm_math_consistent": true
+    },
+    "temporal_truncation": {
+      "condition": "temporal_truncation",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 153,
+        "fp": 7,
+        "fn": 19,
+        "tp": 83
+      },
+      "confusion_matrix_array": [
+        153,
+        7,
+        19,
+        83
+      ],
+      "metrics": {
+        "accuracy": 0.9008,
+        "precision": 0.9222,
+        "recall": 0.8137,
+        "specificity": 0.9563,
+        "false_positive_rate": 0.0437,
+        "false_negative_rate": 0.1863,
+        "f1_score": 0.8646,
+        "brier_score": 0.073,
+        "roc_auc": 0.9688,
+        "pr_auc": 0.9567,
+        "ece": 0.0512,
+        "mce": 0.3958,
+        "mean_violence_score": 0.3503
+      },
+      "cm_math_consistent": true
+    },
+    "spatial_occlusion": {
+      "condition": "spatial_occlusion",
+      "sample_count": 262,
+      "confusion_matrix": {
+        "tn": 157,
+        "fp": 3,
+        "fn": 48,
+        "tp": 54
+      },
+      "confusion_matrix_array": [
+        157,
+        3,
+        48,
+        54
+      ],
+      "metrics": {
+        "accuracy": 0.8053,
+        "precision": 0.9474,
+        "recall": 0.5294,
+        "specificity": 0.9812,
+        "false_positive_rate": 0.0187,
+        "false_negative_rate": 0.4706,
+        "f1_score": 0.6792,
+        "brier_score": 0.1461,
+        "roc_auc": 0.9105,
+        "pr_auc": 0.8773,
+        "ece": 0.1382,
+        "mce": 0.4145,
+        "mean_violence_score": 0.2572
+      },
+      "cm_math_consistent": true
+    }
+  }
+}

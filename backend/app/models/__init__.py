@@ -20,6 +20,7 @@ from backend.app.models.base import (
 from backend.app.models.biometrics import (
     BiometricGovernanceRecord,
     BiometricReference,
+    BiometricQualityReview,
     BiometricVerificationReview,
 )
 from backend.app.models.case import (
@@ -33,9 +34,11 @@ from backend.app.models.case import (
     CaseFinding,
     CaseFindingHistory,
     CaseIncident,
+    LegalHold,
     CaseNote,
     CaseNoteHistory,
     CaseReferral,
+    CaseSequenceCounter,
 )
 from backend.app.models.department import Department
 from backend.app.models.evidence import (
@@ -69,6 +72,7 @@ __all__ = [
     "Base",
     "BiometricGovernanceRecord",
     "BiometricReference",
+    "BiometricQualityReview",
     "BiometricVerificationReview",
     "Case",
     "CaseAISegment",
@@ -80,9 +84,11 @@ __all__ = [
     "CaseFinding",
     "CaseFindingHistory",
     "CaseIncident",
+    "LegalHold",
     "CaseNote",
     "CaseNoteHistory",
     "CaseReferral",
+    "CaseSequenceCounter",
     "Department",
     "EvidenceAttachment",
     "EvidenceCustodyEvent",

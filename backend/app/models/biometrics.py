@@ -10,11 +10,12 @@ Enforces:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import (
     Boolean,
+    JSON,
     CheckConstraint,
     Float,
     ForeignKey,
@@ -27,7 +28,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from ai_services.face_detection.review import (
+    HumanReviewDetermination,
+    QualityReviewStatus,
+    UnifiedReviewDecision,
+)
 from backend.app.core.biometrics import (
+    BIOMETRIC_ADVISORY_DISCLAIMER,
     BiometricHumanVerdict,
     BiometricLawfulBasis,
     BiometricMatchVerdict,
@@ -56,6 +63,9 @@ _LAWFUL_BASIS_VALUES = ", ".join(f"'{b.value}'" for b in BiometricLawfulBasis)
 _REFERENCE_STATUS_VALUES = ", ".join(f"'{s.value}'" for s in BiometricReferenceStatus)
 _MATCH_VERDICT_VALUES = ", ".join(f"'{v.value}'" for v in BiometricMatchVerdict)
 _HUMAN_VERDICT_VALUES = ", ".join(f"'{v.value}'" for v in BiometricHumanVerdict)
+_QUALITY_REVIEW_STATUS_VALUES = ", ".join(f"'{s.value}'" for s in QualityReviewStatus)
+_UNIFIED_DECISION_VALUES = ", ".join(f"'{d.value}'" for d in UnifiedReviewDecision)
+_HUMAN_DETERMINATION_VALUES = ", ".join(f"'{d.value}'" for d in HumanReviewDetermination)
 
 
 class BiometricGovernanceRecord(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -384,3 +394,148 @@ class BiometricVerificationReview(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     incident: Mapped[Incident | None] = relationship()
     reference: Mapped[BiometricReference | None] = relationship()
     reviewer: Mapped[User | None] = relationship(foreign_keys=[reviewer_id])
+
+
+class BiometricQualityReview(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    """Authorized human review and disposition tracking for evidence redaction and quality pre-checks (Phase 77).
+
+    Enforces:
+    - Scoped strictly to tenant, department, and linked evidence record.
+    - Deterministic review decision based on Phase 75 detection and Phase 76 quality/geometry.
+    - Validated lifecycle state machine (PENDING_REVIEW -> IN_REVIEW -> COMPLETED, etc.).
+    - Complete metadata persistence with zero image bytes, templates, or raw coordinates.
+    - Preservation of both original evidence hash and derived redacted artifact hash.
+    """
+
+    __tablename__ = "biometric_quality_reviews"
+    __table_args__ = (
+        CheckConstraint(
+            f"status IN ({_QUALITY_REVIEW_STATUS_VALUES})",
+            name="ck_biometric_quality_review_status",
+        ),
+        CheckConstraint(
+            f"unified_decision IN ({_UNIFIED_DECISION_VALUES})",
+            name="ck_biometric_quality_review_unified_decision",
+        ),
+        CheckConstraint(
+            f"human_determination IS NULL OR human_determination IN ({_HUMAN_DETERMINATION_VALUES})",
+            name="ck_biometric_quality_review_human_determination",
+        ),
+        Index("ix_biometric_quality_review_tenant_dept_status", "tenant_id", "department_id", "status"),
+        Index("ix_biometric_quality_review_evidence_id", "evidence_id"),
+        Index("ix_biometric_quality_review_assigned_reviewer", "assigned_reviewer_id"),
+    )
+
+    tenant_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        nullable=False,
+    )
+    department_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("departments.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    evidence_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("evidence_attachments.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    governance_record_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("biometric_governance_records.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    status: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default=QualityReviewStatus.PENDING_REVIEW.value,
+    )
+    unified_decision: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+    )
+    review_reasons: Mapped[list[str]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=list,
+    )
+    component_versions: Mapped[dict[str, str]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+    )
+    photometric_metrics: Mapped[dict[str, float]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+    )
+    geometry_metrics: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+    )
+    assigned_reviewer_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    assigned_at: Mapped[datetime | None] = mapped_column(
+        UTCDateTime,
+        nullable=True,
+    )
+    reviewed_by_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(
+        UTCDateTime,
+        nullable=True,
+    )
+    human_determination: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+    )
+    reviewer_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    escalation_reason: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    reopen_reason: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    original_evidence_hash: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+    )
+    redacted_artifact_hash: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+    )
+    disclaimer: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default=BIOMETRIC_ADVISORY_DISCLAIMER,
+    )
+
+    # Relationships
+    department: Mapped[Department] = relationship()
+    evidence: Mapped[EvidenceAttachment | None] = relationship()
+    governance_record: Mapped[BiometricGovernanceRecord | None] = relationship()
+    assigned_reviewer: Mapped[User | None] = relationship(foreign_keys=[assigned_reviewer_id])
+    reviewed_by: Mapped[User | None] = relationship(foreign_keys=[reviewed_by_id])
+
+    def __init__(self, **kwargs: Any) -> None:
+        from datetime import UTC, datetime
+        if 'disclaimer' not in kwargs:
+            kwargs['disclaimer'] = BIOMETRIC_ADVISORY_DISCLAIMER
+        now = datetime.now(UTC)
+        if 'created_at' not in kwargs:
+            kwargs['created_at'] = now
+        if 'updated_at' not in kwargs:
+            kwargs['updated_at'] = now
+        super().__init__(**kwargs)

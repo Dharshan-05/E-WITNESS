@@ -166,6 +166,20 @@ class BiometricKeyRevokedError(BiometricKeyError):
     default_status_code = 403
 
 
+class BiometricVaultUnavailableError(BiometricKeyError):
+    """Raised when the secure key vault or external KMS is unreachable or fails closed (Phase 78)."""
+
+    default_code = "BIOMETRIC_VAULT_UNAVAILABLE"
+    default_status_code = 503
+
+
+class BiometricKeyDisabledError(BiometricKeyError):
+    """Raised when an attempt is made to use a temporarily disabled or suspended key (Phase 78)."""
+
+    default_code = "BIOMETRIC_KEY_DISABLED"
+    default_status_code = 403
+
+
 class BiometricQualityError(AppError):
     """Raised when an input biometric image fails minimum resolution, contrast, or quality thresholds (Phase 77)."""
 

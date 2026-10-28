@@ -1,0 +1,461 @@
+{
+  "audit_metadata": {
+    "report_id": "BATCH_07_GROUP_05_RECONCILIATION_AUDIT",
+    "timestamp_utc": "2026-10-27T09:34:58.331248+00:00",
+    "project": "D:/PROJECT/E-WITTNESS",
+    "target_model": "ResNet3D-18 v1.3.0",
+    "audit_phase": "Batch 07, Group 05: Final Numerical and Manifest Reconciliation",
+    "auditor_role": "Senior ML Test Engineer and Dataset Governance Auditor",
+    "platform_safety_policy": {
+      "biometric_matching_enabled": false,
+      "decision_support_only": true,
+      "automated_punitive_actions_prohibited": true,
+      "production_readiness_status": "NOT READY"
+    }
+  },
+  "input_artifacts_inspected": {
+    "validation_predictions_artifact": "artifacts/reports/validation/v130_clean_validation_audit.json",
+    "dataset_manifest_artifact": "data/manifest.json",
+    "licensing_evidence_artifact": "data/dataset_licensing_evidence.json",
+    "group04_report_artifact": "docs/audit/BATCH_07_GROUP_04_FINAL_AUDIT_CONSISTENCY_REPORT.md",
+    "dataset_preparation_script": "scripts/prepare_dataset.py"
+  },
+  "section1_calibration_reconciliation": {
+    "data_availability_audit": {
+      "sample_count": 262,
+      "recorded_probabilities_precision": "Rounded to at most 4 decimal places (lengths 2, 3, 4 in JSON)",
+      "raw_differential_logits_available": true,
+      "differential_logits_precision": "Serialized floating-point numbers with up to 4 decimal places in JSON",
+      "sample_count_verified": true,
+      "positive_count_verified": true
+    },
+    "method_a_stored_probabilities": {
+      "description": "Computed directly from the 4-decimal serialized violence_probability values in predictions",
+      "binning_rule": "10 equal-width bins: [0.0, 0.1), ..., [0.9, 1.0]",
+      "bins": [
+        {
+          "bin_idx": 0,
+          "bin_range": [
+            0.0,
+            0.1
+          ],
+          "sample_count": 137,
+          "positives": 5,
+          "empirical_frequency_raw": 0.0364963503649635,
+          "empirical_frequency_rounded_4dec": 0.0365,
+          "mean_probability_raw": 0.026487007299270074,
+          "mean_probability_rounded_4dec": 0.0265,
+          "abs_calibration_error_raw": 0.010009343065693425,
+          "abs_calibration_error_rounded_4dec": 0.01,
+          "weighted_contribution_raw": 1.3712800000000003,
+          "weighted_contribution_rounded_4dec": 1.3713
+        },
+        {
+          "bin_idx": 1,
+          "bin_range": [
+            0.1,
+            0.2
+          ],
+          "sample_count": 15,
+          "positives": 5,
+          "empirical_frequency_raw": 0.3333333333333333,
+          "empirical_frequency_rounded_4dec": 0.3333,
+          "mean_probability_raw": 0.15163333333333334,
+          "mean_probability_rounded_4dec": 0.1516,
+          "abs_calibration_error_raw": 0.18170000000000003,
+          "abs_calibration_error_rounded_4dec": 0.1817,
+          "weighted_contribution_raw": 2.7255000000000003,
+          "weighted_contribution_rounded_4dec": 2.7255
+        },
+        {
+          "bin_idx": 2,
+          "bin_range": [
+            0.2,
+            0.3
+          ],
+          "sample_count": 8,
+          "positives": 2,
+          "empirical_frequency_raw": 0.25,
+          "empirical_frequency_rounded_4dec": 0.25,
+          "mean_probability_raw": 0.2534125,
+          "mean_probability_rounded_4dec": 0.2534,
+          "abs_calibration_error_raw": 0.0034125,
+          "abs_calibration_error_rounded_4dec": 0.0034,
+          "weighted_contribution_raw": 0.0273,
+          "weighted_contribution_rounded_4dec": 0.0273
+        },
+        {
+          "bin_idx": 3,
+          "bin_range": [
+            0.3,
+            0.4
+          ],
+          "sample_count": 6,
+          "positives": 2,
+          "empirical_frequency_raw": 0.3333333333333333,
+          "empirical_frequency_rounded_4dec": 0.3333,
+          "mean_probability_raw": 0.3468,
+          "mean_probability_rounded_4dec": 0.3468,
+          "abs_calibration_error_raw": 0.013466666666666708,
+          "abs_calibration_error_rounded_4dec": 0.0135,
+          "weighted_contribution_raw": 0.08080000000000025,
+          "weighted_contribution_rounded_4dec": 0.0808
+        },
+        {
+          "bin_idx": 4,
+          "bin_range": [
+            0.4,
+            0.5
+          ],
+          "sample_count": 4,
+          "positives": 1,
+          "empirical_frequency_raw": 0.25,
+          "empirical_frequency_rounded_4dec": 0.25,
+          "mean_probability_raw": 0.43335,
+          "mean_probability_rounded_4dec": 0.4334,
+          "abs_calibration_error_raw": 0.18335,
+          "abs_calibration_error_rounded_4dec": 0.1834,
+          "weighted_contribution_raw": 0.7334,
+          "weighted_contribution_rounded_4dec": 0.7334
+        },
+        {
+          "bin_idx": 5,
+          "bin_range": [
+            0.5,
+            0.6
+          ],
+          "sample_count": 6,
+          "positives": 5,
+          "empirical_frequency_raw": 0.8333333333333334,
+          "empirical_frequency_rounded_4dec": 0.8333,
+          "mean_probability_raw": 0.5455,
+          "mean_probability_rounded_4dec": 0.5455,
+          "abs_calibration_error_raw": 0.2878333333333334,
+          "abs_calibration_error_rounded_4dec": 0.2878,
+          "weighted_contribution_raw": 1.7270000000000003,
+          "weighted_contribution_rounded_4dec": 1.727,
+          "is_mce_bin": true
+        },
+        {
+          "bin_idx": 6,
+          "bin_range": [
+            0.6,
+            0.7
+          ],
+          "sample_count": 6,
+          "positives": 3,
+          "empirical_frequency_raw": 0.5,
+          "empirical_frequency_rounded_4dec": 0.5,
+          "mean_probability_raw": 0.6414166666666666,
+          "mean_probability_rounded_4dec": 0.6414,
+          "abs_calibration_error_raw": 0.14141666666666666,
+          "abs_calibration_error_rounded_4dec": 0.1414,
+          "weighted_contribution_raw": 0.8485,
+          "weighted_contribution_rounded_4dec": 0.8485
+        },
+        {
+          "bin_idx": 7,
+          "bin_range": [
+            0.7,
+            0.8
+          ],
+          "sample_count": 5,
+          "positives": 5,
+          "empirical_frequency_raw": 1.0,
+          "empirical_frequency_rounded_4dec": 1.0,
+          "mean_probability_raw": 0.74058,
+          "mean_probability_rounded_4dec": 0.7406,
+          "abs_calibration_error_raw": 0.25942,
+          "abs_calibration_error_rounded_4dec": 0.2594,
+          "weighted_contribution_raw": 1.2971,
+          "weighted_contribution_rounded_4dec": 1.2971
+        },
+        {
+          "bin_idx": 8,
+          "bin_range": [
+            0.8,
+            0.9
+          ],
+          "sample_count": 17,
+          "positives": 16,
+          "empirical_frequency_raw": 0.9411764705882353,
+          "empirical_frequency_rounded_4dec": 0.9412,
+          "mean_probability_raw": 0.8411941176470589,
+          "mean_probability_rounded_4dec": 0.8412,
+          "abs_calibration_error_raw": 0.0999823529411764,
+          "abs_calibration_error_rounded_4dec": 0.1,
+          "weighted_contribution_raw": 1.6997000000000002,
+          "weighted_contribution_rounded_4dec": 1.6997
+        },
+        {
+          "bin_idx": 9,
+          "bin_range": [
+            0.9,
+            1.0
+          ],
+          "sample_count": 58,
+          "positives": 58,
+          "empirical_frequency_raw": 1.0,
+          "empirical_frequency_rounded_4dec": 1.0,
+          "mean_probability_raw": 0.9693896551724138,
+          "mean_probability_rounded_4dec": 0.9694,
+          "abs_calibration_error_raw": 0.0306103448275862,
+          "abs_calibration_error_rounded_4dec": 0.0306,
+          "weighted_contribution_raw": 1.7754000000000005,
+          "weighted_contribution_rounded_4dec": 1.7754
+        }
+      ],
+      "totals_and_metrics": {
+        "total_sample_count": 262,
+        "total_positives": 102,
+        "sum_of_weighted_contributions_raw": 12.286,
+        "sum_of_displayed_4dec_contributions": 12.286,
+        "ece_unrounded": 0.0468931298,
+        "ece_rounded_6dec": 0.046893,
+        "ece_rounded_4dec": 0.0469,
+        "mce_unrounded": 0.2878333333,
+        "mce_rounded_6dec": 0.287833,
+        "mce_rounded_4dec": 0.2878,
+        "mce_bin_index": 5
+      }
+    },
+    "method_b_differential_logits": {
+      "description": "Computed by passing the raw serialized differential_logit values through standard logistic sigmoid: 1 / (1 + exp(-diff_logit))",
+      "binning_rule": "10 equal-width bins: [0.0, 0.1), ..., [0.9, 1.0]",
+      "bins": [
+        {
+          "bin_idx": 0,
+          "bin_range": [
+            0.0,
+            0.1
+          ],
+          "sample_count": 137,
+          "positives": 5,
+          "empirical_frequency_raw": 0.0364963503649635,
+          "empirical_frequency_rounded_4dec": 0.0365,
+          "mean_probability_raw": 0.02648715102559567,
+          "mean_probability_rounded_4dec": 0.0265,
+          "abs_calibration_error_raw": 0.01000919933936783,
+          "abs_calibration_error_rounded_4dec": 0.01,
+          "weighted_contribution_raw": 1.3712603094933926,
+          "weighted_contribution_rounded_4dec": 1.3713
+        },
+        {
+          "bin_idx": 1,
+          "bin_range": [
+            0.1,
+            0.2
+          ],
+          "sample_count": 15,
+          "positives": 5,
+          "empirical_frequency_raw": 0.3333333333333333,
+          "empirical_frequency_rounded_4dec": 0.3333,
+          "mean_probability_raw": 0.1516530635105221,
+          "mean_probability_rounded_4dec": 0.1517,
+          "abs_calibration_error_raw": 0.18168026982281124,
+          "abs_calibration_error_rounded_4dec": 0.1817,
+          "weighted_contribution_raw": 2.7252040473421686,
+          "weighted_contribution_rounded_4dec": 2.7252
+        },
+        {
+          "bin_idx": 2,
+          "bin_range": [
+            0.2,
+            0.3
+          ],
+          "sample_count": 8,
+          "positives": 2,
+          "empirical_frequency_raw": 0.25,
+          "empirical_frequency_rounded_4dec": 0.25,
+          "mean_probability_raw": 0.2534080187836894,
+          "mean_probability_rounded_4dec": 0.2534,
+          "abs_calibration_error_raw": 0.0034080187836893977,
+          "abs_calibration_error_rounded_4dec": 0.0034,
+          "weighted_contribution_raw": 0.02726415026951518,
+          "weighted_contribution_rounded_4dec": 0.0273
+        },
+        {
+          "bin_idx": 3,
+          "bin_range": [
+            0.3,
+            0.4
+          ],
+          "sample_count": 6,
+          "positives": 2,
+          "empirical_frequency_raw": 0.3333333333333333,
+          "empirical_frequency_rounded_4dec": 0.3333,
+          "mean_probability_raw": 0.3468024954705505,
+          "mean_probability_rounded_4dec": 0.3468,
+          "abs_calibration_error_raw": 0.01346916213721714,
+          "abs_calibration_error_rounded_4dec": 0.0135,
+          "weighted_contribution_raw": 0.08081497282330284,
+          "weighted_contribution_rounded_4dec": 0.0808
+        },
+        {
+          "bin_idx": 4,
+          "bin_range": [
+            0.4,
+            0.5
+          ],
+          "sample_count": 4,
+          "positives": 1,
+          "empirical_frequency_raw": 0.25,
+          "empirical_frequency_rounded_4dec": 0.25,
+          "mean_probability_raw": 0.4333649646481607,
+          "mean_probability_rounded_4dec": 0.4334,
+          "abs_calibration_error_raw": 0.1833649646481607,
+          "abs_calibration_error_rounded_4dec": 0.1834,
+          "weighted_contribution_raw": 0.7334598585926428,
+          "weighted_contribution_rounded_4dec": 0.7335
+        },
+        {
+          "bin_idx": 5,
+          "bin_range": [
+            0.5,
+            0.6
+          ],
+          "sample_count": 6,
+          "positives": 5,
+          "empirical_frequency_raw": 0.8333333333333334,
+          "empirical_frequency_rounded_4dec": 0.8333,
+          "mean_probability_raw": 0.5454802545163777,
+          "mean_probability_rounded_4dec": 0.5455,
+          "abs_calibration_error_raw": 0.2878530788169557,
+          "abs_calibration_error_rounded_4dec": 0.2879,
+          "weighted_contribution_raw": 1.7271184729017341,
+          "weighted_contribution_rounded_4dec": 1.7271,
+          "is_mce_bin": true
+        },
+        {
+          "bin_idx": 6,
+          "bin_range": [
+            0.6,
+            0.7
+          ],
+          "sample_count": 6,
+          "positives": 3,
+          "empirical_frequency_raw": 0.5,
+          "empirical_frequency_rounded_4dec": 0.5,
+          "mean_probability_raw": 0.6414210669288102,
+          "mean_probability_rounded_4dec": 0.6414,
+          "abs_calibration_error_raw": 0.1414210669288102,
+          "abs_calibration_error_rounded_4dec": 0.1414,
+          "weighted_contribution_raw": 0.8485264015728612,
+          "weighted_contribution_rounded_4dec": 0.8485
+        },
+        {
+          "bin_idx": 7,
+          "bin_range": [
+            0.7,
+            0.8
+          ],
+          "sample_count": 5,
+          "positives": 5,
+          "empirical_frequency_raw": 1.0,
+          "empirical_frequency_rounded_4dec": 1.0,
+          "mean_probability_raw": 0.7405567087093375,
+          "mean_probability_rounded_4dec": 0.7406,
+          "abs_calibration_error_raw": 0.2594432912906625,
+          "abs_calibration_error_rounded_4dec": 0.2594,
+          "weighted_contribution_raw": 1.2972164564533124,
+          "weighted_contribution_rounded_4dec": 1.2972
+        },
+        {
+          "bin_idx": 8,
+          "bin_range": [
+            0.8,
+            0.9
+          ],
+          "sample_count": 17,
+          "positives": 16,
+          "empirical_frequency_raw": 0.9411764705882353,
+          "empirical_frequency_rounded_4dec": 0.9412,
+          "mean_probability_raw": 0.8411841398184517,
+          "mean_probability_rounded_4dec": 0.8412,
+          "abs_calibration_error_raw": 0.0999923307697835,
+          "abs_calibration_error_rounded_4dec": 0.1,
+          "weighted_contribution_raw": 1.6998696230863197,
+          "weighted_contribution_rounded_4dec": 1.6999
+        },
+        {
+          "bin_idx": 9,
+          "bin_range": [
+            0.9,
+            1.0
+          ],
+          "sample_count": 58,
+          "positives": 58,
+          "empirical_frequency_raw": 1.0,
+          "empirical_frequency_rounded_4dec": 1.0,
+          "mean_probability_raw": 0.9693934149024097,
+          "mean_probability_rounded_4dec": 0.9694,
+          "abs_calibration_error_raw": 0.030606585097590323,
+          "abs_calibration_error_rounded_4dec": 0.0306,
+          "weighted_contribution_raw": 1.7751819356602387,
+          "weighted_contribution_rounded_4dec": 1.7752
+        }
+      ],
+      "totals_and_metrics": {
+        "total_sample_count": 262,
+        "total_positives": 102,
+        "sum_of_weighted_contributions_raw": 12.2859149952,
+        "sum_of_displayed_4dec_contributions": 12.286,
+        "ece_unrounded": 0.0468928053,
+        "ece_rounded_6dec": 0.046893,
+        "ece_rounded_4dec": 0.0469,
+        "mce_unrounded": 0.2878530788,
+        "mce_rounded_6dec": 0.287853,
+        "mce_rounded_4dec": 0.2879,
+        "mce_bin_index": 5
+      }
+    },
+    "reconciliation_summary": {
+      "ece_agreement": "Both Method A (0.04689313) and Method B (0.04689281) round identically to 0.046893 at 6 decimal places and 0.0469 at 4 decimal places.",
+      "mce_agreement": "Method A yields MCE 0.287833 (0.2878) while Method B yields MCE 0.287853 (0.2879). The difference is 0.00001975, arising purely from serialization rounding of differential logits to probabilities in the JSON.",
+      "display_precision_status": "VERIFIED"
+    }
+  },
+  "section2_dataset_manifest_reconciliation": {
+    "manifest_path": "data/manifest.json",
+    "manifest_sha256": "9c8f627a15cdaddfde9c665a54a3c1d2c954081edc55c9f59e240c936255356a",
+    "total_items": 3265,
+    "unique_paths_verified": 3265,
+    "unique_hashes_verified": 3265,
+    "cross_split_hash_collisions": 0,
+    "current_manifest_split_counts": {
+      "train": 2583,
+      "val": 328,
+      "test": 354,
+      "total": 3265
+    },
+    "authorized_surveillance_subset_counts": {
+      "train": 1995,
+      "val": 262,
+      "test": 285,
+      "total": 2542
+    },
+    "purged_copyrighted_subset_counts": {
+      "train": 588,
+      "val": 66,
+      "test": 69,
+      "total": 723
+    },
+    "investigation_of_discrepancy": {
+      "issue": "Group 04 report stated 'Train (2,649), Val (262), and Test (354)' whereas earlier reports stated 'Train: 2,583, Val: 328, Test: 354'.",
+      "root_cause_identified": true,
+      "detailed_cause": "The author of Group 04 mistakenly substituted the authorized validation subset count (262) for the total validation partition count (328). Because the 66 purged copyrighted clips (MovieFights: 17, HockeyFight: 49) were excluded from validation, the author shifted those 66 clips to the train count (2,583 + 66 = 2,649) so that 2,649 + 262 + 354 = 3,265. The underlying manifest 'data/manifest.json' never changed and has always had Train: 2,583, Val: 328, Test: 354.",
+      "status": "RECONCILED_AND_EXPLAINED"
+    }
+  },
+  "section3_governance_and_preservation": {
+    "model_training_occurred": false,
+    "threshold_tuning_occurred": false,
+    "test_partition_evaluated_in_this_audit": false,
+    "historical_test_exposure_disclosed": true,
+    "biometric_matching_enabled": false,
+    "academic_training_rights": "UNRESOLVED",
+    "commercial_deployment": "BLOCKED",
+    "production_readiness": "NOT READY"
+  },
+  "final_audit_status": "VERIFIED"
+}

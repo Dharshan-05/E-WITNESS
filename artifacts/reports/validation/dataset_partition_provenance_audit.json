@@ -1,0 +1,126 @@
+{
+  "total_manifest_items": 3265,
+  "split_counts": {
+    "train": {
+      "total": 2583,
+      "authorized": 1995
+    },
+    "val": {
+      "total": 328,
+      "authorized": 262
+    },
+    "test": {
+      "total": 354,
+      "authorized": 285
+    }
+  },
+  "path_leakage": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  },
+  "hash_leakage": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  },
+  "scene_prefix_leakage_val_test": 0,
+  "sub_source_provenance": {
+    "AIRTLab": {
+      "original_publisher_and_canonical_source": "Artificial Intelligence & Robotics Lab (AIRTLab), Politecnico di Milano; Bianculli et al., Data in Brief 2020. GitHub: airtlab/A-Dataset-for-Automatic-Violence-Detection-in-Videos",
+      "exact_license_text_or_agreement": "No root LICENSE file in repository. README states: 'Please cite the following paper if you use this dataset in your research: Bianculli et al., A dataset for automatic violence detection in videos, Data in Brief 2020.' Retrieval Date: 2026-10-26.",
+      "applies_to": "Research paper citation only. Repository lacks any standard permissive license (CC BY 4.0, MIT, Apache) covering the video media files.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": true,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Research and educational citation requirement only. No commercial license granted. Subjects recorded under academic experimental protocol.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.4; primary repo audit",
+      "final_status": "RESTRICTED"
+    },
+    "VID": {
+      "original_publisher_and_canonical_source": "Mahi et al., Data in Brief 2024; Hosted on Harvard Dataverse (doi:10.7910/DVN/CR4J0U).",
+      "exact_license_text_or_agreement": "Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0). URL: https://creativecommons.org/licenses/by-nc/4.0/. Retrieval Date: 2026-10-26.",
+      "applies_to": "Applies to dataset metadata and repository files. Governed by CC BY-NC 4.0 (NOT CC0).",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": true,
+        "modification": true,
+        "redistribution": true,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Non-commercial exploitation strictly prohibited. Attribution required. Consenting actor recordings.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.5; Harvard Dataverse terms",
+      "final_status": "RESTRICTED"
+    },
+    "RWF-2000": {
+      "original_publisher_and_canonical_source": "Ming Cheng, Kunjing Cai, Ming Li; SMIIP Lab, Duke Kunshan University (ICPR 2020). GitHub: mchengny/RWF2000-Video-Database-for-Violence-Detection",
+      "exact_license_text_or_agreement": "'The RWF-2000 database is not allowed for commercial purposes without approval from the SMIIP Lab. Without approval from the SMIIP Lab, the RWF-2000 database is not allowed to be modified or redistributed.' Retrieval Date: 2026-10-26.",
+      "applies_to": "Applies to all video sequences and annotations in RWF-2000.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": true,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Strictly non-commercial academic research. Redistribution and modification forbidden without explicit written SMIIP Lab consent.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.1",
+      "final_status": "RESTRICTED"
+    },
+    "Real_Life_Violence_Situations": {
+      "original_publisher_and_canonical_source": "Mohamed M. Soliman et al., Ain Shams University, Cairo (ICICIS 2019). Distributed via Kaggle / ResearchGate.",
+      "exact_license_text_or_agreement": "No formal open license. Scraped from third-party YouTube street footage. Authors request paper citation only. Retrieval Date: 2026-10-26.",
+      "applies_to": "Scraped third-party YouTube video clips without underlying copyright clearance.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": false,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "YouTube Standard Terms of Service. Individual copyright owners retain exclusive rights. No human subject consent recorded.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.2",
+      "final_status": "UNVERIFIED"
+    },
+    "HockeyFight": {
+      "original_publisher_and_canonical_source": "Enrique Bermejo Nievas, Oscar Deniz Suarez et al., VISILAB, University of Castilla-La Mancha (CAIP 2011).",
+      "exact_license_text_or_agreement": "Academic fair-use research distribution. Broadcast footage owned exclusively by the National Hockey League (NHL) and broadcast partners. Retrieval Date: 2026-10-26.",
+      "applies_to": "NHL television broadcast excerpts.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": false,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "NHL proprietary broadcast copyright. Academic fair use research only; prohibited for commercial, enterprise, or judicial deployment.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.3",
+      "final_status": "RESTRICTED"
+    },
+    "MovieFights": {
+      "original_publisher_and_canonical_source": "Commercial Hollywood Cinema Studios (Warner Bros, Universal, Disney, etc.) via YouTube excerpts.",
+      "exact_license_text_or_agreement": "No license granted. Commercial copyright under 17 U.S.C. \u00a7 106. Retrieval Date: 2026-10-26.",
+      "applies_to": "Feature-length studio motion pictures.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": false,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Exclusive studio intellectual property. Redistribution or sublicensing under MIT by third-party aggregators is legally void.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.2",
+      "final_status": "RESTRICTED"
+    }
+  }
+}

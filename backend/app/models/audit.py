@@ -34,6 +34,7 @@ from backend.app.models.base import (
 )
 
 if TYPE_CHECKING:
+    from backend.app.models.case import Case
     from backend.app.models.department import Department
     from backend.app.models.incident import Incident
     from backend.app.models.user import User
@@ -56,6 +57,8 @@ class SecurityAuditEvent(UUIDPrimaryKeyMixin, Base):
         ),
         Index("ix_security_audit_events_target_type_id", "target_type", "target_id"),
         Index("ix_security_audit_events_department_created", "department_id", "created_at"),
+        Index("ix_security_audit_events_case_id", "case_id"),
+        Index("ix_security_audit_events_case_created", "case_id", "created_at"),
     )
 
     sequence_number: Mapped[int] = mapped_column(
@@ -89,6 +92,12 @@ class SecurityAuditEvent(UUIDPrimaryKeyMixin, Base):
     department_id: Mapped[UUID | None] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("departments.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    case_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("cases.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
@@ -136,6 +145,11 @@ class SecurityAuditEvent(UUIDPrimaryKeyMixin, Base):
     department: Mapped[Department | None] = relationship(
         "Department",
         foreign_keys=[department_id],
+        lazy="selectin",
+    )
+    case: Mapped[Case | None] = relationship(
+        "Case",
+        foreign_keys=[case_id],
         lazy="selectin",
     )
 

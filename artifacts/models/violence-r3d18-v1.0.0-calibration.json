@@ -1,0 +1,20 @@
+{
+  "artifact_id": "calib-violence-r3d18-1.0.0-4461868d",
+  "method": "platt_scaling",
+  "model_name": "violence-r3d18",
+  "model_version": "1.0.0",
+  "dataset_name": "yash07yadav-violence-detection-combined",
+  "manifest_sha256": "synthetic-manifest-sha256",
+  "split_name": "validation",
+  "parameters": {
+    "slope": 1.0,
+    "intercept": 0.0,
+    "fit_status": "INVERTED_SCORE_DIRECTION_FALLBACK",
+    "temperature": 9.99999305846327
+  },
+  "metrics": {
+    "val_uncalibrated_ece": 0.1949574742466212
+  },
+  "created_at": "2026-10-26T18:16:54.775828+00:00",
+  "is_approved": true
+}

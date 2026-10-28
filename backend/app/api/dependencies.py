@@ -40,6 +40,7 @@ from backend.app.services.biometrics import (
     BiometricGovernanceService,
     BiometricReferenceService,
     BiometricVerificationService,
+    QualityReviewWorkflowService,
     FaceDetectionService,
     FaceMatchingService,
 )
@@ -404,6 +405,18 @@ def get_biometric_verification_service(
 
 BiometricVerificationServiceDep = Annotated[
     BiometricVerificationService, Depends(get_biometric_verification_service)
+]
+
+def get_quality_review_workflow_service(
+    db_session: DbSessionDep,
+    settings: SettingsDep,
+) -> QualityReviewWorkflowService:
+    """Construct a QualityReviewWorkflowService bound to session and settings."""
+    return QualityReviewWorkflowService.from_session(session=db_session, settings=settings)
+
+
+QualityReviewWorkflowServiceDep = Annotated[
+    QualityReviewWorkflowService, Depends(get_quality_review_workflow_service)
 ]
 
 

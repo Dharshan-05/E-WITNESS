@@ -41,6 +41,7 @@ from backend.app.models.base import (
 )
 
 if TYPE_CHECKING:
+    from backend.app.models.case import LegalHold
     from backend.app.models.department import Department
     from backend.app.models.incident import Incident
     from backend.app.models.user import User
@@ -213,6 +214,12 @@ class EvidenceAttachment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         lazy="selectin",
         cascade="all, delete-orphan",
         order_by="EvidenceCustodyEvent.sequence_number",
+    )
+    legal_holds: Mapped[list[LegalHold]] = relationship(
+        "LegalHold",
+        back_populates="evidence",
+        lazy="selectin",
+        order_by="LegalHold.created_at",
     )
 
     def __repr__(self) -> str:

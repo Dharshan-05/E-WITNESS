@@ -126,3 +126,15 @@ temp/
 local_storage/
 quarantine/
 evidence_uploads/
+
+# -----------------------------------------------------------------------------
+# 9. Local Datasets, Model Binaries, and Scratch Directories
+# -----------------------------------------------------------------------------
+data/raw/
+data/processed/
+data/splits/
+*.pt
+*.pth
+*.onnx
+*.bin
+scratch/

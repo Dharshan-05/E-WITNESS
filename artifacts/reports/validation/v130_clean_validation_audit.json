@@ -1,0 +1,4136 @@
+{
+  "model_checkpoint": "artifacts\\models\\experimental\\v1.3.0\\violence-r3d18-experiment-v1.3.0.pt",
+  "checkpoint_epoch": 4,
+  "best_epoch_in_checkpoint": 4,
+  "sample_count": 262,
+  "threshold": 0.5,
+  "confusion_matrix": {
+    "tn": 155,
+    "fp": 5,
+    "fn": 15,
+    "tp": 87
+  },
+  "confusion_matrix_array": [
+    155,
+    5,
+    15,
+    87
+  ],
+  "metrics": {
+    "accuracy": 0.9237,
+    "precision": 0.9457,
+    "recall": 0.8529,
+    "specificity": 0.9688,
+    "false_positive_rate": 0.0312,
+    "false_negative_rate": 0.1471,
+    "f1_score": 0.8969,
+    "brier_score": 0.0629,
+    "roc_auc": 0.9763,
+    "pr_auc": 0.968,
+    "ece": 0.0469,
+    "mce": 0.2879
+  },
+  "ece_details": {
+    "ece": 0.0469,
+    "mce": 0.2879,
+    "bin_boundaries": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "bins": [
+      {
+        "bin_idx": 0,
+        "bin_range": [
+          0.0,
+          0.1
+        ],
+        "count": 137,
+        "empirical_accuracy": 0.0365,
+        "mean_confidence": 0.0265,
+        "absolute_error": 0.01
+      },
+      {
+        "bin_idx": 1,
+        "bin_range": [
+          0.1,
+          0.2
+        ],
+        "count": 15,
+        "empirical_accuracy": 0.3333,
+        "mean_confidence": 0.1516,
+        "absolute_error": 0.1817
+      },
+      {
+        "bin_idx": 2,
+        "bin_range": [
+          0.2,
+          0.3
+        ],
+        "count": 8,
+        "empirical_accuracy": 0.25,
+        "mean_confidence": 0.2534,
+        "absolute_error": 0.0034
+      },
+      {
+        "bin_idx": 3,
+        "bin_range": [
+          0.3,
+          0.4
+        ],
+        "count": 6,
+        "empirical_accuracy": 0.3333,
+        "mean_confidence": 0.3468,
+        "absolute_error": 0.0135
+      },
+      {
+        "bin_idx": 4,
+        "bin_range": [
+          0.4,
+          0.5
+        ],
+        "count": 4,
+        "empirical_accuracy": 0.25,
+        "mean_confidence": 0.4334,
+        "absolute_error": 0.1834
+      },
+      {
+        "bin_idx": 5,
+        "bin_range": [
+          0.5,
+          0.6
+        ],
+        "count": 6,
+        "empirical_accuracy": 0.8333,
+        "mean_confidence": 0.5455,
+        "absolute_error": 0.2879
+      },
+      {
+        "bin_idx": 6,
+        "bin_range": [
+          0.6,
+          0.7
+        ],
+        "count": 6,
+        "empirical_accuracy": 0.5,
+        "mean_confidence": 0.6414,
+        "absolute_error": 0.1414
+      },
+      {
+        "bin_idx": 7,
+        "bin_range": [
+          0.7,
+          0.8
+        ],
+        "count": 5,
+        "empirical_accuracy": 1.0,
+        "mean_confidence": 0.7406,
+        "absolute_error": 0.2594
+      },
+      {
+        "bin_idx": 8,
+        "bin_range": [
+          0.8,
+          0.9
+        ],
+        "count": 17,
+        "empirical_accuracy": 0.9412,
+        "mean_confidence": 0.8412,
+        "absolute_error": 0.1
+      },
+      {
+        "bin_idx": 9,
+        "bin_range": [
+          0.9,
+          1.0
+        ],
+        "count": 58,
+        "empirical_accuracy": 1.0,
+        "mean_confidence": 0.9694,
+        "absolute_error": 0.0306
+      }
+    ]
+  },
+  "reported_match_check": {
+    "expected_cm": [
+      155,
+      5,
+      15,
+      87
+    ],
+    "reproduced_cm": [
+      155,
+      5,
+      15,
+      87
+    ],
+    "cm_matches": true,
+    "expected_acc": 0.9237,
+    "reproduced_acc": 0.9237,
+    "acc_matches": true,
+    "expected_prec": 0.9457,
+    "reproduced_prec": 0.9457,
+    "prec_matches": true,
+    "expected_rec": 0.8529,
+    "reproduced_rec": 0.8529,
+    "rec_matches": true,
+    "expected_spec": 0.9688,
+    "reproduced_spec": 0.9688,
+    "spec_matches": true,
+    "expected_f1": 0.8969,
+    "reproduced_f1": 0.8969,
+    "f1_matches": true,
+    "expected_roc_auc": 0.9763,
+    "reproduced_roc_auc": 0.9763,
+    "roc_auc_matches": true,
+    "expected_pr_auc": 0.968,
+    "reproduced_pr_auc": 0.968,
+    "pr_auc_matches": true,
+    "expected_brier": 0.0629,
+    "reproduced_brier": 0.0629,
+    "brier_matches": true,
+    "expected_ece": 0.0469,
+    "reproduced_ece": 0.0469,
+    "ece_matches": true
+  },
+  "predictions": [
+    {
+      "sample_index": 0,
+      "sample_id": "val_000_9d5dced5b3c2",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.4346,
+        1.7217
+      ],
+      "differential_logit": 3.1562,
+      "violence_probability": 0.9592
+    },
+    {
+      "sample_index": 1,
+      "sample_id": "val_001_780b9b59017b",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.043,
+        0.9224
+      ],
+      "differential_logit": 1.9648,
+      "violence_probability": 0.8771
+    },
+    {
+      "sample_index": 2,
+      "sample_id": "val_002_1a33648c243f",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.6543,
+        1.9473
+      ],
+      "differential_logit": 4.6016,
+      "violence_probability": 0.9901
+    },
+    {
+      "sample_index": 3,
+      "sample_id": "val_003_32f67a9eb500",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.6025,
+        1.0254
+      ],
+      "differential_logit": 2.6289,
+      "violence_probability": 0.9326
+    },
+    {
+      "sample_index": 4,
+      "sample_id": "val_004_bc6299686eb2",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.6094,
+        1.9336
+      ],
+      "differential_logit": 4.543,
+      "violence_probability": 0.9895
+    },
+    {
+      "sample_index": 5,
+      "sample_id": "val_005_8917cf6ec50d",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.3416,
+        -0.3711
+      ],
+      "differential_logit": -0.7129,
+      "violence_probability": 0.329
+    },
+    {
+      "sample_index": 6,
+      "sample_id": "val_006_7baa72a90799",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.7827,
+        -0.9282
+      ],
+      "differential_logit": -1.7109,
+      "violence_probability": 0.153
+    },
+    {
+      "sample_index": 7,
+      "sample_id": "val_007_d4c761db6587",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        1.3438,
+        -1.0508
+      ],
+      "differential_logit": -2.3945,
+      "violence_probability": 0.0836
+    },
+    {
+      "sample_index": 8,
+      "sample_id": "val_008_15aba4e1a7e5",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        1.1865,
+        -1.375
+      ],
+      "differential_logit": -2.5625,
+      "violence_probability": 0.0717
+    },
+    {
+      "sample_index": 9,
+      "sample_id": "val_009_b12ec3699392",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.7441,
+        2.4297
+      ],
+      "differential_logit": 5.1719,
+      "violence_probability": 0.9944
+    },
+    {
+      "sample_index": 10,
+      "sample_id": "val_010_b049d9d6d5f9",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -3.5762,
+        3.291
+      ],
+      "differential_logit": 6.8672,
+      "violence_probability": 0.999
+    },
+    {
+      "sample_index": 11,
+      "sample_id": "val_011_4dfc804d6461",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.7734,
+        1.0869
+      ],
+      "differential_logit": 1.8604,
+      "violence_probability": 0.8653
+    },
+    {
+      "sample_index": 12,
+      "sample_id": "val_012_505b80fbd144",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.9492,
+        3.0215
+      ],
+      "differential_logit": 5.9688,
+      "violence_probability": 0.9975
+    },
+    {
+      "sample_index": 13,
+      "sample_id": "val_013_45c94e4c7627",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.8818,
+        2.7656
+      ],
+      "differential_logit": 4.6484,
+      "violence_probability": 0.9905
+    },
+    {
+      "sample_index": 14,
+      "sample_id": "val_014_c57650e1b791",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.3047,
+        1.4678
+      ],
+      "differential_logit": 2.7734,
+      "violence_probability": 0.9412
+    },
+    {
+      "sample_index": 15,
+      "sample_id": "val_015_e4f242db0dbd",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.0088,
+        0.7124
+      ],
+      "differential_logit": 1.7207,
+      "violence_probability": 0.8483
+    },
+    {
+      "sample_index": 16,
+      "sample_id": "val_016_1b0a0503dbe2",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.041,
+        1.9102
+      ],
+      "differential_logit": 3.9512,
+      "violence_probability": 0.9811
+    },
+    {
+      "sample_index": 17,
+      "sample_id": "val_017_8dfe0827222d",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.3184,
+        1.54
+      ],
+      "differential_logit": 3.8594,
+      "violence_probability": 0.9793
+    },
+    {
+      "sample_index": 18,
+      "sample_id": "val_018_3ba6cead5aec",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.6826,
+        0.4199
+      ],
+      "differential_logit": 1.1025,
+      "violence_probability": 0.7507
+    },
+    {
+      "sample_index": 19,
+      "sample_id": "val_019_290c1268b729",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.6699,
+        0.0129
+      ],
+      "differential_logit": 0.6826,
+      "violence_probability": 0.6644
+    },
+    {
+      "sample_index": 20,
+      "sample_id": "val_020_6232b066a3c5",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.7158,
+        -1.7275
+      ],
+      "differential_logit": -2.4434,
+      "violence_probability": 0.0799
+    },
+    {
+      "sample_index": 21,
+      "sample_id": "val_021_2cb19a0caab4",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        1.4473,
+        -0.9629
+      ],
+      "differential_logit": -2.4102,
+      "violence_probability": 0.0824
+    },
+    {
+      "sample_index": 22,
+      "sample_id": "val_022_204cbb59b9e5",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.9966,
+        -0.5151
+      ],
+      "differential_logit": -1.5117,
+      "violence_probability": 0.1807
+    },
+    {
+      "sample_index": 23,
+      "sample_id": "val_023_4698ffc4220f",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        1.0928,
+        -0.8262
+      ],
+      "differential_logit": -1.9189,
+      "violence_probability": 0.128
+    },
+    {
+      "sample_index": 24,
+      "sample_id": "val_024_79ad1453a93a",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.1564,
+        0.2059
+      ],
+      "differential_logit": 0.3623,
+      "violence_probability": 0.5896
+    },
+    {
+      "sample_index": 25,
+      "sample_id": "val_025_620bbcd3c5f7",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.9253,
+        0.7925
+      ],
+      "differential_logit": 1.7178,
+      "violence_probability": 0.8478
+    },
+    {
+      "sample_index": 26,
+      "sample_id": "val_026_8550deffa637",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.3687,
+        -0.4216
+      ],
+      "differential_logit": -0.79,
+      "violence_probability": 0.3121
+    },
+    {
+      "sample_index": 27,
+      "sample_id": "val_027_86bfa74c7adb",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.7847,
+        0.8989
+      ],
+      "differential_logit": 1.6836,
+      "violence_probability": 0.8434
+    },
+    {
+      "sample_index": 28,
+      "sample_id": "val_028_a378fa722362",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.7617,
+        2.7129
+      ],
+      "differential_logit": 5.4766,
+      "violence_probability": 0.9958
+    },
+    {
+      "sample_index": 29,
+      "sample_id": "val_029_9401bb63c805",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.9287,
+        1.8555
+      ],
+      "differential_logit": 3.7852,
+      "violence_probability": 0.9778
+    },
+    {
+      "sample_index": 30,
+      "sample_id": "val_030_2e707dd5378f",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.5039,
+        2.1289
+      ],
+      "differential_logit": 3.6328,
+      "violence_probability": 0.9742
+    },
+    {
+      "sample_index": 31,
+      "sample_id": "val_031_52a6aa6eedcb",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.9697,
+        0.6426
+      ],
+      "differential_logit": 1.6123,
+      "violence_probability": 0.8337
+    },
+    {
+      "sample_index": 32,
+      "sample_id": "val_032_797c0b808d44",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.0459,
+        1.1992
+      ],
+      "differential_logit": 2.2461,
+      "violence_probability": 0.9042
+    },
+    {
+      "sample_index": 33,
+      "sample_id": "val_033_b5879b849397",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.1885,
+        1.625
+      ],
+      "differential_logit": 2.8125,
+      "violence_probability": 0.9434
+    },
+    {
+      "sample_index": 34,
+      "sample_id": "val_034_e7966e777ffd",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.6719,
+        0.8848
+      ],
+      "differential_logit": 1.5566,
+      "violence_probability": 0.8259
+    },
+    {
+      "sample_index": 35,
+      "sample_id": "val_035_cf2b40c9728f",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.5703,
+        1.9033
+      ],
+      "differential_logit": 4.4727,
+      "violence_probability": 0.9887
+    },
+    {
+      "sample_index": 36,
+      "sample_id": "val_036_08e3c596e314",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.9492,
+        1.2285
+      ],
+      "differential_logit": 3.1777,
+      "violence_probability": 0.96
+    },
+    {
+      "sample_index": 37,
+      "sample_id": "val_037_2b3999b9a397",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.0332,
+        1.2539
+      ],
+      "differential_logit": 3.2871,
+      "violence_probability": 0.964
+    },
+    {
+      "sample_index": 38,
+      "sample_id": "val_038_386820c87b15",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.8838,
+        1.5605
+      ],
+      "differential_logit": 3.4453,
+      "violence_probability": 0.9691
+    },
+    {
+      "sample_index": 39,
+      "sample_id": "val_039_e719c6561e51",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.0898,
+        1.6465
+      ],
+      "differential_logit": 3.7363,
+      "violence_probability": 0.9767
+    },
+    {
+      "sample_index": 40,
+      "sample_id": "val_040_7400bd19726c",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.4365,
+        0.9663
+      ],
+      "differential_logit": 2.4023,
+      "violence_probability": 0.917
+    },
+    {
+      "sample_index": 41,
+      "sample_id": "val_041_1f751a210057",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        -0.2834,
+        -0.6392
+      ],
+      "differential_logit": -0.3557,
+      "violence_probability": 0.412
+    },
+    {
+      "sample_index": 42,
+      "sample_id": "val_042_19fc5867a5cc",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.2871,
+        0.583
+      ],
+      "differential_logit": 1.8701,
+      "violence_probability": 0.8665
+    },
+    {
+      "sample_index": 43,
+      "sample_id": "val_043_c56d64967fc6",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.4121,
+        1.6123
+      ],
+      "differential_logit": 4.0234,
+      "violence_probability": 0.9824
+    },
+    {
+      "sample_index": 44,
+      "sample_id": "val_044_dc292603a04b",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.6953,
+        1.9082
+      ],
+      "differential_logit": 4.6016,
+      "violence_probability": 0.9901
+    },
+    {
+      "sample_index": 45,
+      "sample_id": "val_045_c7c7288e16df",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.668,
+        2.043
+      ],
+      "differential_logit": 4.7109,
+      "violence_probability": 0.9911
+    },
+    {
+      "sample_index": 46,
+      "sample_id": "val_046_8826703f6977",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.8779,
+        1.5342
+      ],
+      "differential_logit": 3.4121,
+      "violence_probability": 0.9681
+    },
+    {
+      "sample_index": 47,
+      "sample_id": "val_047_94075a23c18f",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.8301,
+        2.3887
+      ],
+      "differential_logit": 5.2188,
+      "violence_probability": 0.9946
+    },
+    {
+      "sample_index": 48,
+      "sample_id": "val_048_e86b02efba85",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.9023,
+        2.0137
+      ],
+      "differential_logit": 4.9141,
+      "violence_probability": 0.9927
+    },
+    {
+      "sample_index": 49,
+      "sample_id": "val_049_cf5a066ca847",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.8711,
+        1.9961
+      ],
+      "differential_logit": 4.8672,
+      "violence_probability": 0.9924
+    },
+    {
+      "sample_index": 50,
+      "sample_id": "val_050_82ae1474c18c",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.3477,
+        0.4463
+      ],
+      "differential_logit": 1.7939,
+      "violence_probability": 0.8574
+    },
+    {
+      "sample_index": 51,
+      "sample_id": "val_051_c8d3a815a7f3",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.6592,
+        1.2744
+      ],
+      "differential_logit": 2.9336,
+      "violence_probability": 0.9495
+    },
+    {
+      "sample_index": 52,
+      "sample_id": "val_052_b7a62dfa7cb5",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.4473,
+        1.8408
+      ],
+      "differential_logit": 4.2891,
+      "violence_probability": 0.9865
+    },
+    {
+      "sample_index": 53,
+      "sample_id": "val_053_e37f5b8ae8be",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.6338,
+        1.0
+      ],
+      "differential_logit": 2.6328,
+      "violence_probability": 0.933
+    },
+    {
+      "sample_index": 54,
+      "sample_id": "val_054_bc09a41f0af4",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.8296,
+        0.5986
+      ],
+      "differential_logit": 1.4277,
+      "violence_probability": 0.8066
+    },
+    {
+      "sample_index": 55,
+      "sample_id": "val_055_1476e05bcd96",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.8374,
+        0.6553
+      ],
+      "differential_logit": 1.4922,
+      "violence_probability": 0.8165
+    },
+    {
+      "sample_index": 56,
+      "sample_id": "val_056_3d87404a8ef4",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.6597,
+        0.3799
+      ],
+      "differential_logit": 1.0391,
+      "violence_probability": 0.7388
+    },
+    {
+      "sample_index": 57,
+      "sample_id": "val_057_2e9db4f60c9e",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -3.2871,
+        1.959
+      ],
+      "differential_logit": 5.2461,
+      "violence_probability": 0.9948
+    },
+    {
+      "sample_index": 58,
+      "sample_id": "val_058_392e0f84bee7",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.6616,
+        -0.4819
+      ],
+      "differential_logit": 0.1797,
+      "violence_probability": 0.5448
+    },
+    {
+      "sample_index": 59,
+      "sample_id": "val_059_a9cc0316b466",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.125,
+        0.3428
+      ],
+      "differential_logit": 1.4678,
+      "violence_probability": 0.8127
+    },
+    {
+      "sample_index": 60,
+      "sample_id": "val_060_73478224b65f",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.7856,
+        0.0933
+      ],
+      "differential_logit": 0.8789,
+      "violence_probability": 0.7066
+    },
+    {
+      "sample_index": 61,
+      "sample_id": "val_061_f14e8576a590",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.0029,
+        0.585
+      ],
+      "differential_logit": 1.5879,
+      "violence_probability": 0.8303
+    },
+    {
+      "sample_index": 62,
+      "sample_id": "val_062_93fba59170fc",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.6846,
+        0.1989
+      ],
+      "differential_logit": 0.8833,
+      "violence_probability": 0.7075
+    },
+    {
+      "sample_index": 63,
+      "sample_id": "val_063_28182950f0f4",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.625,
+        1.3633
+      ],
+      "differential_logit": 2.9883,
+      "violence_probability": 0.952
+    },
+    {
+      "sample_index": 64,
+      "sample_id": "val_064_3e5068cb02a9",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.5928,
+        0.8442
+      ],
+      "differential_logit": 2.4375,
+      "violence_probability": 0.9196
+    },
+    {
+      "sample_index": 65,
+      "sample_id": "val_065_b678c5b281cc",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.8809,
+        1.7031
+      ],
+      "differential_logit": 4.5859,
+      "violence_probability": 0.9899
+    },
+    {
+      "sample_index": 66,
+      "sample_id": "val_066_be33b004073e",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.8623,
+        0.7783
+      ],
+      "differential_logit": 2.6406,
+      "violence_probability": 0.9334
+    },
+    {
+      "sample_index": 67,
+      "sample_id": "val_067_f99954751bc3",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.215,
+        -0.1025
+      ],
+      "differential_logit": 0.1125,
+      "violence_probability": 0.5281
+    },
+    {
+      "sample_index": 68,
+      "sample_id": "val_068_f92d3a084207",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.3945,
+        1.373
+      ],
+      "differential_logit": 3.7676,
+      "violence_probability": 0.9774
+    },
+    {
+      "sample_index": 69,
+      "sample_id": "val_069_bfc7fa189d82",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.9863,
+        2.3633
+      ],
+      "differential_logit": 5.3516,
+      "violence_probability": 0.9953
+    },
+    {
+      "sample_index": 70,
+      "sample_id": "val_070_27007ea936bc",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.5078,
+        1.7959
+      ],
+      "differential_logit": 4.3047,
+      "violence_probability": 0.9867
+    },
+    {
+      "sample_index": 71,
+      "sample_id": "val_071_dd44d07b7772",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.043,
+        1.5215
+      ],
+      "differential_logit": 3.5645,
+      "violence_probability": 0.9725
+    },
+    {
+      "sample_index": 72,
+      "sample_id": "val_072_a1af8cb715e3",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.8457,
+        1.6729
+      ],
+      "differential_logit": 4.5195,
+      "violence_probability": 0.9892
+    },
+    {
+      "sample_index": 73,
+      "sample_id": "val_073_ea5058d46b79",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.0628,
+        0.4739
+      ],
+      "differential_logit": 0.5366,
+      "violence_probability": 0.631
+    },
+    {
+      "sample_index": 74,
+      "sample_id": "val_074_9cf78929394e",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.8613,
+        2.5703
+      ],
+      "differential_logit": 5.4297,
+      "violence_probability": 0.9956
+    },
+    {
+      "sample_index": 75,
+      "sample_id": "val_075_a123c04b6dc8",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.9961,
+        1.9072
+      ],
+      "differential_logit": 3.9023,
+      "violence_probability": 0.9802
+    },
+    {
+      "sample_index": 76,
+      "sample_id": "val_076_87e0d34bb275",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.4307,
+        1.1973
+      ],
+      "differential_logit": 2.6289,
+      "violence_probability": 0.9326
+    },
+    {
+      "sample_index": 77,
+      "sample_id": "val_077_1443d6ebda6c",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.9854,
+        1.6426
+      ],
+      "differential_logit": 3.6289,
+      "violence_probability": 0.9741
+    },
+    {
+      "sample_index": 78,
+      "sample_id": "val_078_4ca0860bb28a",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.6426,
+        1.4648
+      ],
+      "differential_logit": 3.1074,
+      "violence_probability": 0.9572
+    },
+    {
+      "sample_index": 79,
+      "sample_id": "val_079_0c9bfd7ba426",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.2344,
+        1.9062
+      ],
+      "differential_logit": 4.1406,
+      "violence_probability": 0.9843
+    },
+    {
+      "sample_index": 80,
+      "sample_id": "val_080_632911f79b4a",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.7988,
+        2.5254
+      ],
+      "differential_logit": 5.3242,
+      "violence_probability": 0.9952
+    },
+    {
+      "sample_index": 81,
+      "sample_id": "val_081_15d5f7c72cfb",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.5625,
+        1.3027
+      ],
+      "differential_logit": 2.8652,
+      "violence_probability": 0.9461
+    },
+    {
+      "sample_index": 82,
+      "sample_id": "val_082_eb3ef9c80c6c",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.8643,
+        1.8525
+      ],
+      "differential_logit": 3.7168,
+      "violence_probability": 0.9763
+    },
+    {
+      "sample_index": 83,
+      "sample_id": "val_083_9805e644c2c1",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.4219,
+        -0.2524
+      ],
+      "differential_logit": 0.1694,
+      "violence_probability": 0.5423
+    },
+    {
+      "sample_index": 84,
+      "sample_id": "val_084_f5d5ee8bea51",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.291,
+        0.4543
+      ],
+      "differential_logit": 1.7451,
+      "violence_probability": 0.8514
+    },
+    {
+      "sample_index": 85,
+      "sample_id": "val_085_99b822280b55",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.292,
+        0.583
+      ],
+      "differential_logit": 1.875,
+      "violence_probability": 0.867
+    },
+    {
+      "sample_index": 86,
+      "sample_id": "val_086_a2334c840bf7",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.2266,
+        0.1553
+      ],
+      "differential_logit": 1.3818,
+      "violence_probability": 0.7993
+    },
+    {
+      "sample_index": 87,
+      "sample_id": "val_087_444a8b37c823",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.6699,
+        0.6948
+      ],
+      "differential_logit": 2.3652,
+      "violence_probability": 0.9141
+    },
+    {
+      "sample_index": 88,
+      "sample_id": "val_088_5d49a3e3bd33",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.2827,
+        0.2318
+      ],
+      "differential_logit": 0.5146,
+      "violence_probability": 0.6259
+    },
+    {
+      "sample_index": 89,
+      "sample_id": "val_089_b99ed6445ea5",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.8604,
+        1.7852
+      ],
+      "differential_logit": 2.6445,
+      "violence_probability": 0.9337
+    },
+    {
+      "sample_index": 90,
+      "sample_id": "val_090_dd4dd40c00de",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.3818,
+        1.1787
+      ],
+      "differential_logit": 1.5605,
+      "violence_probability": 0.8264
+    },
+    {
+      "sample_index": 91,
+      "sample_id": "val_091_de5417ab0b5a",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.9404,
+        2.0625
+      ],
+      "differential_logit": 3.0039,
+      "violence_probability": 0.9527
+    },
+    {
+      "sample_index": 92,
+      "sample_id": "val_092_20ea7f317203",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.439,
+        -0.4504
+      ],
+      "differential_logit": -0.8896,
+      "violence_probability": 0.2912
+    },
+    {
+      "sample_index": 93,
+      "sample_id": "val_093_ddb1e3622938",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -1.4629,
+        0.9175
+      ],
+      "differential_logit": 2.3809,
+      "violence_probability": 0.9153
+    },
+    {
+      "sample_index": 94,
+      "sample_id": "val_094_eedeba64fce6",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.0566,
+        1.3379
+      ],
+      "differential_logit": 3.3945,
+      "violence_probability": 0.9675
+    },
+    {
+      "sample_index": 95,
+      "sample_id": "val_095_f1d0c131d9bd",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.8984,
+        1.7793
+      ],
+      "differential_logit": 4.6797,
+      "violence_probability": 0.9908
+    },
+    {
+      "sample_index": 96,
+      "sample_id": "val_096_2a338a3d465c",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -0.3879,
+        -0.3101
+      ],
+      "differential_logit": 0.0779,
+      "violence_probability": 0.5195
+    },
+    {
+      "sample_index": 97,
+      "sample_id": "val_097_b6567797f968",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": true,
+      "raw_logits": [
+        -2.4668,
+        2.4023
+      ],
+      "differential_logit": 4.8672,
+      "violence_probability": 0.9924
+    },
+    {
+      "sample_index": 98,
+      "sample_id": "val_098_ca8b38899b3e",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.6758,
+        -0.7759
+      ],
+      "differential_logit": -1.4512,
+      "violence_probability": 0.1897
+    },
+    {
+      "sample_index": 99,
+      "sample_id": "val_099_f64d9b1c2db6",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.605,
+        -1.042
+      ],
+      "differential_logit": -1.6465,
+      "violence_probability": 0.1615
+    },
+    {
+      "sample_index": 100,
+      "sample_id": "val_100_00cc2e46b902",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.2063,
+        -0.8604
+      ],
+      "differential_logit": -1.0664,
+      "violence_probability": 0.256
+    },
+    {
+      "sample_index": 101,
+      "sample_id": "val_101_491ff49fa96d",
+      "ground_truth_label": 1,
+      "ground_truth_class": "violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": false,
+      "raw_logits": [
+        1.5439,
+        -1.6934
+      ],
+      "differential_logit": -3.2383,
+      "violence_probability": 0.0378
+    },
+    {
+      "sample_index": 102,
+      "sample_id": "val_102_0763493a06a5",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9961,
+        -2.1953
+      ],
+      "differential_logit": -4.1914,
+      "violence_probability": 0.0149
+    },
+    {
+      "sample_index": 103,
+      "sample_id": "val_103_fe27b5cc444b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.0205,
+        -1.5469
+      ],
+      "differential_logit": -2.5664,
+      "violence_probability": 0.0713
+    },
+    {
+      "sample_index": 104,
+      "sample_id": "val_104_a807eb06c768",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.4736,
+        -1.751
+      ],
+      "differential_logit": -3.2246,
+      "violence_probability": 0.0383
+    },
+    {
+      "sample_index": 105,
+      "sample_id": "val_105_e81ac5c44b42",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": false,
+      "raw_logits": [
+        -0.4465,
+        -0.002
+      ],
+      "differential_logit": 0.4446,
+      "violence_probability": 0.6093
+    },
+    {
+      "sample_index": 106,
+      "sample_id": "val_106_ecd7234ace22",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.0254,
+        -1.1387
+      ],
+      "differential_logit": -2.1641,
+      "violence_probability": 0.103
+    },
+    {
+      "sample_index": 107,
+      "sample_id": "val_107_e0d20b9bddbb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4395,
+        -2.6113
+      ],
+      "differential_logit": -5.0508,
+      "violence_probability": 0.0064
+    },
+    {
+      "sample_index": 108,
+      "sample_id": "val_108_16406eca2b42",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0859,
+        -2.4043
+      ],
+      "differential_logit": -4.4922,
+      "violence_probability": 0.0111
+    },
+    {
+      "sample_index": 109,
+      "sample_id": "val_109_c742f14402b1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3037,
+        -1.1543
+      ],
+      "differential_logit": -2.457,
+      "violence_probability": 0.0789
+    },
+    {
+      "sample_index": 110,
+      "sample_id": "val_110_092e0138034b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8262,
+        -2.373
+      ],
+      "differential_logit": -4.1992,
+      "violence_probability": 0.0148
+    },
+    {
+      "sample_index": 111,
+      "sample_id": "val_111_6c8cde980bcf",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        3.1328,
+        -2.6367
+      ],
+      "differential_logit": -5.7695,
+      "violence_probability": 0.0031
+    },
+    {
+      "sample_index": 112,
+      "sample_id": "val_112_5efadae1bb35",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.939,
+        -1.3574
+      ],
+      "differential_logit": -2.2969,
+      "violence_probability": 0.0914
+    },
+    {
+      "sample_index": 113,
+      "sample_id": "val_113_6cbae36208c2",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.125,
+        -2.1543
+      ],
+      "differential_logit": -4.2812,
+      "violence_probability": 0.0137
+    },
+    {
+      "sample_index": 114,
+      "sample_id": "val_114_2fddd080f5e5",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2539,
+        -1.4521
+      ],
+      "differential_logit": -2.707,
+      "violence_probability": 0.0626
+    },
+    {
+      "sample_index": 115,
+      "sample_id": "val_115_b24fcb7418f0",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.6646,
+        -0.6685
+      ],
+      "differential_logit": -1.333,
+      "violence_probability": 0.2087
+    },
+    {
+      "sample_index": 116,
+      "sample_id": "val_116_cf3af3531a4b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": false,
+      "raw_logits": [
+        -0.5376,
+        0.0696
+      ],
+      "differential_logit": 0.6074,
+      "violence_probability": 0.6473
+    },
+    {
+      "sample_index": 117,
+      "sample_id": "val_117_a1b4c18cb2b6",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5596,
+        -1.6836
+      ],
+      "differential_logit": -3.2422,
+      "violence_probability": 0.0376
+    },
+    {
+      "sample_index": 118,
+      "sample_id": "val_118_071bae562fe6",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.167,
+        -1.5654
+      ],
+      "differential_logit": -2.7324,
+      "violence_probability": 0.0611
+    },
+    {
+      "sample_index": 119,
+      "sample_id": "val_119_a424d651cc32",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9102,
+        -2.2383
+      ],
+      "differential_logit": -4.1484,
+      "violence_probability": 0.0155
+    },
+    {
+      "sample_index": 120,
+      "sample_id": "val_120_3dd70eb4c4a3",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.4219,
+        -2.0566
+      ],
+      "differential_logit": -3.4785,
+      "violence_probability": 0.0299
+    },
+    {
+      "sample_index": 121,
+      "sample_id": "val_121_004edd679599",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2754,
+        -2.0488
+      ],
+      "differential_logit": -3.3242,
+      "violence_probability": 0.0347
+    },
+    {
+      "sample_index": 122,
+      "sample_id": "val_122_56837753c4f1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0,
+        -3.0449
+      ],
+      "differential_logit": -5.0469,
+      "violence_probability": 0.0064
+    },
+    {
+      "sample_index": 123,
+      "sample_id": "val_123_01ead059bc61",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.6689,
+        -1.9619
+      ],
+      "differential_logit": -3.6309,
+      "violence_probability": 0.0258
+    },
+    {
+      "sample_index": 124,
+      "sample_id": "val_124_9dc5153bd238",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5117,
+        -2.1582
+      ],
+      "differential_logit": -3.6699,
+      "violence_probability": 0.0248
+    },
+    {
+      "sample_index": 125,
+      "sample_id": "val_125_7da1a5ccb6d9",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.999,
+        -2.2461
+      ],
+      "differential_logit": -4.2461,
+      "violence_probability": 0.0141
+    },
+    {
+      "sample_index": 126,
+      "sample_id": "val_126_e85c6779872f",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.9043,
+        -3.4512
+      ],
+      "differential_logit": -6.3555,
+      "violence_probability": 0.0017
+    },
+    {
+      "sample_index": 127,
+      "sample_id": "val_127_d5452cfd1f2f",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7979,
+        -2.1309
+      ],
+      "differential_logit": -3.9297,
+      "violence_probability": 0.0193
+    },
+    {
+      "sample_index": 128,
+      "sample_id": "val_128_8d05a452d141",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.1237,
+        -0.0222
+      ],
+      "differential_logit": -0.1458,
+      "violence_probability": 0.4636
+    },
+    {
+      "sample_index": 129,
+      "sample_id": "val_129_9097c1e0b745",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.2266,
+        -2.6934
+      ],
+      "differential_logit": -4.9219,
+      "violence_probability": 0.0072
+    },
+    {
+      "sample_index": 130,
+      "sample_id": "val_130_9c3a2fc13e59",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9961,
+        -2.9824
+      ],
+      "differential_logit": -4.9766,
+      "violence_probability": 0.0068
+    },
+    {
+      "sample_index": 131,
+      "sample_id": "val_131_221095b09ede",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.332,
+        -1.0898
+      ],
+      "differential_logit": -2.4219,
+      "violence_probability": 0.0815
+    },
+    {
+      "sample_index": 132,
+      "sample_id": "val_132_09670cc35c6b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7559,
+        -1.71
+      ],
+      "differential_logit": -3.4648,
+      "violence_probability": 0.0303
+    },
+    {
+      "sample_index": 133,
+      "sample_id": "val_133_af48412fea14",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": false,
+      "raw_logits": [
+        0.0613,
+        0.2566
+      ],
+      "differential_logit": 0.1953,
+      "violence_probability": 0.5487
+    },
+    {
+      "sample_index": 134,
+      "sample_id": "val_134_4f8c97233962",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.1621,
+        -2.5059
+      ],
+      "differential_logit": -4.668,
+      "violence_probability": 0.0093
+    },
+    {
+      "sample_index": 135,
+      "sample_id": "val_135_8d0dfc29bdf6",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.6206,
+        -1.2314
+      ],
+      "differential_logit": -1.8516,
+      "violence_probability": 0.1356
+    },
+    {
+      "sample_index": 136,
+      "sample_id": "val_136_cf2b7d3e5a3b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8721,
+        -1.8486
+      ],
+      "differential_logit": -3.7207,
+      "violence_probability": 0.0236
+    },
+    {
+      "sample_index": 137,
+      "sample_id": "val_137_34701ccf0140",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.9102,
+        -3.125
+      ],
+      "differential_logit": -6.0352,
+      "violence_probability": 0.0024
+    },
+    {
+      "sample_index": 138,
+      "sample_id": "val_138_9c54590dccff",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7432,
+        -1.498
+      ],
+      "differential_logit": -3.2422,
+      "violence_probability": 0.0376
+    },
+    {
+      "sample_index": 139,
+      "sample_id": "val_139_51143a2c0cf7",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.8096,
+        -0.9639
+      ],
+      "differential_logit": -1.7734,
+      "violence_probability": 0.1451
+    },
+    {
+      "sample_index": 140,
+      "sample_id": "val_140_e4e6efa93cdb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4121,
+        -2.6094
+      ],
+      "differential_logit": -5.0234,
+      "violence_probability": 0.0066
+    },
+    {
+      "sample_index": 141,
+      "sample_id": "val_141_8f50885bb58e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        3.0938,
+        -3.084
+      ],
+      "differential_logit": -6.1797,
+      "violence_probability": 0.0021
+    },
+    {
+      "sample_index": 142,
+      "sample_id": "val_142_d65baa6c6685",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4609,
+        -2.6582
+      ],
+      "differential_logit": -5.1172,
+      "violence_probability": 0.0059
+    },
+    {
+      "sample_index": 143,
+      "sample_id": "val_143_cdfacb70b7cb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4043,
+        -2.7344
+      ],
+      "differential_logit": -5.1406,
+      "violence_probability": 0.0058
+    },
+    {
+      "sample_index": 144,
+      "sample_id": "val_144_f1684fe32884",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4414,
+        -2.6055
+      ],
+      "differential_logit": -5.0469,
+      "violence_probability": 0.0064
+    },
+    {
+      "sample_index": 145,
+      "sample_id": "val_145_a6c354dcbd4e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0742,
+        -2.1055
+      ],
+      "differential_logit": -4.1797,
+      "violence_probability": 0.0151
+    },
+    {
+      "sample_index": 146,
+      "sample_id": "val_146_3aa9a575f4dc",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8789,
+        -2.3438
+      ],
+      "differential_logit": -4.2227,
+      "violence_probability": 0.0144
+    },
+    {
+      "sample_index": 147,
+      "sample_id": "val_147_a0652a085403",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.627,
+        -2.3828
+      ],
+      "differential_logit": -5.0078,
+      "violence_probability": 0.0066
+    },
+    {
+      "sample_index": 148,
+      "sample_id": "val_148_de3f1bdd1ee1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8984,
+        -2.4219
+      ],
+      "differential_logit": -4.3203,
+      "violence_probability": 0.0131
+    },
+    {
+      "sample_index": 149,
+      "sample_id": "val_149_a6b63f4dc7bd",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.3809,
+        -2.3477
+      ],
+      "differential_logit": -4.7266,
+      "violence_probability": 0.0088
+    },
+    {
+      "sample_index": 150,
+      "sample_id": "val_150_8a23587ec206",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.5605,
+        -2.7598
+      ],
+      "differential_logit": -5.3203,
+      "violence_probability": 0.0049
+    },
+    {
+      "sample_index": 151,
+      "sample_id": "val_151_2c7099191d23",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.498,
+        -1.9521
+      ],
+      "differential_logit": -3.4492,
+      "violence_probability": 0.0308
+    },
+    {
+      "sample_index": 152,
+      "sample_id": "val_152_9d33faf8820b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.2891,
+        -3.166
+      ],
+      "differential_logit": -5.4531,
+      "violence_probability": 0.0043
+    },
+    {
+      "sample_index": 153,
+      "sample_id": "val_153_7a29a41736a6",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5117,
+        -2.3516
+      ],
+      "differential_logit": -3.8633,
+      "violence_probability": 0.0206
+    },
+    {
+      "sample_index": 154,
+      "sample_id": "val_154_de40f404119b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.332,
+        -1.9365
+      ],
+      "differential_logit": -3.2695,
+      "violence_probability": 0.0367
+    },
+    {
+      "sample_index": 155,
+      "sample_id": "val_155_8eb4fba7c5f1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.668,
+        -2.6719
+      ],
+      "differential_logit": -5.3398,
+      "violence_probability": 0.0048
+    },
+    {
+      "sample_index": 156,
+      "sample_id": "val_156_f247fb00af56",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9238,
+        -2.3086
+      ],
+      "differential_logit": -4.2344,
+      "violence_probability": 0.0143
+    },
+    {
+      "sample_index": 157,
+      "sample_id": "val_157_b8fef649e05f",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9424,
+        -2.248
+      ],
+      "differential_logit": -4.1914,
+      "violence_probability": 0.0149
+    },
+    {
+      "sample_index": 158,
+      "sample_id": "val_158_1f92eb506929",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.3438,
+        -2.9629
+      ],
+      "differential_logit": -5.3047,
+      "violence_probability": 0.0049
+    },
+    {
+      "sample_index": 159,
+      "sample_id": "val_159_8db98f6588dd",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0938,
+        -2.3379
+      ],
+      "differential_logit": -4.4297,
+      "violence_probability": 0.0118
+    },
+    {
+      "sample_index": 160,
+      "sample_id": "val_160_e38e53d350eb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.5176,
+        -2.6855
+      ],
+      "differential_logit": -5.2031,
+      "violence_probability": 0.0055
+    },
+    {
+      "sample_index": 161,
+      "sample_id": "val_161_d202b3f938ea",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.084,
+        -2.6055
+      ],
+      "differential_logit": -4.6875,
+      "violence_probability": 0.0091
+    },
+    {
+      "sample_index": 162,
+      "sample_id": "val_162_d4b7ef24a5ce",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9551,
+        -2.4512
+      ],
+      "differential_logit": -4.4062,
+      "violence_probability": 0.0121
+    },
+    {
+      "sample_index": 163,
+      "sample_id": "val_163_2d21987a4331",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7959,
+        -2.168
+      ],
+      "differential_logit": -3.9648,
+      "violence_probability": 0.0186
+    },
+    {
+      "sample_index": 164,
+      "sample_id": "val_164_2e67be4360d4",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7002,
+        -1.9502
+      ],
+      "differential_logit": -3.6504,
+      "violence_probability": 0.0253
+    },
+    {
+      "sample_index": 165,
+      "sample_id": "val_165_0b50cfafa170",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.5703,
+        -3.1504
+      ],
+      "differential_logit": -5.7188,
+      "violence_probability": 0.0033
+    },
+    {
+      "sample_index": 166,
+      "sample_id": "val_166_f8c695e03242",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.792,
+        -2.4531
+      ],
+      "differential_logit": -4.2461,
+      "violence_probability": 0.0141
+    },
+    {
+      "sample_index": 167,
+      "sample_id": "val_167_aa5dd7f74916",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0762,
+        -2.7051
+      ],
+      "differential_logit": -4.7812,
+      "violence_probability": 0.0083
+    },
+    {
+      "sample_index": 168,
+      "sample_id": "val_168_b10bbee7db0e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5889,
+        -2.3457
+      ],
+      "differential_logit": -3.9336,
+      "violence_probability": 0.0192
+    },
+    {
+      "sample_index": 169,
+      "sample_id": "val_169_f1f8e8676baf",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5898,
+        -1.9482
+      ],
+      "differential_logit": -3.5391,
+      "violence_probability": 0.0282
+    },
+    {
+      "sample_index": 170,
+      "sample_id": "val_170_0f845304ec79",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0117,
+        -2.1113
+      ],
+      "differential_logit": -4.125,
+      "violence_probability": 0.0159
+    },
+    {
+      "sample_index": 171,
+      "sample_id": "val_171_91039ebb2052",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.5117,
+        -2.7402
+      ],
+      "differential_logit": -5.25,
+      "violence_probability": 0.0052
+    },
+    {
+      "sample_index": 172,
+      "sample_id": "val_172_5f65bb78bd1e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4512,
+        -2.7988
+      ],
+      "differential_logit": -5.25,
+      "violence_probability": 0.0052
+    },
+    {
+      "sample_index": 173,
+      "sample_id": "val_173_11fdd15ef515",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3877,
+        -1.8242
+      ],
+      "differential_logit": -3.2109,
+      "violence_probability": 0.0387
+    },
+    {
+      "sample_index": 174,
+      "sample_id": "val_174_2f311a65cf52",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.0557,
+        -1.9424
+      ],
+      "differential_logit": -2.998,
+      "violence_probability": 0.0475
+    },
+    {
+      "sample_index": 175,
+      "sample_id": "val_175_532089e72f86",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.4658,
+        -2.2637
+      ],
+      "differential_logit": -3.7305,
+      "violence_probability": 0.0234
+    },
+    {
+      "sample_index": 176,
+      "sample_id": "val_176_4afb7b672829",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.041,
+        -2.752
+      ],
+      "differential_logit": -4.793,
+      "violence_probability": 0.0082
+    },
+    {
+      "sample_index": 177,
+      "sample_id": "val_177_b8ddbc6e20c3",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.4033,
+        -1.8926
+      ],
+      "differential_logit": -3.2969,
+      "violence_probability": 0.0357
+    },
+    {
+      "sample_index": 178,
+      "sample_id": "val_178_f063b50a78e3",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.1191,
+        -2.3555
+      ],
+      "differential_logit": -4.4766,
+      "violence_probability": 0.0113
+    },
+    {
+      "sample_index": 179,
+      "sample_id": "val_179_53c7b4de857e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.6729,
+        -2.0684
+      ],
+      "differential_logit": -3.7422,
+      "violence_probability": 0.0232
+    },
+    {
+      "sample_index": 180,
+      "sample_id": "val_180_a6c7a7c26c51",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.6445,
+        -2.2148
+      ],
+      "differential_logit": -3.8594,
+      "violence_probability": 0.0206
+    },
+    {
+      "sample_index": 181,
+      "sample_id": "val_181_a41266b589af",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.1367,
+        -2.2598
+      ],
+      "differential_logit": -4.3984,
+      "violence_probability": 0.0122
+    },
+    {
+      "sample_index": 182,
+      "sample_id": "val_182_60fbfa6e9a81",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7578,
+        -2.3105
+      ],
+      "differential_logit": -4.0703,
+      "violence_probability": 0.0168
+    },
+    {
+      "sample_index": 183,
+      "sample_id": "val_183_bc196c97ba1a",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4785,
+        -3.0879
+      ],
+      "differential_logit": -5.5664,
+      "violence_probability": 0.0038
+    },
+    {
+      "sample_index": 184,
+      "sample_id": "val_184_7f156b82e263",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.4648,
+        -2.6504
+      ],
+      "differential_logit": -5.1172,
+      "violence_probability": 0.006
+    },
+    {
+      "sample_index": 185,
+      "sample_id": "val_185_7a4dd59f160d",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.375,
+        -2.3262
+      ],
+      "differential_logit": -4.7031,
+      "violence_probability": 0.009
+    },
+    {
+      "sample_index": 186,
+      "sample_id": "val_186_b6cc7730dd38",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9414,
+        -2.3477
+      ],
+      "differential_logit": -4.2891,
+      "violence_probability": 0.0135
+    },
+    {
+      "sample_index": 187,
+      "sample_id": "val_187_88eb583428d0",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7549,
+        -2.0977
+      ],
+      "differential_logit": -3.8516,
+      "violence_probability": 0.0208
+    },
+    {
+      "sample_index": 188,
+      "sample_id": "val_188_3a7b72cbe558",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5098,
+        -2.0625
+      ],
+      "differential_logit": -3.5723,
+      "violence_probability": 0.0273
+    },
+    {
+      "sample_index": 189,
+      "sample_id": "val_189_2cb1f7286af4",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.208,
+        -1.7793
+      ],
+      "differential_logit": -2.9883,
+      "violence_probability": 0.048
+    },
+    {
+      "sample_index": 190,
+      "sample_id": "val_190_600c57af06e4",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.832,
+        -2.2637
+      ],
+      "differential_logit": -4.0938,
+      "violence_probability": 0.0164
+    },
+    {
+      "sample_index": 191,
+      "sample_id": "val_191_9d95eb5239bb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7344,
+        -1.833
+      ],
+      "differential_logit": -3.5664,
+      "violence_probability": 0.0275
+    },
+    {
+      "sample_index": 192,
+      "sample_id": "val_192_da3176fb9a53",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0156,
+        -2.9473
+      ],
+      "differential_logit": -4.9609,
+      "violence_probability": 0.0069
+    },
+    {
+      "sample_index": 193,
+      "sample_id": "val_193_7e110452af9b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.2656,
+        -2.4043
+      ],
+      "differential_logit": -4.6719,
+      "violence_probability": 0.0093
+    },
+    {
+      "sample_index": 194,
+      "sample_id": "val_194_83e9174eed0c",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2061,
+        -2.0938
+      ],
+      "differential_logit": -3.3008,
+      "violence_probability": 0.0356
+    },
+    {
+      "sample_index": 195,
+      "sample_id": "val_195_15ae4fcbf870",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0977,
+        -1.8486
+      ],
+      "differential_logit": -3.9453,
+      "violence_probability": 0.019
+    },
+    {
+      "sample_index": 196,
+      "sample_id": "val_196_af2dcbaa35e5",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.6328,
+        -1.7773
+      ],
+      "differential_logit": -4.4102,
+      "violence_probability": 0.012
+    },
+    {
+      "sample_index": 197,
+      "sample_id": "val_197_e4eacec7c953",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.3262,
+        -1.4209
+      ],
+      "differential_logit": -3.7461,
+      "violence_probability": 0.023
+    },
+    {
+      "sample_index": 198,
+      "sample_id": "val_198_bd98678462d4",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8145,
+        -1.2197
+      ],
+      "differential_logit": -3.0352,
+      "violence_probability": 0.0459
+    },
+    {
+      "sample_index": 199,
+      "sample_id": "val_199_9dd069e38189",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.4121,
+        -1.5566
+      ],
+      "differential_logit": -2.9688,
+      "violence_probability": 0.0489
+    },
+    {
+      "sample_index": 200,
+      "sample_id": "val_200_0c09e73ab6a9",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.1797,
+        -0.9727
+      ],
+      "differential_logit": -3.1523,
+      "violence_probability": 0.041
+    },
+    {
+      "sample_index": 201,
+      "sample_id": "val_201_b5255bab39d9",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.8711,
+        -1.8711
+      ],
+      "differential_logit": -4.7422,
+      "violence_probability": 0.0086
+    },
+    {
+      "sample_index": 202,
+      "sample_id": "val_202_9208ad70bd77",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0352,
+        -1.2227
+      ],
+      "differential_logit": -3.2578,
+      "violence_probability": 0.037
+    },
+    {
+      "sample_index": 203,
+      "sample_id": "val_203_8b5748868c29",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.6094,
+        -1.5303
+      ],
+      "differential_logit": -3.1406,
+      "violence_probability": 0.0415
+    },
+    {
+      "sample_index": 204,
+      "sample_id": "val_204_eca71c1850c5",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7793,
+        -1.7559
+      ],
+      "differential_logit": -3.5352,
+      "violence_probability": 0.0283
+    },
+    {
+      "sample_index": 205,
+      "sample_id": "val_205_37cdaa6f5bad",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.1992,
+        -1.5459
+      ],
+      "differential_logit": -3.7461,
+      "violence_probability": 0.0231
+    },
+    {
+      "sample_index": 206,
+      "sample_id": "val_206_4eacc1e23ac5",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.8779,
+        -0.3865
+      ],
+      "differential_logit": -1.2646,
+      "violence_probability": 0.2202
+    },
+    {
+      "sample_index": 207,
+      "sample_id": "val_207_c08d050e301c",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0137,
+        -1.4902
+      ],
+      "differential_logit": -3.5039,
+      "violence_probability": 0.0292
+    },
+    {
+      "sample_index": 208,
+      "sample_id": "val_208_92677d0f530f",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9697,
+        -2.0449
+      ],
+      "differential_logit": -4.0156,
+      "violence_probability": 0.0177
+    },
+    {
+      "sample_index": 209,
+      "sample_id": "val_209_cc4dc4027d5b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3867,
+        -1.3105
+      ],
+      "differential_logit": -2.6973,
+      "violence_probability": 0.0631
+    },
+    {
+      "sample_index": 210,
+      "sample_id": "val_210_136799c224c6",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.9609,
+        -1.3662
+      ],
+      "differential_logit": -2.3281,
+      "violence_probability": 0.0889
+    },
+    {
+      "sample_index": 211,
+      "sample_id": "val_211_4c532bed873b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3838,
+        -1.4453
+      ],
+      "differential_logit": -2.8281,
+      "violence_probability": 0.0558
+    },
+    {
+      "sample_index": 212,
+      "sample_id": "val_212_11bd694d5cd7",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5762,
+        -1.291
+      ],
+      "differential_logit": -2.8672,
+      "violence_probability": 0.0538
+    },
+    {
+      "sample_index": 213,
+      "sample_id": "val_213_778793edacbb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7354,
+        -1.2949
+      ],
+      "differential_logit": -3.0312,
+      "violence_probability": 0.0461
+    },
+    {
+      "sample_index": 214,
+      "sample_id": "val_214_8b2fba27713c",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.2383,
+        -1.9639
+      ],
+      "differential_logit": -4.2031,
+      "violence_probability": 0.0147
+    },
+    {
+      "sample_index": 215,
+      "sample_id": "val_215_c6f2cc316a78",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        3.2734,
+        -2.959
+      ],
+      "differential_logit": -6.2344,
+      "violence_probability": 0.002
+    },
+    {
+      "sample_index": 216,
+      "sample_id": "val_216_d174defb20d7",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3242,
+        -1.7588
+      ],
+      "differential_logit": -3.082,
+      "violence_probability": 0.0438
+    },
+    {
+      "sample_index": 217,
+      "sample_id": "val_217_5c40721b7025",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2178,
+        -1.6777
+      ],
+      "differential_logit": -2.8945,
+      "violence_probability": 0.0524
+    },
+    {
+      "sample_index": 218,
+      "sample_id": "val_218_6621c4873181",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2676,
+        -1.7832
+      ],
+      "differential_logit": -3.0508,
+      "violence_probability": 0.0452
+    },
+    {
+      "sample_index": 219,
+      "sample_id": "val_219_3fc851a5fdfe",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2432,
+        -1.5732
+      ],
+      "differential_logit": -2.8164,
+      "violence_probability": 0.0564
+    },
+    {
+      "sample_index": 220,
+      "sample_id": "val_220_c7cbe4e0761a",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.8198,
+        -1.0059
+      ],
+      "differential_logit": -1.8262,
+      "violence_probability": 0.1388
+    },
+    {
+      "sample_index": 221,
+      "sample_id": "val_221_5ac7f2f0319f",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.0781,
+        -0.6982
+      ],
+      "differential_logit": -1.7764,
+      "violence_probability": 0.1448
+    },
+    {
+      "sample_index": 222,
+      "sample_id": "val_222_359181a56bcb",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": false,
+      "raw_logits": [
+        -0.2993,
+        0.4116
+      ],
+      "differential_logit": 0.7109,
+      "violence_probability": 0.6706
+    },
+    {
+      "sample_index": 223,
+      "sample_id": "val_223_adb7ec759475",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.5557,
+        -0.9316
+      ],
+      "differential_logit": -1.4873,
+      "violence_probability": 0.1843
+    },
+    {
+      "sample_index": 224,
+      "sample_id": "val_224_af310f91d5d1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.9697,
+        -1.5059
+      ],
+      "differential_logit": -3.4766,
+      "violence_probability": 0.03
+    },
+    {
+      "sample_index": 225,
+      "sample_id": "val_225_ef18b497263a",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.9609,
+        -0.7534
+      ],
+      "differential_logit": -1.7148,
+      "violence_probability": 0.1526
+    },
+    {
+      "sample_index": 226,
+      "sample_id": "val_226_986ea336dce9",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.9624,
+        0.0991
+      ],
+      "differential_logit": -0.8633,
+      "violence_probability": 0.2966
+    },
+    {
+      "sample_index": 227,
+      "sample_id": "val_227_d0632a41f92c",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.4749,
+        -0.3865
+      ],
+      "differential_logit": -0.8613,
+      "violence_probability": 0.2971
+    },
+    {
+      "sample_index": 228,
+      "sample_id": "val_228_30ce1f7b5b0c",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.2988,
+        -2.6133
+      ],
+      "differential_logit": -4.9141,
+      "violence_probability": 0.0073
+    },
+    {
+      "sample_index": 229,
+      "sample_id": "val_229_b4acc25721c5",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.7324,
+        -0.562
+      ],
+      "differential_logit": -1.2949,
+      "violence_probability": 0.2151
+    },
+    {
+      "sample_index": 230,
+      "sample_id": "val_230_a7d0494e9a73",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2764,
+        -0.4026
+      ],
+      "differential_logit": -1.6787,
+      "violence_probability": 0.1572
+    },
+    {
+      "sample_index": 231,
+      "sample_id": "val_231_4c1b3c1e04c8",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.2502,
+        -0.038
+      ],
+      "differential_logit": -0.2881,
+      "violence_probability": 0.4284
+    },
+    {
+      "sample_index": 232,
+      "sample_id": "val_232_be9f170fa984",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5449,
+        -1.1777
+      ],
+      "differential_logit": -2.7227,
+      "violence_probability": 0.0616
+    },
+    {
+      "sample_index": 233,
+      "sample_id": "val_233_bbbb81a37ed9",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.3777,
+        -0.1342
+      ],
+      "differential_logit": -0.5117,
+      "violence_probability": 0.3748
+    },
+    {
+      "sample_index": 234,
+      "sample_id": "val_234_22813e6b6b4d",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8936,
+        -1.1934
+      ],
+      "differential_logit": -3.0859,
+      "violence_probability": 0.0437
+    },
+    {
+      "sample_index": 235,
+      "sample_id": "val_235_60b10d316911",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5098,
+        -0.7412
+      ],
+      "differential_logit": -2.25,
+      "violence_probability": 0.0953
+    },
+    {
+      "sample_index": 236,
+      "sample_id": "val_236_0acea3fddf4c",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.1912,
+        -0.2729
+      ],
+      "differential_logit": -0.4641,
+      "violence_probability": 0.386
+    },
+    {
+      "sample_index": 237,
+      "sample_id": "val_237_fbe65adecc18",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.3347,
+        -0.4504
+      ],
+      "differential_logit": -0.7852,
+      "violence_probability": 0.3132
+    },
+    {
+      "sample_index": 238,
+      "sample_id": "val_238_d05e6c02f7a1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.6465,
+        -1.0078
+      ],
+      "differential_logit": -1.6543,
+      "violence_probability": 0.1605
+    },
+    {
+      "sample_index": 239,
+      "sample_id": "val_239_f524e6476b23",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.0273,
+        -2.1426
+      ],
+      "differential_logit": -4.1719,
+      "violence_probability": 0.0152
+    },
+    {
+      "sample_index": 240,
+      "sample_id": "val_240_2819114c4633",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7393,
+        -1.9375
+      ],
+      "differential_logit": -3.6758,
+      "violence_probability": 0.0247
+    },
+    {
+      "sample_index": 241,
+      "sample_id": "val_241_49a46aa903f0",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.8936,
+        -2.3105
+      ],
+      "differential_logit": -4.2031,
+      "violence_probability": 0.0147
+    },
+    {
+      "sample_index": 242,
+      "sample_id": "val_242_8e2ed2b17bf7",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.3359,
+        -1.9365
+      ],
+      "differential_logit": -4.2734,
+      "violence_probability": 0.0138
+    },
+    {
+      "sample_index": 243,
+      "sample_id": "val_243_267a40f2b3f3",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        3.2109,
+        -2.7031
+      ],
+      "differential_logit": -5.9141,
+      "violence_probability": 0.0027
+    },
+    {
+      "sample_index": 244,
+      "sample_id": "val_244_12342d3115a2",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        3.2109,
+        -2.4219
+      ],
+      "differential_logit": -5.6328,
+      "violence_probability": 0.0036
+    },
+    {
+      "sample_index": 245,
+      "sample_id": "val_245_4bc0ad4754ba",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.5713,
+        -2.5781
+      ],
+      "differential_logit": -4.1484,
+      "violence_probability": 0.0155
+    },
+    {
+      "sample_index": 246,
+      "sample_id": "val_246_86683be64431",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.1855,
+        -3.0918
+      ],
+      "differential_logit": -5.2773,
+      "violence_probability": 0.0051
+    },
+    {
+      "sample_index": 247,
+      "sample_id": "val_247_c8f727df45f8",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.4067,
+        -0.1439
+      ],
+      "differential_logit": -0.5508,
+      "violence_probability": 0.3657
+    },
+    {
+      "sample_index": 248,
+      "sample_id": "val_248_7c30638e772a",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 1,
+      "predicted_class": "violence",
+      "is_correct": false,
+      "raw_logits": [
+        -0.7134,
+        0.8306
+      ],
+      "differential_logit": 1.5439,
+      "violence_probability": 0.824
+    },
+    {
+      "sample_index": 249,
+      "sample_id": "val_249_648589a38b6e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.1812,
+        -0.1033
+      ],
+      "differential_logit": -0.2844,
+      "violence_probability": 0.4294
+    },
+    {
+      "sample_index": 250,
+      "sample_id": "val_250_71f01e7baba1",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.8145,
+        -1.0029
+      ],
+      "differential_logit": -1.8174,
+      "violence_probability": 0.1397
+    },
+    {
+      "sample_index": 251,
+      "sample_id": "val_251_2cb0eb11fed7",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.457,
+        -1.9229
+      ],
+      "differential_logit": -3.3789,
+      "violence_probability": 0.0329
+    },
+    {
+      "sample_index": 252,
+      "sample_id": "val_252_a4c25905624e",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.6768,
+        -2.4766
+      ],
+      "differential_logit": -4.1523,
+      "violence_probability": 0.0155
+    },
+    {
+      "sample_index": 253,
+      "sample_id": "val_253_d992146f0db0",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.8828,
+        -3.4648
+      ],
+      "differential_logit": -6.3477,
+      "violence_probability": 0.0017
+    },
+    {
+      "sample_index": 254,
+      "sample_id": "val_254_e475a1dbe24b",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2734,
+        -1.2979
+      ],
+      "differential_logit": -2.5703,
+      "violence_probability": 0.071
+    },
+    {
+      "sample_index": 255,
+      "sample_id": "val_255_21b7370818c9",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3887,
+        -1.8154
+      ],
+      "differential_logit": -3.2031,
+      "violence_probability": 0.039
+    },
+    {
+      "sample_index": 256,
+      "sample_id": "val_256_7ce2d8c37637",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        2.2715,
+        -2.877
+      ],
+      "differential_logit": -5.1484,
+      "violence_probability": 0.0058
+    },
+    {
+      "sample_index": 257,
+      "sample_id": "val_257_9b1c0c7ba8f4",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        0.2957,
+        -0.8438
+      ],
+      "differential_logit": -1.1396,
+      "violence_probability": 0.2424
+    },
+    {
+      "sample_index": 258,
+      "sample_id": "val_258_30b698304bfd",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.4766,
+        -1.9102
+      ],
+      "differential_logit": -3.3867,
+      "violence_probability": 0.0327
+    },
+    {
+      "sample_index": 259,
+      "sample_id": "val_259_91f47784ea29",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.2275,
+        -1.6338
+      ],
+      "differential_logit": -2.8613,
+      "violence_probability": 0.0541
+    },
+    {
+      "sample_index": 260,
+      "sample_id": "val_260_a61bab97518d",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.7617,
+        -2.3379
+      ],
+      "differential_logit": -4.1016,
+      "violence_probability": 0.0163
+    },
+    {
+      "sample_index": 261,
+      "sample_id": "val_261_32b1b0ded6e4",
+      "ground_truth_label": 0,
+      "ground_truth_class": "non_violence",
+      "predicted_label": 0,
+      "predicted_class": "non_violence",
+      "is_correct": true,
+      "raw_logits": [
+        1.3926,
+        -1.9814
+      ],
+      "differential_logit": -3.375,
+      "violence_probability": 0.0331
+    }
+  ]
+}

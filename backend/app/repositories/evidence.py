@@ -41,6 +41,10 @@ class EvidenceRepository:
         )
         return result.scalars().first()
 
+    async def get_by_id(self, attachment_id: UUID) -> EvidenceAttachment | None:
+        """Retrieve an evidence attachment by primary key (alias for get_attachment_by_id)."""
+        return await self.get_attachment_by_id(attachment_id)
+
     async def get_attachment_by_session_id(self, session_id: UUID) -> EvidenceAttachment | None:
         """Retrieve an evidence attachment associated with a specific upload session."""
         result = await self.session.execute(
@@ -165,3 +169,24 @@ class EvidenceRepository:
             select(EvidenceCustodyEvent).where(EvidenceCustodyEvent.id == event_id)
         )
         return result.scalars().first()
+
+    async def has_active_legal_hold(self, evidence_id: UUID) -> bool:
+        """Check if an evidence attachment is protected under any active legal hold."""
+        from backend.app.models.case import LegalHold
+
+        stmt = select(func.count(LegalHold.id)).where(
+            LegalHold.evidence_id == evidence_id,
+            LegalHold.status == "active",
+        )
+        result = await self.session.execute(stmt)
+        count = result.scalar_one() or 0
+        return count > 0
+
+    async def delete_attachment(self, attachment_id: UUID) -> bool:
+        """Physically delete an evidence attachment row from the database."""
+        attachment = await self.get_attachment_by_id(attachment_id)
+        if attachment is None:
+            return False
+        await self.session.delete(attachment)
+        await self.session.flush()
+        return True

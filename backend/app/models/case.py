@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from typing import TYPE_CHECKING
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import (
     BigInteger,
@@ -27,6 +27,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    false,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -208,6 +209,13 @@ class Case(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         cascade="all, delete-orphan",
         order_by="CaseAISegment.created_at",
     )
+    legal_holds: Mapped[list[LegalHold]] = relationship(
+        "LegalHold",
+        back_populates="case",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        order_by="LegalHold.created_at",
+    )
     assignments: Mapped[list[CaseAssignment]] = relationship(
         "CaseAssignment",
         back_populates="case",
@@ -361,6 +369,17 @@ class CaseAssignment(UUIDPrimaryKeyMixin, Base):
         nullable=True,
         default=None,
     )
+    is_supervisor_override: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=false(),
+    )
+    override_justification: Mapped[str | None] = mapped_column(
+        String(1000),
+        nullable=True,
+        default=None,
+    )
     created_at: Mapped[datetime] = mapped_column(
         UTCDateTime(),
         nullable=False,
@@ -455,6 +474,128 @@ class CaseEvidence(UUIDPrimaryKeyMixin, Base):
 
     def __repr__(self) -> str:
         return f"<CaseEvidence case_id={self.case_id} evidence_id={self.evidence_id}>"
+
+
+class LegalHold(UUIDPrimaryKeyMixin, Base):
+    """Audited legal-hold record binding evidence to an investigation case (`legal_holds` table)."""
+
+    __tablename__ = "legal_holds"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('active', 'released')",
+            name="ck_legal_holds_status_allowed",
+        ),
+        Index("ix_legal_holds_case_id", "case_id"),
+        Index("ix_legal_holds_evidence_id", "evidence_id"),
+        Index("ix_legal_holds_department_id", "department_id"),
+        Index("ix_legal_holds_status", "status"),
+        Index("ix_legal_holds_hold_reference", "hold_reference", unique=True),
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    hold_reference: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        unique=True,
+    )
+    case_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("cases.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    evidence_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("evidence_attachments.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    department_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("departments.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    status: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="active",
+        server_default="active",
+    )
+    reason: Mapped[str] = mapped_column(
+        String(1000),
+        nullable=False,
+    )
+    placed_by_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    placed_at: Mapped[datetime] = mapped_column(
+        UTCDateTime(),
+        nullable=False,
+        default=utc_now,
+    )
+    released_by_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=True,
+        default=None,
+    )
+    released_at: Mapped[datetime | None] = mapped_column(
+        UTCDateTime(),
+        nullable=True,
+        default=None,
+    )
+    release_reason: Mapped[str | None] = mapped_column(
+        String(1000),
+        nullable=True,
+        default=None,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        UTCDateTime(),
+        nullable=False,
+        default=utc_now,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        UTCDateTime(),
+        nullable=False,
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+    case: Mapped[Case] = relationship(
+        "Case",
+        back_populates="legal_holds",
+        foreign_keys=[case_id],
+        lazy="selectin",
+    )
+    evidence: Mapped[EvidenceAttachment] = relationship(
+        "EvidenceAttachment",
+        back_populates="legal_holds",
+        foreign_keys=[evidence_id],
+        lazy="selectin",
+    )
+    department: Mapped[Department] = relationship(
+        "Department",
+        foreign_keys=[department_id],
+        lazy="selectin",
+    )
+    placed_by: Mapped[User] = relationship(
+        "User",
+        foreign_keys=[placed_by_id],
+        lazy="selectin",
+    )
+    released_by: Mapped[User | None] = relationship(
+        "User",
+        foreign_keys=[released_by_id],
+        lazy="selectin",
+    )
+
+    def __repr__(self) -> str:
+        return f"<LegalHold id={self.id} ref={self.hold_reference!r} case_id={self.case_id} evidence_id={self.evidence_id} status={self.status!r}>"
+
 
 
 class CaseAISegment(UUIDPrimaryKeyMixin, Base):
@@ -668,6 +809,17 @@ class CaseNoteHistory(UUIDPrimaryKeyMixin, Base):
     content: Mapped[str] = mapped_column(
         String(10000),
         nullable=False,
+    )
+    visibility: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default=CaseNoteVisibility.INTERNAL.value,
+        server_default=CaseNoteVisibility.INTERNAL.value,
+    )
+    previous_visibility: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+        default=None,
     )
     edit_reason: Mapped[str | None] = mapped_column(
         String(1000),
@@ -1221,3 +1373,25 @@ class CaseExport(UUIDPrimaryKeyMixin, Base):
 
     def __repr__(self) -> str:
         return f"<CaseExport id={self.id} case_id={self.case_id} manifest_sha256={self.manifest_sha256!r}>"
+
+
+
+class CaseSequenceCounter(Base):
+    """Annual sequential reference number counter (`case_sequence_counters` table).
+
+    Guarantees concurrency-safe sequential case numbering per calendar year in CASE-YYYY-XXXXX format (Phase 81).
+    """
+
+    __tablename__ = "case_sequence_counters"
+    __table_args__ = (
+        CheckConstraint("year >= 2020 AND year <= 2100", name="ck_case_seq_year_range"),
+        CheckConstraint("current_sequence >= 0", name="ck_case_seq_positive"),
+    )
+
+    year: Mapped[int] = mapped_column(Integer, primary_key=True)
+    current_sequence: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, default=0, server_default="0"
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        UTCDateTime(), nullable=False, default=utc_now, onupdate=utc_now
+    )

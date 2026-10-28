@@ -18,7 +18,31 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ai_services.face_detection.evaluation import run_full_detection_robustness_audit
+from ai_services.face_detection.review import (
+    HumanReviewDetermination,
+    QualityReviewStatus,
+    UnifiedReviewDecision,
+    evaluate_unified_review_decision,
+    validate_review_state_transition,
+)
 from ai_services.face_detection.detector import get_face_detector
+from ai_services.face_detection.geometry import (
+    RedactionGeometryPolicy,
+    compute_box_iou,
+    consolidate_overlapping_boxes,
+    verify_redaction_geometry,
+)
+from ai_services.face_detection.protocol import DetectedFace, FaceDetectionOptions
+from ai_services.face_detection.quality import (
+    PhotometricQualityThresholds,
+    assess_photometric_quality,
+)
+from ai_services.face_detection.redaction import (
+    apply_face_redaction,
+    RedactionPolicy,
+    RedactionStyle,
+)
 from ai_services.face_matching.evaluation import (
     evaluate_biometric_matching_benchmark,
 )
@@ -27,9 +51,18 @@ from ai_services.face_matching.quality import assess_face_image_quality
 from backend.app.config.settings import Settings
 from backend.app.core.audit import AuditAction, AuditOutcome, AuditTargetType
 from backend.app.core.authorization import Permission, has_any_permission, has_permission
-from backend.app.core.biometric_crypto import BiometricKeyManager, get_biometric_key_manager
+from backend.app.core.identity import RoleCode
+from backend.app.core.biometric_crypto import (
+    ENVELOPE_VERSION,
+    BiometricKeyManager,
+    BiometricKeyManagerProtocol,
+    get_biometric_key_manager,
+    validate_envelope_structure,
+)
 from backend.app.core.biometrics import (
+    BIOMETRIC_ADVISORY_DISCLAIMER,
     BiometricHumanVerdict,
+    BiometricLawfulBasis,
     BiometricMatchVerdict,
     BiometricPurpose,
     BiometricReferenceStatus,
@@ -47,19 +80,30 @@ from backend.app.core.exceptions import (
     ResourceNotFoundError,
 )
 from backend.app.models.biometrics import (
+    BiometricQualityReview,
     BiometricGovernanceRecord,
     BiometricReference,
     BiometricVerificationReview,
 )
 from backend.app.repositories.audit import AuditRepository
+from backend.app.repositories.evidence import EvidenceRepository
 from backend.app.repositories.biometrics import (
+    BiometricQualityReviewRepository,
     BiometricGovernanceRepository,
     BiometricReferenceRepository,
     BiometricVerificationRepository,
 )
 from backend.app.schemas.auth import AuthenticatedPrincipal
 from backend.app.schemas.biometrics import (
+    BiometricQualityReviewAssignRequest,
+    BiometricQualityReviewCreate,
+    BiometricQualityReviewEscalateRequest,
+    BiometricQualityReviewRead,
+    BiometricQualityReviewReopenRequest,
+    BiometricQualityReviewVerdictRequest,
+    PaginatedBiometricQualityReviewRead,
     BiometricConsentWithdrawRequest,
+    BiometricRetentionCleanupResponse,
     BiometricEvaluationSummaryRead,
     BiometricGovernanceCreate,
     BiometricGovernanceRead,
@@ -67,12 +111,18 @@ from backend.app.schemas.biometrics import (
     BiometricReferenceCreate,
     BiometricReferenceRead,
     BiometricReferenceRevokeRequest,
+    BiometricBatchReencryptResponse,
+    BiometricKeyMetadataRead,
     BiometricVerificationReviewCreate,
     BiometricVerificationReviewRead,
     DetectedFaceRead,
     FaceDetectionResponse,
+    FaceRedactionResponse,
     FaceMatchRequest,
     FaceMatchResponse,
+    FaceDetectionRobustnessAuditRead,
+    PhotometricQualityResponse,
+    RedactionGeometryResponse,
     PaginatedBiometricGovernanceRead,
     PaginatedBiometricReferenceRead,
     PaginatedBiometricVerificationReviewRead,
@@ -206,7 +256,7 @@ class BiometricGovernanceService:
 
         record = await self.governance_repo.get_by_id(
             record_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if record is None:
             raise ResourceNotFoundError(
@@ -247,7 +297,7 @@ class BiometricGovernanceService:
         """Handle consent withdrawal and propagate cascading revocation to references (Phase 73)."""
         record = await self.governance_repo.get_by_id(
             record_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if record is None:
             raise ResourceNotFoundError(
@@ -328,14 +378,91 @@ class BiometricGovernanceService:
         """Retrieve single governance record with department isolation."""
         record = await self.governance_repo.get_by_id(
             record_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if record is None:
             raise ResourceNotFoundError(
                 f"Biometric governance record '{record_id}' not found.",
                 code="GOVERNANCE_RECORD_NOT_FOUND",
             )
+        now = datetime.now(UTC)
+        rec_exp = getattr(record, "retention_expires_at", None)
+        if (
+            record.consent_status == ConsentStatus.ACTIVE.value
+            and isinstance(rec_exp, datetime)
+            and rec_exp <= now
+        ):
+            record.consent_status = ConsentStatus.EXPIRED.value
+
         return BiometricGovernanceRead.model_validate(record)
+
+    async def cleanup_expired_governance(
+        self,
+        principal: AuthenticatedPrincipal,
+        *,
+        department_id: UUID | None = None,
+    ) -> int:
+        """Scan and transition expired active consent records to EXPIRED status, cascading to references (Phase 73)."""
+        is_global = has_any_permission(
+            principal.role,
+            [Permission.BIOMETRIC_CONFIG_MANAGE, Permission.BIOMETRIC_REFERENCE_MANAGE_GLOBAL],
+        )
+        if not is_global and not has_permission(
+            principal.role, Permission.BIOMETRIC_REFERENCE_MANAGE_DEPT
+        ):
+            raise PermissionDeniedError(
+                "Caller lacks permission to execute biometric retention cleanup.",
+                code="BIOMETRIC_RETENTION_DENIED",
+            )
+
+        scoped_dept = None if is_global else principal.department_id
+        if is_global and department_id is not None:
+            scoped_dept = department_id
+
+        now = datetime.now(UTC)
+        expired_records = await self.governance_repo.list_expired_active(now, department_id=scoped_dept)
+        count = 0
+        for record in expired_records:
+            record.consent_status = ConsentStatus.EXPIRED.value
+            count += 1
+            active_refs = await self.reference_repo.list_active_by_governance_record(record.id)
+            for ref in active_refs:
+                ref.status = BiometricReferenceStatus.EXPIRED.value
+                ref.encrypted_template = None  # Cryptographic erasure: purge ciphertext
+                ref.revoked_at = now
+                ref.revocation_reason = "Retention expired: consent expired"
+
+                if self.audit_repo:
+                    await self.audit_repo.append_event(
+                        action=AuditAction.BIOMETRIC_REFERENCE_REVOKED.value,
+                        actor_id=principal.user_id,
+                        actor_role=principal.role_code,
+                        department_id=ref.department_id,
+                        target_type=AuditTargetType.BIOMETRIC_REFERENCE.value,
+                        target_id=str(ref.id),
+                        outcome=AuditOutcome.SUCCESS.value,
+                        details={
+                            "reference_id": ref.reference_id,
+                            "reason": "Retention expiry cascade",
+                            "governance_record_id": str(record.id),
+                        },
+                    )
+
+            if self.audit_repo:
+                await self.audit_repo.append_event(
+                    action=AuditAction.BIOMETRIC_CONSENT_REVOKED.value,
+                    actor_id=principal.user_id,
+                    actor_role=principal.role_code,
+                    department_id=record.department_id,
+                    target_type=AuditTargetType.BIOMETRIC_GOVERNANCE.value,
+                    target_id=str(record.id),
+                    outcome=AuditOutcome.SUCCESS.value,
+                    details={
+                        "reason": "Retention expired",
+                        "revoked_references_count": len(active_refs),
+                    },
+                )
+        return count
 
     async def list_governance_records(
         self,
@@ -373,10 +500,14 @@ class BiometricReferenceService:
         reference_repo: BiometricReferenceRepository,
         governance_repo: BiometricGovernanceRepository,
         audit_repo: AuditRepository | None = None,
+        evidence_repo: EvidenceRepository | None = None,
+        key_manager: BiometricKeyManagerProtocol | None = None,
     ) -> None:
         self.reference_repo = reference_repo
         self.governance_repo = governance_repo
         self.audit_repo = audit_repo
+        self.evidence_repo = evidence_repo
+        self.key_manager = key_manager
 
     @classmethod
     def from_session(
@@ -385,12 +516,16 @@ class BiometricReferenceService:
         settings: Settings | None = None,
         *,
         audit_repo: AuditRepository | None = None,
+        evidence_repo: EvidenceRepository | None = None,
+        key_manager: BiometricKeyManagerProtocol | None = None,
     ) -> BiometricReferenceService:
         """Construct BiometricReferenceService bound to session."""
         return cls(
             reference_repo=BiometricReferenceRepository(session),
             governance_repo=BiometricGovernanceRepository(session),
             audit_repo=audit_repo or AuditRepository(session),
+            evidence_repo=evidence_repo or EvidenceRepository(session),
+            key_manager=key_manager or get_biometric_key_manager(),
         )
 
     async def enroll_reference(
@@ -419,7 +554,7 @@ class BiometricReferenceService:
         # Validate that the governance record is approved and active
         gov_record = await self.governance_repo.get_by_id(
             request.governance_record_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if gov_record is None:
             raise ResourceNotFoundError(
@@ -440,6 +575,68 @@ class BiometricReferenceService:
             )
 
         now = datetime.now(UTC)
+        gov_exp = getattr(gov_record, "retention_expires_at", None)
+        if isinstance(gov_exp, datetime) and gov_exp <= now:
+            raise BiometricGovernanceError(
+                f"Cannot enroll reference under expired governance record (expired at: {gov_record.retention_expires_at.isoformat()}).",
+                code="RETENTION_EXPIRED",
+            )
+
+        if gov_record.lawful_basis == BiometricLawfulBasis.EXPLICIT_CONSENT.value:
+            if gov_record.consent_status != ConsentStatus.ACTIVE.value:
+                raise BiometricGovernanceError(
+                    f"Enrollment requires active consent when lawful basis is explicit_consent; current status is '{gov_record.consent_status}'.",
+                    code="CONSENT_NOT_ACTIVE",
+                )
+
+        # Fail-closed verification: subject user ID must match governance record subject if set
+        if gov_record.subject_user_id is not None:
+            if request.subject_user_id != gov_record.subject_user_id:
+                raise BiometricGovernanceError(
+                    f"Subject user ID '{request.subject_user_id}' does not match governance record subject '{gov_record.subject_user_id}'.",
+                    code="SUBJECT_MISMATCH",
+                )
+
+        # Fail-closed verification: enrollment purpose must match governance record purpose
+        if request.purpose.value != gov_record.purpose:
+            raise BiometricGovernanceError(
+                f"Enrollment purpose '{request.purpose.value}' does not match governance record purpose '{gov_record.purpose}'.",
+                code="PURPOSE_MISMATCH",
+            )
+
+        # Evidence provenance verification: ensure provenance evidence exists and belongs to the same department
+        if request.provenance_evidence_id is not None and self.evidence_repo is not None:
+            evidence = await self.evidence_repo.get_attachment_by_id(request.provenance_evidence_id)
+            if evidence is None:
+                raise ResourceNotFoundError(
+                    f"Provenance evidence attachment '{request.provenance_evidence_id}' not found.",
+                    code="EVIDENCE_NOT_FOUND",
+                )
+            if (
+                evidence.department_id != principal.department_id
+                and principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"}
+            ):
+                raise PermissionDeniedError(
+                    "Provenance evidence attachment belongs to a different department/tenant.",
+                    code="CROSS_TENANT_EVIDENCE_FORBIDDEN",
+                )
+
+        # Envelope encryption and digest integrity verification
+        if request.encrypted_template is not None:
+            if request.encrypted_template.startswith(f"{ENVELOPE_VERSION}:") or (
+                ":" in request.encrypted_template and request.encrypted_template.startswith("v")
+            ):
+                if self.key_manager is not None:
+                    decrypted_bytes = self.key_manager.decrypt(request.encrypted_template)
+                    computed_digest = hashlib.sha256(decrypted_bytes).hexdigest()
+                    if computed_digest != request.template_digest:
+                        raise BiometricGovernanceError(
+                            f"Template digest '{request.template_digest}' does not match SHA-256 of decrypted template ('{computed_digest}').",
+                            code="TEMPLATE_DIGEST_MISMATCH",
+                        )
+                else:
+                    validate_envelope_structure(request.encrypted_template)
+
         expires_at = now + timedelta(days=gov_record.retention_days)
         opaque_id = f"REF-BIO-{uuid4().hex[:12].upper()}"
 
@@ -490,7 +687,7 @@ class BiometricReferenceService:
         """Revoke an active biometric reference (Phase 74)."""
         reference = await self.reference_repo.get_by_id(
             reference_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if reference is None:
             raise ResourceNotFoundError(
@@ -551,7 +748,7 @@ class BiometricReferenceService:
         """Retrieve biometric reference metadata without exposing template payload."""
         reference = await self.reference_repo.get_by_id(
             reference_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if reference is None:
             raise ResourceNotFoundError(
@@ -576,7 +773,400 @@ class BiometricReferenceService:
                 code="BIOMETRIC_READ_DENIED",
             )
 
+        now = datetime.now(UTC)
+        ref_exp = getattr(reference, "retention_expires_at", None)
+        if (
+            reference.status == BiometricReferenceStatus.ACTIVE.value
+            and isinstance(ref_exp, datetime)
+            and ref_exp <= now
+        ):
+            reference.status = BiometricReferenceStatus.EXPIRED.value
+            reference.encrypted_template = None  # Securely purge ciphertext
+            reference.revoked_at = now
+            reference.revocation_reason = "Retention expired"
+
         return BiometricReferenceRead.model_validate(reference)
+
+    async def reencrypt_reference(
+        self,
+        reference_id: UUID,
+        principal: AuthenticatedPrincipal,
+        *,
+        new_key_id: str | None = None,
+    ) -> BiometricReferenceRead:
+        """Re-encrypt an active biometric reference under a rotated or designated active key (Phase 78)."""
+        can_manage = has_any_permission(
+            principal.role,
+            [
+                Permission.BIOMETRIC_REFERENCE_MANAGE_DEPT,
+                Permission.BIOMETRIC_REFERENCE_MANAGE_GLOBAL,
+                Permission.BIOMETRIC_CONFIG_MANAGE,
+            ],
+        )
+        if not can_manage:
+            raise PermissionDeniedError(
+                "Caller lacks authorization to re-encrypt biometric references.",
+                code="BIOMETRIC_REENCRYPTION_DENIED",
+            )
+
+        reference = await self.reference_repo.get_by_id(
+            reference_id,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
+        )
+        if reference is None:
+            raise ResourceNotFoundError(
+                f"Biometric reference '{reference_id}' not found.",
+                code="BIOMETRIC_REFERENCE_NOT_FOUND",
+            )
+
+        if reference.status != BiometricReferenceStatus.ACTIVE.value:
+            raise BiometricGovernanceError(
+                f"Cannot re-encrypt reference in status '{reference.status}'. Only active references may be re-encrypted.",
+                code="REFERENCE_NOT_ACTIVE",
+            )
+
+        if not reference.encrypted_template:
+            raise BiometricGovernanceError(
+                "Reference has no encrypted template to re-encrypt (cryptographically erased or missing).",
+                code="ENCRYPTED_TEMPLATE_MISSING",
+            )
+
+        if self.key_manager is None:
+            raise BiometricKeyError(
+                "Key manager is not configured. Cannot perform reference re-encryption."
+            )
+
+        old_envelope = reference.encrypted_template
+        old_version, old_key_id, _ = validate_envelope_structure(old_envelope)
+
+        target_key_id = new_key_id or self.key_manager.active_key_id
+        if not target_key_id:
+            raise BiometricKeyError("No active encryption key available for re-encryption.")
+
+        # Re-encrypt
+        new_envelope = self.key_manager.reencrypt(
+            old_envelope,
+            new_key_id=target_key_id,
+        )
+
+        # Verification: decrypt newly produced envelope and verify digest matches stored template_digest
+        decrypted_verify = self.key_manager.decrypt(new_envelope)
+        computed_digest = hashlib.sha256(decrypted_verify).hexdigest()
+        if computed_digest != reference.template_digest:
+            raise BiometricGovernanceError(
+                "Post-re-encryption integrity verification failed: decrypted digest does not match template_digest.",
+                code="REENCRYPTION_VERIFICATION_FAILED",
+            )
+
+        reference.encrypted_template = new_envelope
+        reference.updated_at = datetime.now(UTC)
+        await self.reference_repo.update(reference)
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_REFERENCE_REENCRYPTED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=reference.department_id,
+                target_type=AuditTargetType.BIOMETRIC_REFERENCE.value,
+                target_id=str(reference.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "reference_id": reference.reference_id,
+                    "old_key_id": old_key_id,
+                    "new_key_id": target_key_id,
+                    "template_digest": reference.template_digest,
+                },
+            )
+
+        return BiometricReferenceRead.model_validate(reference)
+
+    async def batch_reencrypt_references(
+        self,
+        principal: AuthenticatedPrincipal,
+        *,
+        department_id: UUID | None = None,
+        new_key_id: str | None = None,
+        batch_size: int = 50,
+    ) -> BiometricBatchReencryptResponse:
+        """Batch re-encrypt active references under the active key (Phase 78). Idempotent and recoverable."""
+        is_global = has_permission(principal.role, Permission.BIOMETRIC_CONFIG_MANAGE) or has_permission(
+            principal.role, Permission.BIOMETRIC_REFERENCE_MANAGE_GLOBAL
+        )
+        if not is_global and not has_permission(principal.role, Permission.BIOMETRIC_REFERENCE_MANAGE_DEPT):
+            raise PermissionDeniedError(
+                "Caller lacks permission for batch reference re-encryption.",
+                code="BATCH_REENCRYPTION_DENIED",
+            )
+
+        scoped_dept = None if is_global else principal.department_id
+        if is_global and department_id is not None:
+            scoped_dept = department_id
+
+        if self.key_manager is None:
+            raise BiometricKeyError("Key manager is not configured.")
+
+        target_key = new_key_id or self.key_manager.active_key_id
+        if not target_key:
+            raise BiometricKeyError("No active key available for batch re-encryption.")
+
+        refs = await self.reference_repo.list_active_for_reencryption(
+            department_id=scoped_dept,
+            limit=batch_size,
+        )
+
+        total_scanned = len(refs)
+        reencrypted_count = 0
+        skipped_count = 0
+        error_count = 0
+
+        now = datetime.now(UTC)
+        for ref in refs:
+            if not ref.encrypted_template:
+                skipped_count += 1
+                continue
+            try:
+                _, cur_key_id, _ = validate_envelope_structure(ref.encrypted_template)
+                if cur_key_id == target_key:
+                    # Already encrypted under target key; idempotent skip
+                    skipped_count += 1
+                    continue
+
+                new_env = self.key_manager.reencrypt(ref.encrypted_template, new_key_id=target_key)
+                dec = self.key_manager.decrypt(new_env)
+                if hashlib.sha256(dec).hexdigest() != ref.template_digest:
+                    error_count += 1
+                    continue
+
+                ref.encrypted_template = new_env
+                ref.updated_at = now
+                await self.reference_repo.update(ref)
+                reencrypted_count += 1
+
+                if self.audit_repo:
+                    await self.audit_repo.append_event(
+                        action=AuditAction.BIOMETRIC_REFERENCE_REENCRYPTED.value,
+                        actor_id=principal.user_id,
+                        actor_role=principal.role_code,
+                        department_id=ref.department_id,
+                        target_type=AuditTargetType.BIOMETRIC_REFERENCE.value,
+                        target_id=str(ref.id),
+                        outcome=AuditOutcome.SUCCESS.value,
+                        details={
+                            "reference_id": ref.reference_id,
+                            "old_key_id": cur_key_id,
+                            "new_key_id": target_key,
+                        },
+                    )
+            except Exception:
+                error_count += 1
+
+        return BiometricBatchReencryptResponse(
+            total_scanned=total_scanned,
+            reencrypted_count=reencrypted_count,
+            skipped_count=skipped_count,
+            error_count=error_count,
+            target_key_id=target_key,
+        )
+
+    def list_keys(self, principal: AuthenticatedPrincipal) -> list[BiometricKeyMetadataRead]:
+        """List metadata for all biometric encryption keys (Phase 78)."""
+        can_view = has_any_permission(
+            principal.role,
+            [Permission.BIOMETRIC_CONFIG_MANAGE, Permission.BIOMETRIC_AUDIT_READ],
+        )
+        if not can_view:
+            raise PermissionDeniedError(
+                "Caller lacks authorization to view biometric key metadata.",
+                code="BIOMETRIC_KEY_METADATA_DENIED",
+            )
+        if self.key_manager is None:
+            raise BiometricKeyError("Key manager is not configured.")
+
+        active_id = self.key_manager.active_key_id
+        keys = self.key_manager.list_keys()
+        return [
+            BiometricKeyMetadataRead(
+                key_id=k.key_id,
+                status=k.status.value,
+                algorithm=k.algorithm,
+                version=k.version,
+                created_at=k.created_at,
+                rotated_at=k.rotated_at,
+                revoked_at=k.revoked_at,
+                retired_at=k.retired_at,
+                is_active=(k.key_id == active_id),
+            )
+            for k in keys
+        ]
+
+    def get_key_metadata(self, key_id: str, principal: AuthenticatedPrincipal) -> BiometricKeyMetadataRead:
+        """Get sanitized metadata for a single biometric key (Phase 78)."""
+        can_view = has_any_permission(
+            principal.role,
+            [Permission.BIOMETRIC_CONFIG_MANAGE, Permission.BIOMETRIC_AUDIT_READ],
+        )
+        if not can_view:
+            raise PermissionDeniedError(
+                "Caller lacks authorization to view biometric key metadata.",
+                code="BIOMETRIC_KEY_METADATA_DENIED",
+            )
+        if self.key_manager is None:
+            raise BiometricKeyError("Key manager is not configured.")
+
+        k = self.key_manager.get_key_metadata(key_id)
+        active_id = self.key_manager.active_key_id
+        return BiometricKeyMetadataRead(
+            key_id=k.key_id,
+            status=k.status.value,
+            algorithm=k.algorithm,
+            version=k.version,
+            created_at=k.created_at,
+            rotated_at=k.rotated_at,
+            revoked_at=k.revoked_at,
+            retired_at=k.retired_at,
+            is_active=(k.key_id == active_id),
+        )
+
+    async def rotate_key(
+        self,
+        principal: AuthenticatedPrincipal,
+        *,
+        new_key_id: str | None = None,
+    ) -> BiometricKeyMetadataRead:
+        """Rotate the active biometric encryption key (Phase 78). Restricted to super admin."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_CONFIG_MANAGE):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_CONFIG_MANAGE permission to rotate encryption keys.",
+                code="KEY_ROTATION_DENIED",
+            )
+        if self.key_manager is None:
+            raise BiometricKeyError("Key manager is not configured.")
+
+        old_active = self.key_manager.active_key_id
+        new_id = self.key_manager.rotate_key(new_key_id)
+        meta = self.key_manager.get_key_metadata(new_id)
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_KEY_ROTATED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_KEY.value,
+                target_id=new_id,
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "old_key_id": old_active,
+                    "new_key_id": new_id,
+                    "version": meta.version,
+                },
+            )
+
+        return BiometricKeyMetadataRead(
+            key_id=meta.key_id,
+            status=meta.status.value,
+            algorithm=meta.algorithm,
+            version=meta.version,
+            created_at=meta.created_at,
+            rotated_at=meta.rotated_at,
+            revoked_at=meta.revoked_at,
+            retired_at=meta.retired_at,
+            is_active=True,
+        )
+
+    async def revoke_key(
+        self,
+        key_id: str,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricKeyMetadataRead:
+        """Revoke a biometric encryption key (Phase 78). Restricted to super admin."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_CONFIG_MANAGE):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_CONFIG_MANAGE permission to revoke encryption keys.",
+                code="KEY_REVOCATION_DENIED",
+            )
+        if self.key_manager is None:
+            raise BiometricKeyError("Key manager is not configured.")
+
+        self.key_manager.revoke_key(key_id)
+        meta = self.key_manager.get_key_metadata(key_id)
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_KEY_REVOKED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_KEY.value,
+                target_id=key_id,
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "key_id": key_id,
+                    "status": meta.status.value,
+                },
+            )
+
+        return BiometricKeyMetadataRead(
+            key_id=meta.key_id,
+            status=meta.status.value,
+            algorithm=meta.algorithm,
+            version=meta.version,
+            created_at=meta.created_at,
+            rotated_at=meta.rotated_at,
+            revoked_at=meta.revoked_at,
+            retired_at=meta.retired_at,
+            is_active=False,
+        )
+
+    async def cleanup_expired_references(
+        self,
+        principal: AuthenticatedPrincipal,
+        *,
+        department_id: UUID | None = None,
+    ) -> int:
+        """Scan and transition expired active references to EXPIRED status, purging templates (Phase 73)."""
+        is_global = has_any_permission(
+            principal.role,
+            [Permission.BIOMETRIC_CONFIG_MANAGE, Permission.BIOMETRIC_REFERENCE_MANAGE_GLOBAL],
+        )
+        if not is_global and not has_permission(
+            principal.role, Permission.BIOMETRIC_REFERENCE_MANAGE_DEPT
+        ):
+            raise PermissionDeniedError(
+                "Caller lacks permission to execute biometric retention cleanup.",
+                code="BIOMETRIC_RETENTION_DENIED",
+            )
+
+        scoped_dept = None if is_global else principal.department_id
+        if is_global and department_id is not None:
+            scoped_dept = department_id
+
+        now = datetime.now(UTC)
+        expired_refs = await self.reference_repo.list_expired_active(now, department_id=scoped_dept)
+        count = 0
+        for ref in expired_refs:
+            ref.status = BiometricReferenceStatus.EXPIRED.value
+            ref.encrypted_template = None  # Cryptographic erasure
+            ref.revoked_at = now
+            ref.revocation_reason = "Retention expired"
+            count += 1
+
+            if self.audit_repo:
+                await self.audit_repo.append_event(
+                    action=AuditAction.BIOMETRIC_REFERENCE_REVOKED.value,
+                    actor_id=principal.user_id,
+                    actor_role=principal.role_code,
+                    department_id=ref.department_id,
+                    target_type=AuditTargetType.BIOMETRIC_REFERENCE.value,
+                    target_id=str(ref.id),
+                    outcome=AuditOutcome.SUCCESS.value,
+                    details={
+                        "reference_id": ref.reference_id,
+                        "reason": "Retention expiry cleanup",
+                    },
+                )
+        return count
 
     async def list_references(
         self,
@@ -607,17 +1197,21 @@ class BiometricReferenceService:
 
 
 class FaceDetectionService:
-    """Service executing approved face detection under verified governance (Phase 75)."""
+    """Service executing approved face detection and privacy-preserving redaction under verified governance (Phase 75)."""
 
     def __init__(
         self,
         governance_repo: BiometricGovernanceRepository,
         settings: Settings,
         audit_repo: AuditRepository | None = None,
+        evidence_repo: EvidenceRepository | None = None,
+        detector: FaceDetectorProtocol | None = None,
     ) -> None:
         self.governance_repo = governance_repo
         self.settings = settings
         self.audit_repo = audit_repo
+        self.evidence_repo = evidence_repo
+        self.detector = detector
 
     @classmethod
     def from_session(
@@ -626,12 +1220,14 @@ class FaceDetectionService:
         settings: Settings,
         *,
         audit_repo: AuditRepository | None = None,
+        evidence_repo: EvidenceRepository | None = None,
     ) -> FaceDetectionService:
         """Construct FaceDetectionService bound to session and settings."""
         return cls(
             governance_repo=BiometricGovernanceRepository(session),
             settings=settings,
             audit_repo=audit_repo or AuditRepository(session),
+            evidence_repo=evidence_repo or EvidenceRepository(session),
         )
 
     async def detect_faces(
@@ -639,6 +1235,9 @@ class FaceDetectionService:
         image_bytes: bytes,
         governance_record_id: UUID,
         principal: AuthenticatedPrincipal,
+        *,
+        evidence_id: UUID | None = None,
+        options: FaceDetectionOptions | None = None,
     ) -> FaceDetectionResponse:
         """Execute face bounding-box detection (Phase 75)."""
         if not has_permission(principal.role, Permission.BIOMETRIC_DETECTION_EXECUTE):
@@ -667,7 +1266,7 @@ class FaceDetectionService:
         # Validate approved governance authorization
         gov_record = await self.governance_repo.get_by_id(
             governance_record_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if gov_record is None:
             raise ResourceNotFoundError(
@@ -681,10 +1280,27 @@ class FaceDetectionService:
                 code="GOVERNANCE_NOT_APPROVED",
             )
 
+        now = datetime.now(UTC)
+        gov_exp = getattr(gov_record, "retention_expires_at", None)
+        if isinstance(gov_exp, datetime) and gov_exp <= now:
+            raise BiometricGovernanceError(
+                "Biometric governance record retention period has expired.",
+                code="RETENTION_EXPIRED",
+            )
+
         if gov_record.consent_status == ConsentStatus.WITHDRAWN.value:
             raise BiometricGovernanceError(
                 "Face detection cannot be executed under withdrawn subject consent.",
                 code="CONSENT_WITHDRAWN",
+            )
+
+        if (
+            gov_record.lawful_basis == BiometricLawfulBasis.EXPLICIT_CONSENT.value
+            and gov_record.consent_status != ConsentStatus.ACTIVE.value
+        ):
+            raise BiometricGovernanceError(
+                "Face detection requires active subject consent when lawful basis is explicit_consent.",
+                code="CONSENT_NOT_ACTIVE",
             )
 
         permitted_purposes = {
@@ -698,15 +1314,43 @@ class FaceDetectionService:
                 code="UNAUTHORIZED_BIOMETRIC_PURPOSE",
             )
 
-        # Instantiate face detector provider
-        detector = get_face_detector(
+        # Scoped evidence verification
+        if evidence_id is not None and self.evidence_repo is not None:
+            attachment = await self.evidence_repo.get_attachment_by_id(evidence_id)
+            if attachment is None:
+                raise ResourceNotFoundError(
+                    f"Evidence attachment '{evidence_id}' not found.",
+                    code="EVIDENCE_NOT_FOUND",
+                )
+            if (
+                principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"}
+                and attachment.department_id != principal.department_id
+            ):
+                raise PermissionDeniedError(
+                    "Access to cross-tenant evidence is strictly prohibited.",
+                    code="CROSS_TENANT_ACCESS_DENIED",
+                )
+
+        # Instantiate face detector provider if not injected
+        detector = self.detector or get_face_detector(
             enabled=self.settings.BIOMETRIC_DETECTION_ENABLED,
             provider=self.settings.BIOMETRIC_PROVIDER,
         )
 
-        result = detector.detect_faces(image_bytes)
+        result = detector.detect_faces(image_bytes, options=options)
 
         if self.audit_repo:
+            details = {
+                "face_count": result.face_count,
+                "image_width": result.image_width,
+                "image_height": result.image_height,
+                "model_name": result.model_name,
+                "model_version": result.model_version,
+                "latency_ms": result.inference_latency_ms,
+            }
+            if evidence_id is not None:
+                details["evidence_id"] = str(evidence_id)
+
             await self.audit_repo.append_event(
                 action=AuditAction.BIOMETRIC_DETECTION_EXECUTED.value,
                 actor_id=principal.user_id,
@@ -715,14 +1359,7 @@ class FaceDetectionService:
                 target_type=AuditTargetType.BIOMETRIC_GOVERNANCE.value,
                 target_id=str(gov_record.id),
                 outcome=AuditOutcome.SUCCESS.value,
-                details={
-                    "face_count": result.face_count,
-                    "image_width": result.image_width,
-                    "image_height": result.image_height,
-                    "model_name": result.model_name,
-                    "model_version": result.model_version,
-                    "latency_ms": result.inference_latency_ms,
-                },
+                details=details,
             )
 
         return FaceDetectionResponse(
@@ -743,6 +1380,310 @@ class FaceDetectionService:
             disclaimer=result.disclaimer,
             metadata=result.metadata,
         )
+
+    async def redact_faces(
+        self,
+        image_bytes: bytes,
+        governance_record_id: UUID,
+        principal: AuthenticatedPrincipal,
+        *,
+        evidence_id: UUID | None = None,
+        style: str = "solid_box",
+        min_confidence: float = 0.5,
+        padding_ratio: float = 0.1,
+        consolidate_overlapping: bool = False,
+    ) -> FaceRedactionResponse:
+        """Execute privacy-preserving face redaction on image bytes (Phase 75)."""
+        # Capture all candidate detections (confidence >= 0.0) so apply_face_redaction
+        # can inspect for low-confidence candidate detections below min_confidence
+        detection_response = await self.detect_faces(
+            image_bytes=image_bytes,
+            governance_record_id=governance_record_id,
+            principal=principal,
+            evidence_id=evidence_id,
+            options=FaceDetectionOptions(
+                confidence_threshold=0.0,
+            ),
+        )
+
+        detected_faces = [
+            DetectedFace(
+                bounding_box=f.bounding_box,
+                confidence=f.confidence,
+                landmarks=f.landmarks,
+            )
+            for f in detection_response.detected_faces
+        ]
+
+        if consolidate_overlapping and detected_faces:
+            boxes = [f.bounding_box for f in detected_faces]
+            c_boxes, _ = consolidate_overlapping_boxes(boxes, iou_threshold=0.15)
+            c_faces: list[DetectedFace] = []
+            for c_b in c_boxes:
+                c_conf = 0.0
+                c_landmarks: dict[str, tuple[float, float]] = {}
+                for orig in detected_faces:
+                    if compute_box_iou(orig.bounding_box, c_b) > 0.0:
+                        c_conf = max(c_conf, orig.confidence)
+                        if orig.landmarks:
+                            c_landmarks.update(orig.landmarks)
+                c_faces.append(
+                    DetectedFace(
+                        bounding_box=c_b,
+                        confidence=c_conf if c_conf > 0.0 else 0.90,
+                        landmarks=c_landmarks if c_landmarks else None,
+                    )
+                )
+            detected_faces = c_faces
+
+        style_enum = (
+            RedactionStyle(style)
+            if style in RedactionStyle._value2member_map_
+            else RedactionStyle.SOLID_BOX
+        )
+        policy = RedactionPolicy(
+            min_confidence=min_confidence,
+            padding_ratio=padding_ratio,
+            style=style_enum,
+        )
+        redacted_result = apply_face_redaction(
+            image_bytes=image_bytes,
+            detected_faces=detected_faces,
+            policy=policy,
+        )
+
+        return FaceRedactionResponse(
+            redacted_image_base64=base64.b64encode(redacted_result.redacted_bytes).decode("ascii"),
+            redacted_faces_count=redacted_result.redacted_faces_count,
+            image_format=redacted_result.image_format,
+            image_width=redacted_result.image_width,
+            image_height=redacted_result.image_height,
+            style=redacted_result.style,
+            disclaimer=redacted_result.disclaimer,
+            is_redacted=redacted_result.is_redacted,
+            requires_human_review=redacted_result.requires_human_review,
+            review_reason=redacted_result.review_reason,
+            metadata=redacted_result.metadata,
+        )
+
+    async def assess_image_quality(
+        self,
+        image_bytes: bytes,
+        governance_record_id: UUID,
+        principal: AuthenticatedPrincipal,
+        *,
+        evidence_id: UUID | None = None,
+        thresholds: PhotometricQualityThresholds | None = None,
+    ) -> PhotometricQualityResponse:
+        """Assess non-identifying photometric quality of an evidence image (Phase 76)."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_DETECTION_EXECUTE):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_DETECTION_EXECUTE permission.",
+                code="FACE_DETECTION_DENIED",
+            )
+
+        if not self.settings.BIOMETRIC_ANALYSIS_ENABLED:
+            raise BiometricsDisabledError(
+                "Biometric analysis is disabled in system configuration.",
+                code="BIOMETRICS_DISABLED",
+            )
+
+        if len(image_bytes) > self.settings.BIOMETRIC_MAX_IMAGE_SIZE_BYTES:
+            raise PayloadTooLargeError(
+                f"Image payload size ({len(image_bytes)} bytes) exceeds the maximum allowed limit "
+                f"({self.settings.BIOMETRIC_MAX_IMAGE_SIZE_BYTES} bytes).",
+                code="PAYLOAD_TOO_LARGE",
+            )
+
+        # Validate approved governance authorization
+        gov_record = await self.governance_repo.get_by_id(
+            governance_record_id,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
+        )
+        if gov_record is None:
+            raise ResourceNotFoundError(
+                f"Biometric governance record '{governance_record_id}' not found.",
+                code="GOVERNANCE_RECORD_NOT_FOUND",
+            )
+
+        if gov_record.status != GovernanceStatus.APPROVED.value:
+            raise BiometricGovernanceError(
+                f"Governance record '{governance_record_id}' is not approved (current status: '{gov_record.status}').",
+                code="GOVERNANCE_NOT_APPROVED",
+            )
+
+        now = datetime.now(UTC)
+        gov_exp = getattr(gov_record, "retention_expires_at", None)
+        if isinstance(gov_exp, datetime) and gov_exp <= now:
+            raise BiometricGovernanceError(
+                f"Governance record has expired (expired at: {gov_record.retention_expires_at.isoformat()}).",
+                code="RETENTION_EXPIRED",
+            )
+
+        if gov_record.consent_status == ConsentStatus.WITHDRAWN.value:
+            raise BiometricGovernanceError(
+                "Consent has been withdrawn for this governance record.",
+                code="CONSENT_WITHDRAWN",
+            )
+
+        # Scoped evidence verification
+        if evidence_id is not None and self.evidence_repo is not None:
+            attachment = await self.evidence_repo.get_attachment_by_id(evidence_id)
+            if attachment is None:
+                raise ResourceNotFoundError(
+                    f"Evidence attachment '{evidence_id}' not found.",
+                    code="EVIDENCE_NOT_FOUND",
+                )
+            if (
+                principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"}
+                and attachment.department_id != principal.department_id
+            ):
+                raise PermissionDeniedError(
+                    "Access to cross-tenant evidence is strictly prohibited.",
+                    code="CROSS_TENANT_ACCESS_DENIED",
+                )
+
+        result = assess_photometric_quality(image_bytes, thresholds=thresholds)
+
+        if self.audit_repo:
+            details = {
+                "quality_status": result.quality_status.value,
+                "sharpness_score": result.sharpness_score,
+                "exposure_score": result.exposure_score,
+                "contrast_score": result.contrast_score,
+                "requires_human_review": result.requires_human_review,
+                "image_width": result.image_width,
+                "image_height": result.image_height,
+            }
+            if evidence_id is not None:
+                details["evidence_id"] = str(evidence_id)
+
+            await self.audit_repo.append_event(
+                action="evidence:quality:evaluated",
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_GOVERNANCE.value,
+                target_id=str(gov_record.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details=details,
+            )
+
+        return PhotometricQualityResponse(
+            sharpness_score=result.sharpness_score,
+            exposure_score=result.exposure_score,
+            contrast_score=result.contrast_score,
+            underexposed_fraction=result.underexposed_fraction,
+            overexposed_fraction=result.overexposed_fraction,
+            clipped_fraction=result.clipped_fraction,
+            quality_status=result.quality_status.value,
+            requires_human_review=result.requires_human_review,
+            review_reasons=result.review_reasons,
+            raw_metrics=result.raw_metrics,
+            image_width=result.image_width,
+            image_height=result.image_height,
+            image_format=result.image_format,
+            metric_version=result.metric_version,
+            disclaimer=result.disclaimer,
+        )
+
+    async def verify_geometry(
+        self,
+        detected_faces: list[DetectedFace],
+        image_width: int,
+        image_height: int,
+        governance_record_id: UUID,
+        principal: AuthenticatedPrincipal,
+        *,
+        padding_ratio: float = 0.10,
+        consolidate_overlapping: bool = True,
+    ) -> RedactionGeometryResponse:
+        """Verify geometry and overlap consolidation of detected face bounding boxes (Phase 76)."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_DETECTION_EXECUTE):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_DETECTION_EXECUTE permission.",
+                code="FACE_DETECTION_DENIED",
+            )
+
+        # Validate approved governance authorization
+        gov_record = await self.governance_repo.get_by_id(
+            governance_record_id,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
+        )
+        if gov_record is None:
+            raise ResourceNotFoundError(
+                f"Biometric governance record '{governance_record_id}' not found.",
+                code="GOVERNANCE_RECORD_NOT_FOUND",
+            )
+
+        if gov_record.status != GovernanceStatus.APPROVED.value:
+            raise BiometricGovernanceError(
+                f"Governance record '{governance_record_id}' is not approved (current status: '{gov_record.status}').",
+                code="GOVERNANCE_NOT_APPROVED",
+            )
+
+        pol = RedactionGeometryPolicy(
+            padding_ratio=padding_ratio,
+            consolidate_overlapping=consolidate_overlapping,
+        )
+        result = verify_redaction_geometry(
+            detected_faces=detected_faces,
+            image_width=image_width,
+            image_height=image_height,
+            policy=pol,
+        )
+
+        return RedactionGeometryResponse(
+            geometry_valid=result.geometry_valid,
+            total_boxes=result.total_boxes,
+            valid_box_count=result.valid_box_count,
+            invalid_box_count=result.invalid_box_count,
+            overlap_count=result.overlap_count,
+            clipped_box_count=result.clipped_box_count,
+            consolidated_boxes=result.consolidated_boxes,
+            landmark_coverage_valid=result.landmark_coverage_valid,
+            requires_human_review=result.requires_human_review,
+            review_reasons=result.review_reasons,
+            geometry_version=result.geometry_version,
+            disclaimer=result.disclaimer,
+        )
+
+    async def get_detection_robustness_report(
+        self,
+        principal: AuthenticatedPrincipal,
+    ) -> FaceDetectionRobustnessAuditRead:
+        """Execute Phase 79 comprehensive detection quality, robustness, and input-integrity audit."""
+        if not has_any_permission(
+            principal.role,
+            [
+                Permission.BIOMETRIC_GOVERNANCE_REVIEW,
+                Permission.BIOMETRIC_AUDIT_READ,
+                Permission.BIOMETRIC_DETECTION_EXECUTE,
+            ],
+        ):
+            raise PermissionDeniedError(
+                "Caller lacks permission to access face detection robustness reports.",
+                code="DETECTION_REPORT_DENIED",
+            )
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_POLICY_EVALUATED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_GOVERNANCE.value,
+                target_id="phase79-detection-robustness",
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "operation": "get_detection_robustness_report",
+                    "phase": 79,
+                    "fairness_status": "NOT ESTABLISHED",
+                },
+            )
+
+        report = run_full_detection_robustness_audit()
+        return FaceDetectionRobustnessAuditRead.model_validate(report.to_dict())
 
 
 class FaceMatchingService:
@@ -818,7 +1759,7 @@ class FaceMatchingService:
 
         gov_record = await self.governance_repo.get_by_id(
             payload.governance_record_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if gov_record is None:
             raise ResourceNotFoundError(
@@ -832,10 +1773,27 @@ class FaceMatchingService:
                 code="GOVERNANCE_NOT_APPROVED",
             )
 
+        now = datetime.now(UTC)
+        gov_exp = getattr(gov_record, "retention_expires_at", None)
+        if isinstance(gov_exp, datetime) and gov_exp <= now:
+            raise BiometricGovernanceError(
+                "Governance record retention period has expired.",
+                code="RETENTION_EXPIRED",
+            )
+
         if gov_record.consent_status == ConsentStatus.WITHDRAWN.value:
             raise BiometricGovernanceError(
                 "Face matching cannot be executed under withdrawn subject consent.",
                 code="CONSENT_WITHDRAWN",
+            )
+
+        if (
+            gov_record.lawful_basis == BiometricLawfulBasis.EXPLICIT_CONSENT.value
+            and gov_record.consent_status != ConsentStatus.ACTIVE.value
+        ):
+            raise BiometricGovernanceError(
+                "Face matching requires active subject consent when lawful basis is explicit_consent.",
+                code="CONSENT_NOT_ACTIVE",
             )
 
         permitted_purposes = {
@@ -884,7 +1842,7 @@ class FaceMatchingService:
             ref = await self.reference_repo.get_by_id(
                 payload.reference_id,
                 department_id=principal.department_id
-                if principal.role_code != "SUPER_ADMIN"
+                if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"}
                 else None,
             )
             if ref is None:
@@ -896,6 +1854,12 @@ class FaceMatchingService:
                 raise BiometricGovernanceError(
                     f"Biometric reference '{ref.reference_id}' is not active (status: {ref.status}).",
                     code="BIOMETRIC_REFERENCE_INACTIVE",
+                )
+            ref_exp = getattr(ref, "retention_expires_at", None)
+            if (isinstance(ref_exp, datetime) and ref_exp <= now) or ref.status == BiometricReferenceStatus.EXPIRED.value:
+                raise BiometricGovernanceError(
+                    f"Biometric reference '{ref.reference_id}' retention period has expired.",
+                    code="BIOMETRIC_REFERENCE_EXPIRED",
                 )
             ref_record_id = ref.id
 
@@ -1044,7 +2008,7 @@ class BiometricVerificationService:
         """Fetch a single biometric verification review record."""
         review = await self.verification_repo.get_by_id(
             review_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if review is None:
             raise ResourceNotFoundError(
@@ -1063,7 +2027,7 @@ class BiometricVerificationService:
         offset: int = 0,
     ) -> PaginatedBiometricVerificationReviewRead:
         """List biometric verification review records scoped to department."""
-        dept_id = principal.department_id if principal.role_code != "SUPER_ADMIN" else None
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
         items = await self.verification_repo.list_for_department(
             department_id=dept_id,
             incident_id=incident_id,
@@ -1098,7 +2062,7 @@ class BiometricVerificationService:
 
         review = await self.verification_repo.get_by_id(
             review_id,
-            department_id=principal.department_id if principal.role_code != "SUPER_ADMIN" else None,
+            department_id=principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None,
         )
         if review is None:
             raise ResourceNotFoundError(
@@ -1237,3 +2201,447 @@ class BiometricEvaluationService:
             pad_summary=pad_summary,
             subgroups=subgroup_data,
         )
+
+
+class QualityReviewWorkflowService:
+    """Service managing evidence quality and redaction human review workflow (Phase 77).
+
+    Enforces:
+    - Department and tenant isolation.
+    - RBAC: requires BIOMETRIC_VERIFICATION_REVIEW for review assignments and verdicts.
+    - Permitted state machine transitions with fail-closed validation.
+    - Rejection of invalid transitions and completed review lock.
+    - Deterministic review decision evaluation based on Phase 75 & 76 outputs.
+    - Complete metadata persistence with zero raw image bytes or biometric embeddings.
+    - Immutable audit trails for creation, assignment, determination, escalation, and reopen.
+    """
+
+    def __init__(
+        self,
+        review_repo: BiometricQualityReviewRepository,
+        audit_repo: AuditRepository | None = None,
+        settings: Settings | None = None,
+    ) -> None:
+        self.review_repo = review_repo
+        self.audit_repo = audit_repo
+        self.settings = settings
+
+    @classmethod
+    def from_session(
+        cls,
+        session: AsyncSession,
+        settings: Settings | None = None,
+        *,
+        audit_repo: AuditRepository | None = None,
+    ) -> QualityReviewWorkflowService:
+        """Construct QualityReviewWorkflowService bound to session."""
+        return cls(
+            review_repo=BiometricQualityReviewRepository(session),
+            audit_repo=audit_repo or AuditRepository(session),
+            settings=settings,
+        )
+
+    async def create_review_item(
+        self,
+        payload: BiometricQualityReviewCreate,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricQualityReviewRead:
+        """Create a new human review item from quality, geometry, and detection outcomes (Phase 77)."""
+        can_create = has_any_permission(
+            principal.role,
+            [
+                Permission.BIOMETRIC_DETECTION_EXECUTE,
+                Permission.BIOMETRIC_VERIFICATION_REVIEW,
+                Permission.BIOMETRIC_GOVERNANCE_REVIEW,
+            ],
+        )
+        if not can_create:
+            raise PermissionDeniedError(
+                "Caller lacks required permission to create biometric quality review items.",
+                code="CREATE_QUALITY_REVIEW_DENIED",
+            )
+
+        # 1. Deterministic evaluation of review decision
+        decision, reasons = evaluate_unified_review_decision(
+            detection_failed=payload.detection_failed,
+            redaction_failed=payload.redaction_failed,
+            redacted_faces_count=payload.redacted_faces_count,
+            detected_faces_count=payload.detected_faces_count,
+            quality_result=payload.quality_result,
+            geometry_result=payload.geometry_result,
+            has_partial_redaction=payload.has_partial_redaction,
+            has_missing_landmarks=payload.has_missing_landmarks,
+        )
+
+        # Extract photometric and geometry metrics safely (metadata only)
+        photometric_metrics: dict[str, float] = {}
+        if isinstance(payload.quality_result, dict):
+            raw_m = payload.quality_result.get("raw_metrics", {})
+            if isinstance(raw_m, dict):
+                photometric_metrics = {str(k): float(v) for k, v in raw_m.items() if isinstance(v, (int, float))}
+            for k in ("sharpness_score", "exposure_score", "contrast_score", "clipped_fraction"):
+                val = payload.quality_result.get(k)
+                if isinstance(val, (int, float)):
+                    photometric_metrics[k] = float(val)
+
+        geometry_metrics: dict[str, Any] = {}
+        if isinstance(payload.geometry_result, dict):
+            for k in ("box_count", "overlap_clusters_count", "uncovered_landmarks_count", "is_valid", "geometry_status"):
+                if k in payload.geometry_result:
+                    geometry_metrics[k] = payload.geometry_result[k]
+
+        component_versions = {
+            "detector": "mock-detector-1.0",
+            "quality": "1.0.0",
+            "geometry": "1.0.0",
+            "workflow": "1.0.0",
+        }
+
+        review = BiometricQualityReview(
+            id=uuid4(),
+            tenant_id=principal.department_id or uuid4(),
+            department_id=principal.department_id,
+            evidence_id=payload.evidence_id,
+            governance_record_id=payload.governance_record_id,
+            status=QualityReviewStatus.PENDING_REVIEW.value,
+            unified_decision=decision.value,
+            review_reasons=reasons,
+            component_versions=component_versions,
+            photometric_metrics=photometric_metrics,
+            geometry_metrics=geometry_metrics,
+            original_evidence_hash=payload.original_evidence_hash,
+            redacted_artifact_hash=payload.redacted_artifact_hash,
+            disclaimer=BIOMETRIC_ADVISORY_DISCLAIMER,
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
+        )
+
+        created = await self.review_repo.create(review)
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_QUALITY_REVIEW_CREATED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_QUALITY_REVIEW.value,
+                target_id=str(created.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "unified_decision": decision.value,
+                    "status": created.status,
+                    "reasons_count": len(reasons),
+                    "evidence_id": str(payload.evidence_id) if payload.evidence_id else None,
+                },
+            )
+
+        return BiometricQualityReviewRead.model_validate(created)
+
+    async def get_review(
+        self,
+        review_id: UUID,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricQualityReviewRead:
+        """Fetch a single biometric quality review record."""
+        can_view = has_any_permission(
+            principal.role,
+            [
+                Permission.BIOMETRIC_VERIFICATION_REVIEW,
+                Permission.BIOMETRIC_GOVERNANCE_REVIEW,
+                Permission.BIOMETRIC_AUDIT_READ,
+            ],
+        )
+        if not can_view:
+            raise PermissionDeniedError(
+                "Caller lacks permission to view biometric quality review records.",
+                code="VIEW_QUALITY_REVIEW_DENIED",
+            )
+
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
+        review = await self.review_repo.get_by_id(review_id, department_id=dept_id)
+        if review is None:
+            raise ResourceNotFoundError(
+                f"Biometric quality review '{review_id}' not found.",
+                code="QUALITY_REVIEW_NOT_FOUND",
+            )
+        return BiometricQualityReviewRead.model_validate(review)
+
+    async def list_reviews(
+        self,
+        principal: AuthenticatedPrincipal,
+        *,
+        status: str | None = None,
+        assigned_reviewer_id: UUID | None = None,
+        evidence_id: UUID | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> PaginatedBiometricQualityReviewRead:
+        """List biometric quality review records scoped to department."""
+        can_list = has_any_permission(
+            principal.role,
+            [
+                Permission.BIOMETRIC_VERIFICATION_REVIEW,
+                Permission.BIOMETRIC_GOVERNANCE_REVIEW,
+                Permission.BIOMETRIC_AUDIT_READ,
+            ],
+        )
+        if not can_list:
+            raise PermissionDeniedError(
+                "Caller lacks permission to list biometric quality review records.",
+                code="LIST_QUALITY_REVIEW_DENIED",
+            )
+
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
+        items = await self.review_repo.list_for_department(
+            department_id=dept_id,
+            status=status,
+            assigned_reviewer_id=assigned_reviewer_id,
+            evidence_id=evidence_id,
+            limit=limit,
+            offset=offset,
+        )
+        total = await self.review_repo.count_for_department(
+            department_id=dept_id,
+            status=status,
+            assigned_reviewer_id=assigned_reviewer_id,
+            evidence_id=evidence_id,
+        )
+        return PaginatedBiometricQualityReviewRead(
+            items=[BiometricQualityReviewRead.model_validate(r) for r in items],
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
+
+    async def assign_reviewer(
+        self,
+        review_id: UUID,
+        payload: BiometricQualityReviewAssignRequest,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricQualityReviewRead:
+        """Assign review item to authorized reviewer and transition to IN_REVIEW (Phase 77)."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_VERIFICATION_REVIEW):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_VERIFICATION_REVIEW permission to assign reviews.",
+                code="ASSIGN_QUALITY_REVIEW_DENIED",
+            )
+
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
+        review = await self.review_repo.get_by_id(review_id, department_id=dept_id)
+        if review is None:
+            raise ResourceNotFoundError(
+                f"Biometric quality review '{review_id}' not found.",
+                code="QUALITY_REVIEW_NOT_FOUND",
+            )
+
+        # Idempotency check: already assigned to same reviewer in IN_REVIEW
+        if (
+            review.assigned_reviewer_id == payload.reviewer_id
+            and review.status == QualityReviewStatus.IN_REVIEW.value
+        ):
+            return BiometricQualityReviewRead.model_validate(review)
+
+        # State transition validation
+        validate_review_state_transition(
+            QualityReviewStatus(review.status),
+            QualityReviewStatus.IN_REVIEW,
+        )
+
+        review.assigned_reviewer_id = payload.reviewer_id
+        review.assigned_at = datetime.now(UTC)
+        review.status = QualityReviewStatus.IN_REVIEW.value
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_QUALITY_REVIEW_ASSIGNED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_QUALITY_REVIEW.value,
+                target_id=str(review.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "reviewer_id": str(payload.reviewer_id),
+                    "status": review.status,
+                },
+            )
+
+        return BiometricQualityReviewRead.model_validate(review)
+
+    async def record_human_verdict(
+        self,
+        review_id: UUID,
+        payload: BiometricQualityReviewVerdictRequest,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricQualityReviewRead:
+        """Record human determination and advance review state machine (Phase 77)."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_VERIFICATION_REVIEW):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_VERIFICATION_REVIEW permission to record determinations.",
+                code="VERDICT_QUALITY_REVIEW_DENIED",
+            )
+
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
+        review = await self.review_repo.get_by_id(review_id, department_id=dept_id)
+        if review is None:
+            raise ResourceNotFoundError(
+                f"Biometric quality review '{review_id}' not found.",
+                code="QUALITY_REVIEW_NOT_FOUND",
+            )
+
+        # Caller must be assigned reviewer, or Dept Admin, or Super Admin
+        is_assigned = (
+            review.assigned_reviewer_id is not None
+            and review.assigned_reviewer_id == principal.user_id
+        )
+        is_admin = principal.role_code in {"DEPT_ADMIN", "SUPER_ADMIN", RoleCode.DEPT_ADMIN.value, RoleCode.SUPER_ADMIN.value}
+        if not is_assigned and not is_admin:
+            raise PermissionDeniedError(
+                "Only the assigned reviewer or a department administrator may record review determination.",
+                code="NOT_ASSIGNED_REVIEWER",
+            )
+
+        # Determine target state machine status
+        if payload.determination == HumanReviewDetermination.APPROVED.value:
+            target_status = QualityReviewStatus.COMPLETED
+        elif payload.determination == HumanReviewDetermination.REJECTED.value:
+            target_status = QualityReviewStatus.COMPLETED
+        elif payload.determination == HumanReviewDetermination.RE_REDACTION_REQUESTED.value:
+            target_status = QualityReviewStatus.NEEDS_REDACTION
+        else:
+            raise BusinessRuleError(
+                f"Unknown determination '{payload.determination}'.",
+                code="INVALID_DETERMINATION",
+            )
+
+        # Validate state machine transition
+        validate_review_state_transition(
+            QualityReviewStatus(review.status),
+            target_status,
+        )
+
+        review.status = target_status.value
+        review.human_determination = payload.determination
+        review.reviewed_by_id = principal.user_id
+        review.reviewed_at = datetime.now(UTC)
+        review.reviewer_notes = payload.notes or payload.justification
+
+        if payload.determination == HumanReviewDetermination.APPROVED.value:
+            review.unified_decision = UnifiedReviewDecision.REVIEW_COMPLETED.value
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_QUALITY_REVIEW_VERDICT.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_QUALITY_REVIEW.value,
+                target_id=str(review.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "determination": payload.determination,
+                    "status": review.status,
+                    "has_notes": bool(review.reviewer_notes),
+                },
+            )
+
+        return BiometricQualityReviewRead.model_validate(review)
+
+    async def escalate_review(
+        self,
+        review_id: UUID,
+        payload: BiometricQualityReviewEscalateRequest,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricQualityReviewRead:
+        """Escalate review to supervisory or administrative review (Phase 77)."""
+        if not has_permission(principal.role, Permission.BIOMETRIC_VERIFICATION_REVIEW):
+            raise PermissionDeniedError(
+                "Caller lacks BIOMETRIC_VERIFICATION_REVIEW permission to escalate reviews.",
+                code="ESCALATE_QUALITY_REVIEW_DENIED",
+            )
+
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
+        review = await self.review_repo.get_by_id(review_id, department_id=dept_id)
+        if review is None:
+            raise ResourceNotFoundError(
+                f"Biometric quality review '{review_id}' not found.",
+                code="QUALITY_REVIEW_NOT_FOUND",
+            )
+
+        validate_review_state_transition(
+            QualityReviewStatus(review.status),
+            QualityReviewStatus.ESCALATED,
+        )
+
+        review.status = QualityReviewStatus.ESCALATED.value
+        review.escalation_reason = payload.escalation_reason
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_QUALITY_REVIEW_ESCALATED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_QUALITY_REVIEW.value,
+                target_id=str(review.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "status": review.status,
+                    "escalation_reason_length": len(payload.escalation_reason),
+                },
+            )
+
+        return BiometricQualityReviewRead.model_validate(review)
+
+    async def reopen_review(
+        self,
+        review_id: UUID,
+        payload: BiometricQualityReviewReopenRequest,
+        principal: AuthenticatedPrincipal,
+    ) -> BiometricQualityReviewRead:
+        """Administratively reopen a COMPLETED review item (Phase 77)."""
+        is_admin = principal.role_code in {"DEPT_ADMIN", "SUPER_ADMIN", RoleCode.DEPT_ADMIN.value, RoleCode.SUPER_ADMIN.value} or has_permission(
+            principal.role, Permission.BIOMETRIC_GOVERNANCE_REVIEW
+        )
+        if not is_admin:
+            raise PermissionDeniedError(
+                "Only administrative roles with BIOMETRIC_GOVERNANCE_REVIEW may reopen completed reviews.",
+                code="REOPEN_QUALITY_REVIEW_DENIED",
+            )
+
+        dept_id = principal.department_id if principal.role_code not in {RoleCode.SUPER_ADMIN.value, "SUPER_ADMIN"} else None
+        review = await self.review_repo.get_by_id(review_id, department_id=dept_id)
+        if review is None:
+            raise ResourceNotFoundError(
+                f"Biometric quality review '{review_id}' not found.",
+                code="QUALITY_REVIEW_NOT_FOUND",
+            )
+
+        validate_review_state_transition(
+            QualityReviewStatus(review.status),
+            QualityReviewStatus.PENDING_REVIEW,
+            is_authorized_reopen=True,
+        )
+
+        review.status = QualityReviewStatus.PENDING_REVIEW.value
+        review.reopen_reason = payload.reopen_reason
+        review.assigned_reviewer_id = None
+        review.assigned_at = None
+        review.human_determination = None
+
+        if self.audit_repo:
+            await self.audit_repo.append_event(
+                action=AuditAction.BIOMETRIC_QUALITY_REVIEW_REOPENED.value,
+                actor_id=principal.user_id,
+                actor_role=principal.role_code,
+                department_id=principal.department_id,
+                target_type=AuditTargetType.BIOMETRIC_QUALITY_REVIEW.value,
+                target_id=str(review.id),
+                outcome=AuditOutcome.SUCCESS.value,
+                details={
+                    "status": review.status,
+                    "reopen_reason_length": len(payload.reopen_reason),
+                },
+            )
+
+        return BiometricQualityReviewRead.model_validate(review)

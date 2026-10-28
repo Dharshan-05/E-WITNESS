@@ -1,0 +1,66 @@
+{
+  "dataset_path": "D:\\PROJECT\\E-WITTNESS\\data\\raw",
+  "audit_timestamp": "2026-10-26T13:57:49.764165+00:00",
+  "declared_source": "https://www.kaggle.com/datasets/yash07yadav/project-data",
+  "declared_license": "MIT",
+  "local_license_file": null,
+  "license_verification_status": "UNVERIFIED_ON_DISK: No LICENSE, README, or terms file present in raw download archive.",
+  "is_license_approved": false,
+  "total_files_scanned": 3273,
+  "valid_videos_count": 3273,
+  "corrupt_videos_count": 0,
+  "total_size_bytes": 13921264652,
+  "total_duration_seconds": 13566.039999999872,
+  "partition_distribution": {
+    "train": 2588,
+    "val": 685
+  },
+  "class_distribution": {
+    "Fight": 1275,
+    "NonFight": 1275,
+    "HockeyFight": 500,
+    "MovieFights": 223
+  },
+  "class_by_partition": {
+    "val": {
+      "Fight": 275,
+      "NonFight": 275,
+      "HockeyFight": 100,
+      "MovieFights": 35
+    },
+    "train": {
+      "Fight": 1000,
+      "NonFight": 1000,
+      "HockeyFight": 400,
+      "MovieFights": 188
+    }
+  },
+  "resolution_distribution": {
+    "360x288": 800,
+    "1280x720": 652,
+    "320x240": 592,
+    "224x224": 209,
+    "640x360": 188,
+    "480x360": 78,
+    "1920x1080": 71,
+    "720x576": 55,
+    "1920x800": 49,
+    "720x480": 30
+  },
+  "fps_distribution": {
+    "30fps": 2034,
+    "25fps": 897,
+    "24fps": 140,
+    "37fps": 97,
+    "23fps": 45
+  },
+  "corrupted_files": [],
+  "findings": [
+    "GOVERNANCE ADVISORY: Dataset license is UNVERIFIED_ON_DISK: No LICENSE, README, or terms file present in raw download archive. Kaggle web card declares MIT, but no verifiable license file exists in the downloaded archive.",
+    "THIRD-PARTY COMPOSITE RISK: Archive aggregates footage from RWF-2000, Real Life Violence Situations, HockeyFight, and MovieFights without copyright assignment.",
+    "SUB-SOURCE RESTRICTIONS: MovieFights consists of commercial Hollywood cinema excerpts under studio copyright; RWF-2000 is restricted by SMIIP Lab to non-commercial academic research; HockeyFight is NHL broadcast footage.",
+    "GOVERNANCE CONCLUSION: Ineffective third-party MIT relicensing. Full model training is BLOCKED pending verified rights clearance or certified replacement data.",
+    "All 3273 scanned video files are structurally valid and decodable.",
+    "Class balance: 1998 violent clips vs 1275 non-violent clips (ratio: 1.57:1)."
+  ]
+}

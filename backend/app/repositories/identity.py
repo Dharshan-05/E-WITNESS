@@ -363,6 +363,7 @@ class UserRepository:
         entity_id: UUID,
         *,
         department_id: UUID,
+        with_for_update: bool = False,
     ) -> User | None:
         """Retrieve a `User` strictly scoped to ``department_id`` (`SEC-002`)."""
         try:
@@ -370,19 +371,30 @@ class UserRepository:
                 User.id == entity_id,
                 User.department_id == department_id,
             )
+            if with_for_update:
+                stmt = stmt.with_for_update()
             result = await self._session.execute(stmt)
             return result.scalar_one_or_none()
         except SQLAlchemyError as exc:
             raise translate_database_error(exc) from None
 
-    async def get_by_id_unscoped(self, user_id: UUID) -> User | None:
+    async def get_by_id_unscoped(
+        self,
+        user_id: UUID,
+        *,
+        with_for_update: bool = False,
+    ) -> User | None:
         """Retrieve a `User` by primary key for platform-level identity checks."""
         try:
             stmt = select(User).where(User.id == user_id)
+            if with_for_update:
+                stmt = stmt.with_for_update()
             result = await self._session.execute(stmt)
             return result.scalar_one_or_none()
         except SQLAlchemyError as exc:
             raise translate_database_error(exc) from None
+
+
 
     async def get_by_email(
         self,

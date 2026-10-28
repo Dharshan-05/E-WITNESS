@@ -82,6 +82,7 @@ class PretrainedVideoClassifierProvider:
         detection_threshold: float = 0.50,
         expected_sha256: str | None = None,
         allowed_base_dir: Path | str | None = None,
+        device: str | None = None,
     ) -> None:
         self.model_name = model_name
         self.model_version = model_version
@@ -89,6 +90,7 @@ class PretrainedVideoClassifierProvider:
         self.detection_threshold = detection_threshold
         self.expected_sha256 = expected_sha256.lower() if expected_sha256 else None
         self.allowed_base_dir = Path(allowed_base_dir).resolve() if allowed_base_dir else None
+        self.device_str = device
         self._weights_loaded: bool = False
         self._runtime_available: bool = False
         self._integrity_verified: bool = False
@@ -162,8 +164,80 @@ class PretrainedVideoClassifierProvider:
             raise ModelUnavailableError(AI_MODEL_FALLBACK_DISCLAIMER)
 
         # Production execution path (when weights and torch are installed)
-        # Note: Actual weights execution produces raw uncalibrated probabilities
-        raise NotImplementedError("Model execution engine loaded without weight checkpoints.")
+        try:
+            import torch
+            import torchvision.models.video as video_models
+
+            if not hasattr(self, "_torch_model") or self._torch_model is None:
+                device = torch.device(self.device_str if self.device_str else ("cuda" if torch.cuda.is_available() else "cpu"))
+                model = video_models.r3d_18(weights=None)
+                model.fc = torch.nn.Linear(model.fc.in_features, 2)
+                if self.weights_path is None:
+                    raise ModelUnavailableError("Weights path is not configured.")
+                checkpoint = torch.load(self.weights_path, map_location=device, weights_only=False)
+                state_dict = checkpoint.get("model_state_dict", checkpoint)
+                model.load_state_dict(state_dict)
+                model.to(device)
+                model.eval()
+                self._torch_model = model
+                self._device = device
+
+            violence_score = 0.0
+            file_path = video_spec.metadata.get("file_path")
+            if file_path and Path(file_path).is_file():
+                import cv2
+                import numpy as np
+
+                cap = cv2.VideoCapture(str(file_path))
+                total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                if total_frames <= 0:
+                    total_frames = 16
+                indices = np.linspace(0, max(0, total_frames - 1), 16, dtype=int)
+                frames_list: list[np.ndarray] = []
+                cur_idx = 0
+                for tgt_idx in indices:
+                    while cur_idx < tgt_idx:
+                        cap.grab()
+                        cur_idx += 1
+                    ret, frame = cap.read()
+                    cur_idx += 1
+                    if ret and frame is not None:
+                        resized = cv2.resize(frame, (112, 112))
+                        rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+                        frames_list.append(rgb)
+                    else:
+                        frames_list.append(frames_list[-1].copy() if frames_list else np.zeros((112, 112, 3), dtype=np.float32))
+                cap.release()
+
+                kinetics_mean = np.array([0.43216, 0.394666, 0.37645], dtype=np.float32)
+                kinetics_std = np.array([0.22803, 0.22145, 0.216989], dtype=np.float32)
+                norm = (np.array(frames_list, dtype=np.float32) - kinetics_mean) / kinetics_std
+                tensor = torch.from_numpy(norm).permute(3, 0, 1, 2).unsqueeze(0).to(self._device)
+
+                with torch.no_grad():
+                    outputs = self._torch_model(tensor)
+                    probs = torch.softmax(outputs, dim=1).cpu().numpy()[0]
+                    violence_score = float(probs[1])
+
+            is_violence = violence_score >= self.detection_threshold
+            return VideoClassificationResult(
+                model_name=self.model_name,
+                model_version=self.model_version,
+                is_violence_detected=is_violence,
+                violence_score=round(violence_score, 4),
+                confidence_is_uncalibrated=True,
+                class_probabilities={
+                    "non_violence": round(1.0 - violence_score, 4),
+                    "violence": round(violence_score, 4),
+                },
+                detected_segments=[{"start_seconds": 0.0, "end_seconds": video_spec.duration_seconds}] if is_violence else [],
+                frames_analyzed=video_spec.frames_count,
+                disclaimer=AI_HUMAN_IN_THE_LOOP_DISCLAIMER,
+            )
+        except Exception as exc:
+            if isinstance(exc, ModelUnavailableError):
+                raise
+            raise ModelUnavailableError(f"Model inference failed: {exc}") from exc
 
 
 class MockVideoClassifier:

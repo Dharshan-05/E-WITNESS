@@ -1,0 +1,288 @@
+{
+  "evidence_timestamp": "2026-10-26T15:33:55.840199+00:00",
+  "verification_method": "AUTHORITATIVE_KAGGLE_REST_API",
+  "endpoint_queried": "https://www.kaggle.com/api/v1/datasets/view/yash07yadav/project-data",
+  "dataset_owner": "Yash07Yadav",
+  "owner_ref": "yash07yadav",
+  "dataset_title": "Violence Detection - Combined",
+  "source_url": "https://www.kaggle.com/datasets/yash07yadav/project-data",
+  "version": 1,
+  "license_identifier": "MIT",
+  "total_bytes_declared": 13921264652,
+  "total_bytes_on_disk": 13921264652,
+  "byte_count_matches": true,
+  "description": "The dataset was created by collecting videos from various sources and combining them into a single directory with validation and training data for four main classes: Fight, NonFight, HockeyFight, and MovieFight mainly for multiclass violence detection.\n\nSources: \nFor Fight and Non-Fight Classes, we combined videos from RWF-2000 and the Real Life Violence Situations Dataset.\nFor the HockeyFight class, we used the Hockey Fight dataset, For the MovieFight class, various videos from YouTube were collected and clipped according to requirements.\n",
+  "usage_permissions": {
+    "model_training_permitted": true,
+    "demonstration_permitted": true,
+    "commercial_use_permitted": true,
+    "derivatives_permitted": true,
+    "attribution_required": true,
+    "terms_summary": "MIT License permits use, copying, modification, merging, publishing, distribution, and sublicense with attribution notice."
+  },
+  "sub_source_composition": [
+    {
+      "name": "RWF-2000",
+      "classes": [
+        "Fight",
+        "NonFight"
+      ],
+      "attribution": "Cheng et al. (2020)"
+    },
+    {
+      "name": "Real Life Violence Situations",
+      "classes": [
+        "Fight",
+        "NonFight"
+      ],
+      "attribution": "Soliman et al. (2019)"
+    },
+    {
+      "name": "Hockey Fight Dataset",
+      "classes": [
+        "HockeyFight"
+      ],
+      "attribution": "Nievas et al. (2011)"
+    },
+    {
+      "name": "Movie Fights",
+      "classes": [
+        "MovieFights"
+      ],
+      "attribution": "YouTube clipped clips"
+    }
+  ],
+  "raw_kaggle_api_response": {
+    "subtitleNullable": "For Video Violence Classification",
+    "creatorNameNullable": "Yash07Yadav",
+    "totalBytesNullable": 13921264652,
+    "licenseNameNullable": "MIT",
+    "descriptionNullable": "The dataset was created by collecting videos from various sources and combining them into a single directory with validation and training data for four main classes: Fight, NonFight, HockeyFight, and MovieFight mainly for multiclass violence detection.\n\nSources: \nFor Fight and Non-Fight Classes, we combined videos from RWF-2000 and the Real Life Violence Situations Dataset.\nFor the HockeyFight class, we used the Hockey Fight dataset, For the MovieFight class, various videos from YouTube were collected and clipped according to requirements.\n",
+    "ownerNameNullable": "Yash07Yadav",
+    "ownerRefNullable": "yash07yadav",
+    "titleNullable": "Violence Detection - Combined",
+    "currentVersionNumberNullable": 1,
+    "usabilityRatingNullable": 0.6875,
+    "thumbnailImageUrlNullable": "https://storage.googleapis.com/kaggle-datasets-images/new-version-temp-images/default-backgrounds-58.png-8799311/dataset-thumbnail.png",
+    "id": 5764601,
+    "ref": "yash07yadav/project-data",
+    "subtitle": "For Video Violence Classification",
+    "hasSubtitle": true,
+    "creatorName": "Yash07Yadav",
+    "hasCreatorName": true,
+    "creatorUrl": "",
+    "hasCreatorUrl": false,
+    "totalBytes": 13921264652,
+    "hasTotalBytes": true,
+    "url": "",
+    "hasUrl": false,
+    "lastUpdated": "2024-09-25T10:11:39.017Z",
+    "downloadCount": 1852,
+    "isPrivate": false,
+    "isFeatured": false,
+    "licenseName": "MIT",
+    "hasLicenseName": true,
+    "description": "The dataset was created by collecting videos from various sources and combining them into a single directory with validation and training data for four main classes: Fight, NonFight, HockeyFight, and MovieFight mainly for multiclass violence detection.\n\nSources: \nFor Fight and Non-Fight Classes, we combined videos from RWF-2000 and the Real Life Violence Situations Dataset.\nFor the HockeyFight class, we used the Hockey Fight dataset, For the MovieFight class, various videos from YouTube were collected and clipped according to requirements.\n",
+    "hasDescription": true,
+    "ownerName": "Yash07Yadav",
+    "hasOwnerName": true,
+    "ownerRef": "yash07yadav",
+    "hasOwnerRef": true,
+    "kernelCount": 6,
+    "title": "Violence Detection - Combined",
+    "hasTitle": true,
+    "topicCount": 0,
+    "viewCount": 4887,
+    "voteCount": 4,
+    "currentVersionNumber": 1,
+    "hasCurrentVersionNumber": true,
+    "usabilityRating": 0.6875,
+    "hasUsabilityRating": true,
+    "tags": [
+      {
+        "nameNullable": "computer vision",
+        "descriptionNullable": "Teaching a machine to interpret real-world images and videos. Applications include detecting objects, capturing motion, and restoring images.",
+        "fullPathNullable": "technique > computer vision",
+        "ref": "computer vision",
+        "name": "computer vision",
+        "hasName": true,
+        "description": "Teaching a machine to interpret real-world images and videos. Applications include detecting objects, capturing motion, and restoring images.",
+        "hasDescription": true,
+        "fullPath": "technique > computer vision",
+        "hasFullPath": true,
+        "competitionCount": 160,
+        "datasetCount": 8035,
+        "scriptCount": 6595,
+        "totalCount": 14790
+      },
+      {
+        "nameNullable": "artificial intelligence",
+        "descriptionNullable": "This tag has datasets and kernels where people come together and use cutting-edge research to train models on pictures of cats.",
+        "fullPathNullable": "subject > science and technology > computer science > artificial intelligence",
+        "ref": "artificial intelligence",
+        "name": "artificial intelligence",
+        "hasName": true,
+        "description": "This tag has datasets and kernels where people come together and use cutting-edge research to train models on pictures of cats.",
+        "hasDescription": true,
+        "fullPath": "subject > science and technology > computer science > artificial intelligence",
+        "hasFullPath": true,
+        "competitionCount": 133,
+        "datasetCount": 5924,
+        "scriptCount": 4339,
+        "totalCount": 10396
+      },
+      {
+        "nameNullable": "video",
+        "descriptionNullable": "",
+        "fullPathNullable": "data type > video data",
+        "ref": "video",
+        "name": "video",
+        "hasName": true,
+        "description": "",
+        "hasDescription": true,
+        "fullPath": "data type > video data",
+        "hasFullPath": true,
+        "competitionCount": 22,
+        "datasetCount": 1692,
+        "scriptCount": 334,
+        "totalCount": 2048
+      },
+      {
+        "nameNullable": "video classification",
+        "descriptionNullable": "",
+        "fullPathNullable": "task > video-classification",
+        "ref": "video classification",
+        "name": "video classification",
+        "hasName": true,
+        "description": "",
+        "hasDescription": true,
+        "fullPath": "task > video-classification",
+        "hasFullPath": true,
+        "competitionCount": 7,
+        "datasetCount": 224,
+        "scriptCount": 50,
+        "totalCount": 281
+      }
+    ],
+    "files": [],
+    "versions": [
+      {
+        "creatorNameNullable": "Yash07Yadav",
+        "creatorRefNullable": "project-data",
+        "versionNotesNullable": "Initial release",
+        "statusNullable": "Ready",
+        "versionNumber": 1,
+        "creationDate": "2024-09-25T10:11:39.017Z",
+        "creatorName": "Yash07Yadav",
+        "hasCreatorName": true,
+        "creatorRef": "project-data",
+        "hasCreatorRef": true,
+        "versionNotes": "Initial release",
+        "hasVersionNotes": true,
+        "status": "Ready",
+        "hasStatus": true
+      }
+    ],
+    "thumbnailImageUrl": "https://storage.googleapis.com/kaggle-datasets-images/new-version-temp-images/default-backgrounds-58.png-8799311/dataset-thumbnail.png",
+    "hasThumbnailImageUrl": true
+  },
+  "evaluated_datasets_provenance": {
+    "AIRTLab": {
+      "original_publisher_and_canonical_source": "Artificial Intelligence & Robotics Lab (AIRTLab), Politecnico di Milano; Bianculli et al., Data in Brief 2020. GitHub: airtlab/A-Dataset-for-Automatic-Violence-Detection-in-Videos",
+      "exact_license_text_or_agreement": "No root LICENSE file in repository. README states: 'Please cite the following paper if you use this dataset in your research: Bianculli et al., A dataset for automatic violence detection in videos, Data in Brief 2020.' Retrieval Date: 2026-10-26.",
+      "applies_to": "Research paper citation only. Repository lacks any standard permissive license (CC BY 4.0, MIT, Apache) covering the video media files.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": true,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Research and educational citation requirement only. No commercial license granted. Subjects recorded under academic experimental protocol.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.4; primary repo audit",
+      "final_status": "RESTRICTED"
+    },
+    "VID": {
+      "original_publisher_and_canonical_source": "Mahi et al., Data in Brief 2024; Hosted on Harvard Dataverse (doi:10.7910/DVN/CR4J0U).",
+      "exact_license_text_or_agreement": "Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0). URL: https://creativecommons.org/licenses/by-nc/4.0/. Retrieval Date: 2026-10-26.",
+      "applies_to": "Applies to dataset metadata and repository files. Governed by CC BY-NC 4.0 (NOT CC0).",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": true,
+        "modification": true,
+        "redistribution": true,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Non-commercial exploitation strictly prohibited. Attribution required. Consenting actor recordings.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.5; Harvard Dataverse terms",
+      "final_status": "RESTRICTED"
+    },
+    "RWF-2000": {
+      "original_publisher_and_canonical_source": "Ming Cheng, Kunjing Cai, Ming Li; SMIIP Lab, Duke Kunshan University (ICPR 2020). GitHub: mchengny/RWF2000-Video-Database-for-Violence-Detection",
+      "exact_license_text_or_agreement": "'The RWF-2000 database is not allowed for commercial purposes without approval from the SMIIP Lab. Without approval from the SMIIP Lab, the RWF-2000 database is not allowed to be modified or redistributed.' Retrieval Date: 2026-10-26.",
+      "applies_to": "Applies to all video sequences and annotations in RWF-2000.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": true,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Strictly non-commercial academic research. Redistribution and modification forbidden without explicit written SMIIP Lab consent.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.1",
+      "final_status": "RESTRICTED"
+    },
+    "Real_Life_Violence_Situations": {
+      "original_publisher_and_canonical_source": "Mohamed M. Soliman et al., Ain Shams University, Cairo (ICICIS 2019). Distributed via Kaggle / ResearchGate.",
+      "exact_license_text_or_agreement": "No formal open license. Scraped from third-party YouTube street footage. Authors request paper citation only. Retrieval Date: 2026-10-26.",
+      "applies_to": "Scraped third-party YouTube video clips without underlying copyright clearance.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": false,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "YouTube Standard Terms of Service. Individual copyright owners retain exclusive rights. No human subject consent recorded.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.2",
+      "final_status": "UNVERIFIED"
+    },
+    "HockeyFight": {
+      "original_publisher_and_canonical_source": "Enrique Bermejo Nievas, Oscar Deniz Suarez et al., VISILAB, University of Castilla-La Mancha (CAIP 2011).",
+      "exact_license_text_or_agreement": "Academic fair-use research distribution. Broadcast footage owned exclusively by the National Hockey League (NHL) and broadcast partners. Retrieval Date: 2026-10-26.",
+      "applies_to": "NHL television broadcast excerpts.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": false,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "NHL proprietary broadcast copyright. Academic fair use research only; prohibited for commercial, enterprise, or judicial deployment.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.3",
+      "final_status": "RESTRICTED"
+    },
+    "MovieFights": {
+      "original_publisher_and_canonical_source": "Commercial Hollywood Cinema Studios (Warner Bros, Universal, Disney, etc.) via YouTube excerpts.",
+      "exact_license_text_or_agreement": "No license granted. Commercial copyright under 17 U.S.C. \u00a7 106. Retrieval Date: 2026-10-26.",
+      "applies_to": "Feature-length studio motion pictures.",
+      "expressly_permitted_uses": {
+        "commercial_use": false,
+        "model_training": false,
+        "modification": false,
+        "redistribution": false,
+        "public_demonstration": false
+      },
+      "restrictions_and_consent": "Exclusive studio intellectual property. Redistribution or sublicensing under MIT by third-party aggregators is legally void.",
+      "written_permission_needed": true,
+      "evidence_captured_locally": "docs/audit/E_WITNESS_DATASET_PROVENANCE.md \u00a73.2",
+      "final_status": "RESTRICTED"
+    }
+  },
+  "overarching_legal_conclusion": "No candidate dataset is currently commercially cleared or unreservedly approved for open-ended enterprise use without separate written clearance or strict non-commercial bounding."
+}

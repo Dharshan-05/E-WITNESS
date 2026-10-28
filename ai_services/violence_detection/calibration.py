@@ -35,6 +35,7 @@ class CalibratedOutput:
     uncertainty_status: UncertaintyStatus
     calibration_version: str | None
     is_flagged_for_review: bool
+    confidence_is_uncalibrated: bool = True
     disclaimer: str = AI_HUMAN_IN_THE_LOOP_DISCLAIMER
 
 
@@ -120,7 +121,21 @@ def evaluate_uncertainty(
 
 
 class PlattScalingCalibrator:
-    """Logistic sigmoid calibrator using Platt scaling: P(y=1|s) = 1 / (1 + exp(-(A*s + B)))."""
+    """Logistic sigmoid calibrator using Platt scaling: P(y=1|s) = 1 / (1 + exp(-(A*s + B))).
+
+    Score Representation Contract:
+    - score_type='probability' (default):
+      raw_score is expected to be a valid probability in [0.0, 1.0].
+      If raw_score < 0.0 or raw_score > 1.0, raises ValueError.
+      If calibration is an identity fallback (is_identity_fallback=True or slope <= 0),
+      returns raw_score directly without applying a second sigmoid, preserving
+      CalibrationStatus.UNCALIBRATED and confidence_is_uncalibrated=True.
+      If validly fitted (slope > 0), applies P = 1 / (1 + exp(-(slope * s + intercept))).
+    - score_type='logit':
+      raw_score is expected to be an unbounded logit / differential logit in (-inf, +inf).
+      Applies P = 1 / (1 + exp(-(slope * s + intercept))). For an identity fallback (slope=1.0, intercept=0.0),
+      P = sigma(s) converts the logit to the baseline softmax probability.
+    """
 
     def __init__(self, artifact: CalibrationArtifact) -> None:
         if artifact.method != CalibrationMethod.PLATT_SCALING:
@@ -130,6 +145,19 @@ class PlattScalingCalibrator:
         self.artifact = artifact
         self.slope: float = float(artifact.parameters.get("slope", 1.0))
         self.intercept: float = float(artifact.parameters.get("intercept", 0.0))
+        self.score_type: str = str(artifact.parameters.get("score_type", "probability")).lower()
+        if self.score_type not in {"probability", "logit"}:
+            raise ValueError(f"Unknown score_type '{self.score_type}', must be 'probability' or 'logit'.")
+
+        fit_status = str(artifact.parameters.get("fit_status", "")).upper()
+        self.is_identity_fallback: bool = bool(
+            artifact.parameters.get("is_identity_fallback", False)
+            or ("FALLBACK" in fit_status)
+            or ("ERROR" in fit_status)
+            or not artifact.is_approved
+            or self.slope <= 0.0
+            or (self.score_type == "probability" and self.slope == 1.0 and self.intercept == 0.0 and fit_status != "FITTED_CONVERGED")
+        )
 
     def calibrate(
         self,
@@ -140,32 +168,55 @@ class PlattScalingCalibrator:
     ) -> CalibratedOutput:
         validate_score_is_finite(raw_score)
 
-        # Bounded logistic sigmoid
-        z = self.slope * raw_score + self.intercept
-        # Prevent math overflow for extreme logits
-        if z > 35.0:
-            calibrated = 1.0
-        elif z < -35.0:
-            calibrated = 0.0
+        if self.score_type == "probability":
+            if raw_score < 0.0 or raw_score > 1.0:
+                raise ValueError(
+                    f"Score representation violation: score_type is 'probability' but raw_score={raw_score} "
+                    "is outside valid probability range [0.0, 1.0]."
+                )
+            if self.is_identity_fallback:
+                calibrated = raw_score
+                uncertainty_status, is_flagged = evaluate_uncertainty(
+                    calibrated,
+                    threshold=threshold,
+                    borderline_delta=borderline_delta,
+                    is_calibrated=False,
+                )
+                return CalibratedOutput(
+                    raw_score=raw_score,
+                    calibrated_score=round(calibrated, 4),
+                    calibration_status=CalibrationStatus.UNCALIBRATED,
+                    uncertainty_status=uncertainty_status,
+                    calibration_version=self.artifact.artifact_id,
+                    is_flagged_for_review=is_flagged,
+                    confidence_is_uncalibrated=True,
+                )
+            else:
+                z = self.slope * raw_score + self.intercept
+                calibrated = 1.0 / (1.0 + math.exp(-max(-35.0, min(35.0, z))))
         else:
-            calibrated = 1.0 / (1.0 + math.exp(-z))
+            z = self.slope * raw_score + self.intercept
+            calibrated = 1.0 / (1.0 + math.exp(-max(-35.0, min(35.0, z))))
 
         calibrated = max(0.0, min(1.0, calibrated))
+        is_calibrated = not self.is_identity_fallback
+        calib_status = CalibrationStatus.CALIBRATED if is_calibrated else CalibrationStatus.UNCALIBRATED
 
         uncertainty_status, is_flagged = evaluate_uncertainty(
             calibrated,
             threshold=threshold,
             borderline_delta=borderline_delta,
-            is_calibrated=True,
+            is_calibrated=is_calibrated,
         )
 
         return CalibratedOutput(
             raw_score=raw_score,
             calibrated_score=round(calibrated, 4),
-            calibration_status=CalibrationStatus.CALIBRATED,
+            calibration_status=calib_status,
             uncertainty_status=uncertainty_status,
             calibration_version=self.artifact.artifact_id,
             is_flagged_for_review=is_flagged,
+            confidence_is_uncalibrated=not is_calibrated,
         )
 
 
@@ -219,6 +270,7 @@ class TemperatureScalingCalibrator:
             uncertainty_status=uncertainty_status,
             calibration_version=self.artifact.artifact_id,
             is_flagged_for_review=is_flagged,
+            confidence_is_uncalibrated=False,
         )
 
 
@@ -280,6 +332,7 @@ class IsotonicRegressionCalibrator:
             uncertainty_status=uncertainty_status,
             calibration_version=self.artifact.artifact_id,
             is_flagged_for_review=is_flagged,
+            confidence_is_uncalibrated=False,
         )
 
 

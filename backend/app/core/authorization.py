@@ -117,6 +117,10 @@ class Permission(StrEnum):
     BIOMETRIC_AUDIT_READ = "biometric:audit:read"
 
     # 12. Investigation Case Management, Workload & Inventory Permissions (Phases 81-85)
+    CASE_CREATE = "case:create"
+    CASE_READ = "case:read"
+    CASE_UPDATE = "case:update"
+    CASE_ASSIGN = "case:assign"
     CASE_CREATE_DEPT = "case:create:dept"
     CASE_CREATE_GLOBAL = "case:create:global"
     CASE_READ_OWN = "case:read:own"
@@ -126,16 +130,29 @@ class Permission(StrEnum):
     CASE_UPDATE_GLOBAL = "case:update:global"
     CASE_ASSIGN_DEPT = "case:assign:dept"
     CASE_ASSIGN_GLOBAL = "case:assign:global"
+    CASE_ASSIGN_OVERRIDE = "case:assign:override"
     CASE_WORKLOAD_READ_DEPT = "case:workload:read:dept"
     CASE_WORKLOAD_READ_GLOBAL = "case:workload:read:global"
     CASE_EVIDENCE_MANAGE = "case:evidence:manage"
+    CASE_LEGAL_HOLD_MANAGE = "case:legal_hold:manage"
+    CASE_LEGAL_HOLD_RELEASE = "case:legal_hold:release"
+    CASE_LEGAL_HOLD_READ = "case:legal_hold:read"
     CASE_AI_SEGMENT_MANAGE = "case:ai_segment:manage"
     CASE_AI_SEGMENT_REVIEW = "case:ai_segment:review"
+    CASE_AI_SEGMENT_OVERRIDE = "case:ai_segment:override"
     CASE_NOTE_CREATE = "case:note:create"
     CASE_NOTE_READ = "case:note:read"
+    CASE_NOTE_UPDATE = "case:note:update"
+    CASE_NOTE_VISIBILITY_MANAGE = "case:note:visibility_manage"
+    CASE_NOTE_HISTORY_READ = "case:note:history:read"
     CASE_NOTE_READ_RESTRICTED = "case:note:read:restricted"
     CASE_FINDING_MANAGE = "case:finding:manage"
+    CASE_TRANSITION_SUBMIT = "case:transition:submit"
+    CASE_TRANSITION_PERFORM = "case:transition:perform"
     CASE_TRANSITION_APPROVE = "case:transition:approve"
+    CASE_APPROVAL_READ = "case:approval:read"
+    CASE_TRANSITION_HISTORY_READ = "case:transition:history:read"
+    CASE_TIMELINE_READ = "case:timeline:read"
     CASE_ESCALATE = "case:escalate"
     CASE_REFER = "case:refer"
     CASE_CLOSE = "case:close"
@@ -226,16 +243,28 @@ ROLE_PERMISSIONS: Final[dict[RoleCode, frozenset[Permission]]] = {
             Permission.BIOMETRIC_DETECTION_EXECUTE,
             Permission.BIOMETRIC_MATCHING_EXECUTE,
             Permission.BIOMETRIC_VERIFICATION_REVIEW,
+            Permission.CASE_CREATE,
+            Permission.CASE_READ,
+            Permission.CASE_UPDATE,
             Permission.CASE_CREATE_DEPT,
             Permission.CASE_READ_OWN,
             Permission.CASE_READ_DEPT,
             Permission.CASE_UPDATE_DEPT,
             Permission.CASE_EVIDENCE_MANAGE,
+            Permission.CASE_LEGAL_HOLD_MANAGE,
+            Permission.CASE_LEGAL_HOLD_READ,
             Permission.CASE_AI_SEGMENT_MANAGE,
             Permission.CASE_AI_SEGMENT_REVIEW,
             Permission.CASE_NOTE_CREATE,
             Permission.CASE_NOTE_READ,
+            Permission.CASE_NOTE_UPDATE,
+            Permission.CASE_NOTE_HISTORY_READ,
             Permission.CASE_FINDING_MANAGE,
+            Permission.CASE_TRANSITION_SUBMIT,
+            Permission.CASE_TRANSITION_PERFORM,
+            Permission.CASE_APPROVAL_READ,
+            Permission.CASE_TRANSITION_HISTORY_READ,
+            Permission.CASE_TIMELINE_READ,
             Permission.CASE_ESCALATE,
             Permission.CASE_REFER,
             Permission.CASE_EXPORT,
@@ -285,18 +314,35 @@ ROLE_PERMISSIONS: Final[dict[RoleCode, frozenset[Permission]]] = {
             Permission.BIOMETRIC_VERIFICATION_REVIEW,
             Permission.BIOMETRIC_GOVERNANCE_REVIEW,
             Permission.BIOMETRIC_AUDIT_READ,
+            Permission.CASE_CREATE,
+            Permission.CASE_READ,
+            Permission.CASE_UPDATE,
+            Permission.CASE_ASSIGN,
+            Permission.CASE_ASSIGN_OVERRIDE,
             Permission.CASE_CREATE_DEPT,
             Permission.CASE_READ_DEPT,
             Permission.CASE_UPDATE_DEPT,
             Permission.CASE_ASSIGN_DEPT,
             Permission.CASE_WORKLOAD_READ_DEPT,
             Permission.CASE_EVIDENCE_MANAGE,
+            Permission.CASE_LEGAL_HOLD_MANAGE,
+            Permission.CASE_LEGAL_HOLD_RELEASE,
+            Permission.CASE_LEGAL_HOLD_READ,
             Permission.CASE_AI_SEGMENT_MANAGE,
             Permission.CASE_AI_SEGMENT_REVIEW,
+            Permission.CASE_AI_SEGMENT_OVERRIDE,
             Permission.CASE_NOTE_CREATE,
             Permission.CASE_NOTE_READ,
+            Permission.CASE_NOTE_UPDATE,
+            Permission.CASE_NOTE_VISIBILITY_MANAGE,
+            Permission.CASE_NOTE_HISTORY_READ,
             Permission.CASE_NOTE_READ_RESTRICTED,
             Permission.CASE_FINDING_MANAGE,
+            Permission.CASE_TRANSITION_SUBMIT,
+            Permission.CASE_TRANSITION_PERFORM,
+            Permission.CASE_APPROVAL_READ,
+            Permission.CASE_TRANSITION_HISTORY_READ,
+            Permission.CASE_TIMELINE_READ,
             Permission.CASE_TRANSITION_APPROVE,
             Permission.CASE_ESCALATE,
             Permission.CASE_REFER,
@@ -372,6 +418,11 @@ ROLE_PERMISSIONS: Final[dict[RoleCode, frozenset[Permission]]] = {
             Permission.BIOMETRIC_VERIFICATION_REVIEW,
             Permission.BIOMETRIC_GOVERNANCE_REVIEW,
             Permission.BIOMETRIC_AUDIT_READ,
+            Permission.CASE_CREATE,
+            Permission.CASE_READ,
+            Permission.CASE_UPDATE,
+            Permission.CASE_ASSIGN,
+            Permission.CASE_ASSIGN_OVERRIDE,
             Permission.CASE_CREATE_DEPT,
             Permission.CASE_CREATE_GLOBAL,
             Permission.CASE_READ_OWN,
@@ -384,12 +435,24 @@ ROLE_PERMISSIONS: Final[dict[RoleCode, frozenset[Permission]]] = {
             Permission.CASE_WORKLOAD_READ_DEPT,
             Permission.CASE_WORKLOAD_READ_GLOBAL,
             Permission.CASE_EVIDENCE_MANAGE,
+            Permission.CASE_LEGAL_HOLD_MANAGE,
+            Permission.CASE_LEGAL_HOLD_RELEASE,
+            Permission.CASE_LEGAL_HOLD_READ,
             Permission.CASE_AI_SEGMENT_MANAGE,
             Permission.CASE_AI_SEGMENT_REVIEW,
+            Permission.CASE_AI_SEGMENT_OVERRIDE,
             Permission.CASE_NOTE_CREATE,
             Permission.CASE_NOTE_READ,
+            Permission.CASE_NOTE_UPDATE,
+            Permission.CASE_NOTE_VISIBILITY_MANAGE,
+            Permission.CASE_NOTE_HISTORY_READ,
             Permission.CASE_NOTE_READ_RESTRICTED,
             Permission.CASE_FINDING_MANAGE,
+            Permission.CASE_TRANSITION_SUBMIT,
+            Permission.CASE_TRANSITION_PERFORM,
+            Permission.CASE_APPROVAL_READ,
+            Permission.CASE_TRANSITION_HISTORY_READ,
+            Permission.CASE_TIMELINE_READ,
             Permission.CASE_TRANSITION_APPROVE,
             Permission.CASE_ESCALATE,
             Permission.CASE_REFER,
@@ -472,3 +535,7 @@ def has_all_permissions(role: RoleCode | str, permissions: Iterable[Permission |
         except ValueError:
             return False
     return True
+
+
+# Canonical alias for Phase 81 authorization specification
+PermissionCode = Permission

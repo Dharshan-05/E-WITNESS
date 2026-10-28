@@ -1,0 +1,335 @@
+{
+  "audit_metadata": {
+    "report_id": "BATCH_07_GROUP_04_CONSISTENCY_AUDIT",
+    "timestamp_utc": "2026-10-27T06:07:27.124558+00:00",
+    "project": "D:/PROJECT/E-WITTNESS",
+    "target_model": "ResNet3D-18 v1.3.0",
+    "audit_phase": "Batch 07, Group 04: Final Audit Evidence Consistency Check",
+    "auditor_role": "Senior ML Test Engineer and Dataset Governance Auditor",
+    "platform_safety_policy": {
+      "biometric_matching_enabled": false,
+      "decision_support_only": true,
+      "automated_punitive_actions_prohibited": true,
+      "production_readiness_status": "NOT READY"
+    }
+  },
+  "input_artifacts": {
+    "raw_validation_predictions": "artifacts/reports/validation/v130_clean_validation_audit.json",
+    "dataset_licensing_evidence": "data/dataset_licensing_evidence.json",
+    "dataset_manifest": "data/manifest.json",
+    "historical_v120_report": "docs/reports/BATCH_07_V1_2_0_INDEPENDENT_EVALUATION.md",
+    "group03_resolution_report": "docs/audit/BATCH_07_GROUP_03_AUDIT_DISCREPANCY_RESOLUTION.md"
+  },
+  "task1_ece_verification": {
+    "validation_sample_count": 262,
+    "sample_count_verified": true,
+    "positive_label_count": 102,
+    "positive_count_verified": true,
+    "negative_label_count": 160,
+    "negative_count_verified": true,
+    "bin_definition": "10 equal-width bins: [0.0, 0.1), [0.1, 0.2), ..., [0.9, 1.0]",
+    "bin_edge_closure": "Left-closed, right-open, with Bin 9 [0.9, 1.0] right-closed",
+    "boundary_sample_count": 0,
+    "bin_boundary_invariance": true,
+    "bins": [
+      {
+        "bin_idx": 0,
+        "bin_range": [
+          0.0,
+          0.1
+        ],
+        "sample_count": 137,
+        "positive_count": 5,
+        "negative_count": 132,
+        "empirical_frequency": 0.0364963503649635,
+        "mean_predicted_probability": 0.026487007299270074,
+        "absolute_calibration_error": 0.010009343065693425,
+        "weighted_contribution": 1.3712800000000003
+      },
+      {
+        "bin_idx": 1,
+        "bin_range": [
+          0.1,
+          0.2
+        ],
+        "sample_count": 15,
+        "positive_count": 5,
+        "negative_count": 10,
+        "empirical_frequency": 0.3333333333333333,
+        "mean_predicted_probability": 0.15163333333333334,
+        "absolute_calibration_error": 0.18170000000000003,
+        "weighted_contribution": 2.7255000000000003
+      },
+      {
+        "bin_idx": 2,
+        "bin_range": [
+          0.2,
+          0.3
+        ],
+        "sample_count": 8,
+        "positive_count": 2,
+        "negative_count": 6,
+        "empirical_frequency": 0.25,
+        "mean_predicted_probability": 0.2534125,
+        "absolute_calibration_error": 0.0034125,
+        "weighted_contribution": 0.0273
+      },
+      {
+        "bin_idx": 3,
+        "bin_range": [
+          0.3,
+          0.4
+        ],
+        "sample_count": 6,
+        "positive_count": 2,
+        "negative_count": 4,
+        "empirical_frequency": 0.3333333333333333,
+        "mean_predicted_probability": 0.3468,
+        "absolute_calibration_error": 0.013466666666666708,
+        "weighted_contribution": 0.08080000000000025
+      },
+      {
+        "bin_idx": 4,
+        "bin_range": [
+          0.4,
+          0.5
+        ],
+        "sample_count": 4,
+        "positive_count": 1,
+        "negative_count": 3,
+        "empirical_frequency": 0.25,
+        "mean_predicted_probability": 0.43335,
+        "absolute_calibration_error": 0.18335,
+        "weighted_contribution": 0.7334
+      },
+      {
+        "bin_idx": 5,
+        "bin_range": [
+          0.5,
+          0.6
+        ],
+        "sample_count": 6,
+        "positive_count": 5,
+        "negative_count": 1,
+        "empirical_frequency": 0.8333333333333334,
+        "mean_predicted_probability": 0.5455,
+        "absolute_calibration_error": 0.2878333333333334,
+        "weighted_contribution": 1.7270000000000003,
+        "is_mce_bin": true
+      },
+      {
+        "bin_idx": 6,
+        "bin_range": [
+          0.6,
+          0.7
+        ],
+        "sample_count": 6,
+        "positive_count": 3,
+        "negative_count": 3,
+        "empirical_frequency": 0.5,
+        "mean_predicted_probability": 0.6414166666666666,
+        "absolute_calibration_error": 0.14141666666666666,
+        "weighted_contribution": 0.8485
+      },
+      {
+        "bin_idx": 7,
+        "bin_range": [
+          0.7,
+          0.8
+        ],
+        "sample_count": 5,
+        "positive_count": 5,
+        "negative_count": 0,
+        "empirical_frequency": 1.0,
+        "mean_predicted_probability": 0.74058,
+        "absolute_calibration_error": 0.25942,
+        "weighted_contribution": 1.2971
+      },
+      {
+        "bin_idx": 8,
+        "bin_range": [
+          0.8,
+          0.9
+        ],
+        "sample_count": 17,
+        "positive_count": 16,
+        "negative_count": 1,
+        "empirical_frequency": 0.9411764705882353,
+        "mean_predicted_probability": 0.8411941176470589,
+        "absolute_calibration_error": 0.0999823529411764,
+        "weighted_contribution": 1.6997000000000002
+      },
+      {
+        "bin_idx": 9,
+        "bin_range": [
+          0.9,
+          1.0
+        ],
+        "sample_count": 58,
+        "positive_count": 58,
+        "negative_count": 0,
+        "empirical_frequency": 1.0,
+        "mean_predicted_probability": 0.9693896551724138,
+        "absolute_calibration_error": 0.0306103448275862,
+        "weighted_contribution": 1.7754000000000005
+      }
+    ],
+    "sums_and_aggregates": {
+      "sample_count_sum": 262,
+      "positive_count_sum": 102,
+      "weighted_contributions_sum_raw": 12.28598,
+      "ece_unrounded": 0.046893053435114504,
+      "ece_round_6": 0.046893,
+      "ece_round_4": 0.0469,
+      "mce_unrounded": 0.2878333333333334,
+      "mce_round_6": 0.287833,
+      "mce_round_4": 0.2878,
+      "raw_logits_unrounded_ece": 0.0468928053,
+      "raw_logits_unrounded_mce": 0.2878530788
+    },
+    "discrepancy_explanation": "In artifacts/reports/validation/v130_clean_validation_audit.json, metrics are recorded rounded to 4 decimals: ece=0.0469 and mce=0.2879. When evaluated using unrounded sigmoid probabilities derived from raw differential logits (1/(1+e^-diff_logit)), the unrounded ECE is 0.0468928053 (0.046893) and MCE is 0.2878530788 (0.287853). When evaluated using the stored 4-decimal violence_probability fields, ECE is 0.0468931298 and MCE is 0.2878333333. Both reconcile identically to 0.0469 (ECE) and 0.2878/0.2879 (MCE) within display precision.",
+    "status": "VERIFIED"
+  },
+  "task2_metrics_verification": {
+    "threshold": 0.5,
+    "positive_class": 1,
+    "negative_class": 0,
+    "confusion_matrix": {
+      "tn": 155,
+      "fp": 5,
+      "fn": 15,
+      "tp": 87
+    },
+    "confusion_matrix_verified": true,
+    "metrics": {
+      "accuracy": {
+        "unrounded": 0.9236641221374046,
+        "reported": 0.9237,
+        "match": true
+      },
+      "precision": {
+        "unrounded": 0.9456521739130435,
+        "reported": 0.9457,
+        "match": true
+      },
+      "recall": {
+        "unrounded": 0.8529411764705882,
+        "reported": 0.8529,
+        "match": true
+      },
+      "specificity": {
+        "unrounded": 0.96875,
+        "reported": 0.9688,
+        "match": true
+      },
+      "false_positive_rate": {
+        "unrounded": 0.03125,
+        "reported": 0.0312,
+        "match": true
+      },
+      "false_negative_rate": {
+        "unrounded": 0.14705882352941177,
+        "reported": 0.1471,
+        "match": true
+      },
+      "f1_score": {
+        "unrounded": 0.8969072164948454,
+        "reported": 0.8969,
+        "match": true
+      },
+      "brier_score": {
+        "unrounded": 0.0628688461832061,
+        "reported": 0.0629,
+        "match": true
+      },
+      "roc_auc": {
+        "unrounded": 0.9762867647058824,
+        "reported": 0.9763,
+        "match": true
+      },
+      "pr_auc_average_precision": {
+        "unrounded": 0.9680036649457635,
+        "reported": 0.968,
+        "match": true
+      },
+      "pr_auc_trapezoidal": {
+        "unrounded": 0.967862788546199,
+        "reported": 0.9679,
+        "match": true
+      }
+    },
+    "pr_auc_methodology": "The pipeline primary PR-AUC metric is scikit-learn's average_precision_score (AP = sum (R_n - R_{n-1}) * P_n = 0.9680). The linear trapezoidal integration across the PR curve yields 0.9679.",
+    "status": "VERIFIED"
+  },
+  "task3_test_partition_status": {
+    "group03_and_04_audit_access": "NEITHER Group 03 NOR Group 04 loaded, evaluated, or accessed the test partition (N=354 total, 285 eligible surveillance clips).",
+    "historical_evaluation_disclosure": "The test partition is NOT historically untouched and NOT pristine. In Batch 07 Phase 5 (v1.2.0 Independent Evaluation), the 285 eligible surveillance clips were evaluated against the v1.2.0 checkpoint (producing 87.37% Accuracy, 96.60% Precision, 82.08% Recall, 4.46% FPR, and Platt calibration ECE 0.1390).",
+    "implication_for_future_evaluations": "Because the existing test partition has been previously exposed and evaluated, it cannot serve as an independent pristine confirmation for future production readiness. Future milestone qualification requires a newly acquired, independently quarantined external surveillance benchmark (N >= 300).",
+    "status": "CORRECTED_AND_DISCLOSED"
+  },
+  "task4_governance_status": {
+    "tier1_file_and_manifest_integrity": {
+      "status": "VERIFIED",
+      "findings": "3,265 items in data/manifest.json. All video files match byte counts and SHA-256 digests."
+    },
+    "tier2_partition_isolation": {
+      "status": "VERIFIED",
+      "findings": "Zero cross-split file path overlaps. Zero bitwise hash collisions. Zero scene-prefix group leakage between val (59 groups) and test (64 groups)."
+    },
+    "tier3_bibliographic_attribution": {
+      "status": "VERIFIED",
+      "findings": "Formal scientific citations documented for RWF-2000, Real Life Violence Situations, AIRTLab, VID, and HockeyFight."
+    },
+    "tier4_academic_training_permission": {
+      "status": "UNRESOLVED",
+      "findings": "RWF-2000 and VID permit academic research only. Real Life Violence Situations consists of scraped YouTube footage without underlying copyright release or human subject consent. Because RLVS is included in the authorized surveillance training partition, academic training rights are UNRESOLVED."
+    },
+    "tier5_commercial_operational_deployment": {
+      "status": "BLOCKED",
+      "findings": "No candidate dataset has commercial clearance. Production deployment is strictly BLOCKED."
+    }
+  },
+  "task5_checkpoint_preservation": {
+    "checkpoints": [
+      {
+        "name": "v1.0.0",
+        "path": "artifacts/models/violence-r3d18-v1.0.0.pt",
+        "sha256": "e3b4337bea8b98c0a64b13b471d2d174526a31a29e2dbcc07944b6818eab5af9",
+        "status": "PRESERVED_BIT_FOR_BIT"
+      },
+      {
+        "name": "v1.1.0",
+        "path": "artifacts/models/experimental/violence-r3d18-experiment-v1.1.0.pt",
+        "sha256": "2d001c4e9700fd113d340a5e643d40f191772ed44874801ce0f2f3cd4ed09ae2",
+        "status": "PRESERVED_BIT_FOR_BIT"
+      },
+      {
+        "name": "v1.2.0",
+        "path": "artifacts/models/experimental/v1.2.0/violence-r3d18-experiment-v1.2.0.pt",
+        "sha256": "d18daa747d8c6f8774e7f8cd1356f949fd18e976caa5a7a43020cf5df5f32c10",
+        "status": "PRESERVED_BIT_FOR_BIT"
+      },
+      {
+        "name": "v1.3.0-smoke",
+        "path": "artifacts/models/experimental/v1.3.0/violence-r3d18-experiment-v1.3.0-smoke.pt",
+        "sha256": "1592e86dc8701c1ce4e98377afd9e76d3d52776475f1dce1a35701155817ed79",
+        "status": "PRESERVED_BIT_FOR_BIT"
+      },
+      {
+        "name": "v1.3.0",
+        "path": "artifacts/models/experimental/v1.3.0/violence-r3d18-experiment-v1.3.0.pt",
+        "sha256": "6c1151f0c9b9d3aed11d02abff034cc103c270253241b2ed91afd1def9b1336e",
+        "status": "PRESERVED_BIT_FOR_BIT"
+      }
+    ]
+  },
+  "audit_conclusion": {
+    "overall_status": "VERIFIED_WITH_UNRESOLVED_GOVERNANCE_AND_HISTORICAL_DISCLOSURE",
+    "ece_status": "VERIFIED",
+    "validation_metrics_status": "VERIFIED",
+    "test_partition_status": "HISTORICALLY_EXPOSED_NOT_TOUCHED_IN_GROUP04",
+    "governance_training_status": "UNRESOLVED",
+    "deployment_status": "BLOCKED",
+    "production_readiness": "NOT READY"
+  }
+}

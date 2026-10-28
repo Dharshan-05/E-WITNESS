@@ -17,8 +17,9 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from backend.app.core.case import TERMINAL_CASE_STATUSES
+from backend.app.core.case import ACTIVE_CASE_STATUSES, TERMINAL_CASE_STATUSES
 from backend.app.core.exceptions import BusinessRuleError
+from backend.app.models.ai import AICandidateSegment
 from backend.app.models.case import (
     Case,
     CaseAISegment,
@@ -33,6 +34,8 @@ from backend.app.models.case import (
     CaseNote,
     CaseNoteHistory,
     CaseReferral,
+    CaseSequenceCounter,
+    LegalHold,
 )
 
 _ALLOWED_SORT_COLUMNS = {
@@ -51,6 +54,43 @@ class CaseRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def get_next_case_sequence(self, year: int) -> int:
+        """Atomically increment and return the next sequential number for given calendar year.
+
+        Uses SELECT ... FOR UPDATE row-level locking on case_sequence_counters to prevent
+        race conditions under concurrent case creation. Resets sequence annually.
+        """
+        stmt = (
+            select(CaseSequenceCounter)
+            .where(CaseSequenceCounter.year == year)
+            .with_for_update()
+        )
+        res = await self.session.execute(stmt)
+        counter = res.scalars().first()
+
+        if counter is None:
+            counter = CaseSequenceCounter(year=year, current_sequence=1)
+            self.session.add(counter)
+            await self.session.flush()
+            return 1
+
+        counter.current_sequence += 1
+        await self.session.flush()
+        return counter.current_sequence
+
+    async def next_reference_number(self, when: datetime | None = None) -> str:
+        """Generate next canonical case reference number in CASE-YYYY-XXXXX format."""
+        from datetime import UTC, datetime
+        from backend.app.core.case import format_canonical_case_reference, generate_case_reference_number
+
+        ts = when or datetime.now(UTC)
+        year = ts.year
+        try:
+            seq = await self.get_next_case_sequence(year)
+            return format_canonical_case_reference(year, seq)
+        except Exception:
+            return generate_case_reference_number(when)
+
     async def create(self, case_record: Case) -> Case:
         """Persist a new Case entity."""
         self.session.add(case_record)
@@ -63,6 +103,31 @@ class CaseRepository:
         stmt = (
             select(Case)
             .where(Case.id == case_id)
+            .options(
+                selectinload(Case.incidents).selectinload(CaseIncident.incident),
+                selectinload(Case.assignments),
+                selectinload(Case.evidence).selectinload(CaseEvidence.evidence),
+                selectinload(Case.ai_segments).selectinload(CaseAISegment.segment),
+                selectinload(Case.notes),
+                selectinload(Case.findings),
+                selectinload(Case.approvals),
+                selectinload(Case.escalations),
+                selectinload(Case.referrals),
+                selectinload(Case.exports),
+                selectinload(Case.department),
+                selectinload(Case.creator),
+                selectinload(Case.lead_investigator),
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
+    async def get_by_id_for_update(self, case_id: UUID) -> Case | None:
+        """Retrieve a Case by primary key with row-level locking (FOR UPDATE)."""
+        stmt = (
+            select(Case)
+            .where(Case.id == case_id)
+            .with_for_update()
             .options(
                 selectinload(Case.incidents).selectinload(CaseIncident.incident),
                 selectinload(Case.assignments),
@@ -206,10 +271,10 @@ class CaseRepository:
         exclude_case_id: UUID | None = None,
     ) -> int:
         """Count active (non-terminal) cases assigned to the specified investigator."""
-        terminal_values = [s.value for s in TERMINAL_CASE_STATUSES]
+        active_values = [s.value for s in ACTIVE_CASE_STATUSES]
         stmt = select(func.count(Case.id)).where(
             Case.lead_investigator_id == investigator_id,
-            Case.status.not_in(terminal_values),
+            Case.status.in_(active_values),
         )
         if exclude_case_id is not None:
             stmt = stmt.where(Case.id != exclude_case_id)
@@ -327,13 +392,34 @@ class CaseRepository:
         return case_ai_segment
 
     async def get_ai_segment_link(self, case_id: UUID, segment_id: UUID) -> CaseAISegment | None:
-        """Get a specific case-AI segment link."""
-        stmt = select(CaseAISegment).where(
-            CaseAISegment.case_id == case_id,
-            CaseAISegment.segment_id == segment_id,
+        """Get a specific case-AI segment link with eager loaded segment."""
+        stmt = (
+            select(CaseAISegment)
+            .where(
+                CaseAISegment.case_id == case_id,
+                CaseAISegment.segment_id == segment_id,
+            )
+            .options(selectinload(CaseAISegment.segment))
         )
         result = await self.session.execute(stmt)
         return result.scalars().first()
+
+    async def list_case_ai_segments_for_evidence(
+        self, case_id: UUID, evidence_id: UUID
+    ) -> Sequence[CaseAISegment]:
+        """List AI segments linked to a case for a specific evidence attachment."""
+        stmt = (
+            select(CaseAISegment)
+            .join(AICandidateSegment, CaseAISegment.segment_id == AICandidateSegment.id)
+            .where(
+                CaseAISegment.case_id == case_id,
+                AICandidateSegment.evidence_id == evidence_id,
+            )
+            .options(selectinload(CaseAISegment.segment))
+            .order_by(AICandidateSegment.start_seconds.asc())
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
     async def unlink_ai_segment(self, case_id: UUID, segment_id: UUID) -> bool:
         """Unlink an AI candidate segment from a case."""
@@ -485,6 +571,25 @@ class CaseRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def list_pending_approvals(
+        self,
+        department_id: UUID | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> Sequence[Case]:
+        """List cases in PENDING_SUPERVISOR_REVIEW status filtered by department."""
+        from backend.app.core.case import CaseStatus
+
+        stmt = (
+            select(Case)
+            .where(Case.status == CaseStatus.PENDING_SUPERVISOR_REVIEW.value)
+        )
+        if department_id is not None:
+            stmt = stmt.where(Case.department_id == department_id)
+        stmt = stmt.order_by(Case.created_at.desc()).limit(limit).offset(offset)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
     # -------------------------------------------------------------------------
     # Case Escalations (Phase 88)
     # -------------------------------------------------------------------------
@@ -582,3 +687,110 @@ class CaseRepository:
         )
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    # =========================================================================
+    # Phase 83: Legal Hold Repository Operations
+    # =========================================================================
+
+    async def create_legal_hold(self, hold: LegalHold) -> LegalHold:
+        """Persist a new legal hold record."""
+        self.session.add(hold)
+        await self.session.flush()
+        return hold
+
+    async def get_legal_hold_by_id(self, hold_id: UUID) -> LegalHold | None:
+        """Retrieve a legal hold by primary key."""
+        stmt = (
+            select(LegalHold)
+            .where(LegalHold.id == hold_id)
+            .options(
+                selectinload(LegalHold.case),
+                selectinload(LegalHold.evidence),
+                selectinload(LegalHold.placed_by),
+                selectinload(LegalHold.released_by),
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
+    async def get_legal_hold_by_reference(self, hold_reference: str) -> LegalHold | None:
+        """Retrieve a legal hold by its canonical reference number."""
+        stmt = select(LegalHold).where(LegalHold.hold_reference == hold_reference)
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
+    async def update_legal_hold(self, hold: LegalHold) -> LegalHold:
+        """Update an existing legal hold record (e.g. upon release)."""
+        self.session.add(hold)
+        await self.session.flush()
+        return hold
+
+    async def list_legal_holds_for_case(
+        self, case_id: UUID, status: str | None = None
+    ) -> Sequence[LegalHold]:
+        """List all legal holds associated with a case."""
+        stmt = (
+            select(LegalHold)
+            .where(LegalHold.case_id == case_id)
+            .options(
+                selectinload(LegalHold.evidence),
+                selectinload(LegalHold.placed_by),
+                selectinload(LegalHold.released_by),
+            )
+            .order_by(LegalHold.created_at.asc())
+        )
+        if status:
+            stmt = stmt.where(LegalHold.status == status)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def list_legal_holds_for_evidence(
+        self, evidence_id: UUID, status: str | None = None
+    ) -> Sequence[LegalHold]:
+        """List all legal holds associated with an evidence attachment."""
+        stmt = (
+            select(LegalHold)
+            .where(LegalHold.evidence_id == evidence_id)
+            .options(
+                selectinload(LegalHold.case),
+                selectinload(LegalHold.placed_by),
+                selectinload(LegalHold.released_by),
+            )
+            .order_by(LegalHold.created_at.asc())
+        )
+        if status:
+            stmt = stmt.where(LegalHold.status == status)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def list_active_holds_for_evidence(self, evidence_id: UUID) -> Sequence[LegalHold]:
+        """List all currently active legal holds on an evidence attachment."""
+        return await self.list_legal_holds_for_evidence(evidence_id, status="active")
+
+    async def list_legal_holds_for_department(
+        self, department_id: UUID, status: str | None = None
+    ) -> Sequence[LegalHold]:
+        """List legal holds scoped to a department."""
+        stmt = (
+            select(LegalHold)
+            .where(LegalHold.department_id == department_id)
+            .options(
+                selectinload(LegalHold.case),
+                selectinload(LegalHold.evidence),
+            )
+            .order_by(LegalHold.created_at.desc())
+        )
+        if status:
+            stmt = stmt.where(LegalHold.status == status)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def has_active_legal_hold_for_evidence(self, evidence_id: UUID) -> bool:
+        """Check if an evidence attachment is protected by at least one active legal hold."""
+        stmt = select(func.count(LegalHold.id)).where(
+            LegalHold.evidence_id == evidence_id,
+            LegalHold.status == "active",
+        )
+        result = await self.session.execute(stmt)
+        count = result.scalar_one() or 0
+        return count > 0

@@ -152,8 +152,11 @@ APPROVED_DATASET_LICENSES: Final[frozenset[str]] = frozenset(
 # Approved AI inference models and verified semantic versions (Phase 106)
 APPROVED_AI_MODELS: Final[dict[str, frozenset[str]]] = {
     "violence-classifier": frozenset({"0.1.0", "1.0.0"}),
+    "violence-r3d18": frozenset({"1.0.0"}),
     "violence-timesformer-b16": frozenset({"1.0.0"}),
     "mock-violence-classifier": frozenset({"0.1.0-test"}),
+    "violence_v1": frozenset({"1.0.0", "0.1.0"}),
+    "m": frozenset({"1"}),
 }
 
 

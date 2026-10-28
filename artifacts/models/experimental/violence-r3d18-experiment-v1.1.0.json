@@ -1,0 +1,44 @@
+{
+  "model_name": "violence-r3d18-experiment",
+  "model_version": "1.1.0",
+  "weight_sha256": "2d001c4e9700fd113d340a5e643d40f191772ed44874801ce0f2f3cd4ed09ae2",
+  "manifest_sha256": "5e96341d30da2f179e7c9f7a9d599a66991e27e159673d29bae65a7e540a4628",
+  "architecture": "r3d_18",
+  "input_frames": 16,
+  "resolution": [
+    112,
+    112
+  ],
+  "class_mapping": {
+    "0": "non_violence",
+    "1": "violence"
+  },
+  "random_seed": 42,
+  "start_time": "2026-10-26T18:34:34.025592+00:00",
+  "end_time": "2026-10-26T18:34:40.709924+00:00",
+  "hyperparameters": {
+    "epochs": 1,
+    "micro_batch_size": 4,
+    "gradient_accumulation_steps": 2,
+    "effective_batch_size": 8,
+    "learning_rate": 0.0001
+  },
+  "metrics": {
+    "best_val_loss": 0.6669,
+    "best_val_accuracy": 0.5,
+    "training_time_seconds": 6.38
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6772,
+      "train_accuracy": 0.5625,
+      "val_loss": 0.6669,
+      "val_accuracy": 0.5
+    }
+  ],
+  "device_used": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "saved_checkpoint": "violence-r3d18-experiment-v1.1.0.pt",
+  "evaluation_note": "Smoke-test checkpoint only"
+}

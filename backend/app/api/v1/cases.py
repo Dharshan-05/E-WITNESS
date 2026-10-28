@@ -27,15 +27,26 @@ from backend.app.schemas.auth import AuthenticatedPrincipal
 from backend.app.schemas.case import (
     CaseAISegmentRead,
     CaseAISegmentReviewRequest,
+    CaseCreateAISegmentAnnotationRequest,
+    CaseAISegmentHistoryItemRead,
     CaseApprovalRead,
     CaseApprovalRequest,
     CaseAssignmentRead,
     CaseAssignRequest,
     CaseCloseRequest,
     CaseCreate,
+    CaseSubmitReviewRequest,
+    CaseReadinessResult,
+    CaseTransitionHistoryItem,
+    CaseTimelineEventRead,
+    CaseTimelineResponse,
     CaseEscalationRead,
     CaseEscalationRequest,
     CaseEvidenceItemRead,
+    LegalHoldPlaceRequest,
+    LegalHoldReleaseRequest,
+    LegalHoldRead,
+    LegalHoldStatusRead,
     CaseExportRead,
     CaseExportRequest,
     CaseFindingCreate,
@@ -50,6 +61,7 @@ from backend.app.schemas.case import (
     CaseNoteHistoryRead,
     CaseNoteRead,
     CaseNoteUpdate,
+    CaseNoteVisibilityUpdate,
     CaseRead,
     CaseReferralCreate,
     CaseReferralRead,
@@ -132,6 +144,29 @@ async def list_cases(
         sort_by=sort_by,
         sort_order=sort_order,
     )
+
+
+@router.get(
+    "/pending-approvals",
+    response_model=list[CaseRead],
+    summary="List cases pending supervisor review",
+    description="List active cases in pending_supervisor_review status within authorized department scope (Phase 87).",
+)
+async def list_pending_approvals(
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.CASE_APPROVAL_READ,
+                Permission.CASE_TRANSITION_APPROVE,
+            )
+        ),
+    ],
+    limit: int = 50,
+    offset: int = 0,
+) -> list[CaseRead]:
+    return await case_service.list_pending_approvals(principal, limit=limit, offset=offset)
 
 
 @router.get(
@@ -222,6 +257,7 @@ async def assign_case(
             require_any_permission(
                 Permission.CASE_ASSIGN_GLOBAL,
                 Permission.CASE_ASSIGN_DEPT,
+                Permission.CASE_ASSIGN,
             )
         ),
     ],
@@ -430,6 +466,126 @@ async def unlink_evidence(
     )
 
 
+@router.get(
+    "/{case_id}/evidence/{evidence_id}",
+    response_model=CaseEvidenceItemRead,
+    summary="Get enriched case evidence item",
+    description="Retrieve single enriched evidence inventory item with hold and custody metadata.",
+)
+async def get_case_evidence_item(
+    case_id: UUID,
+    evidence_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_READ, Permission.CASE_READ_DEPT, Permission.CASE_READ_GLOBAL, Permission.CASE_READ_OWN)),
+    ],
+) -> CaseEvidenceItemRead:
+    return await case_service.get_case_evidence_item(case_id, evidence_id, principal)
+
+
+@router.post(
+    "/{case_id}/evidence/{evidence_id}/holds",
+    response_model=LegalHoldRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Place legal hold on case evidence",
+    description="Place an audited legal hold on a case-linked evidence attachment.",
+)
+async def place_legal_hold(
+    case_id: UUID,
+    evidence_id: UUID,
+    payload: LegalHoldPlaceRequest,
+    request: Request,
+    case_service: CaseServiceDep,
+    client_ip: ClientIpDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_LEGAL_HOLD_MANAGE, Permission.CASE_EVIDENCE_MANAGE)),
+    ],
+) -> LegalHoldRead:
+    actor_user_agent = request.headers.get("user-agent")
+    return await case_service.place_legal_hold(
+        case_id,
+        evidence_id,
+        payload,
+        principal,
+        actor_ip=client_ip,
+        actor_user_agent=actor_user_agent,
+    )
+
+
+@router.get(
+    "/{case_id}/evidence/{evidence_id}/holds",
+    response_model=list[LegalHoldRead],
+    summary="List legal holds for evidence item",
+    description="List active and released legal holds for a case-linked evidence item.",
+)
+async def list_evidence_legal_holds(
+    case_id: UUID,
+    evidence_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_LEGAL_HOLD_READ, Permission.CASE_READ, Permission.CASE_READ_DEPT, Permission.CASE_READ_GLOBAL)),
+    ],
+    hold_status: Annotated[str | None, Query(alias="status", description="Filter by hold status (active, released)")] = None,
+) -> list[LegalHoldRead]:
+    return await case_service.list_legal_holds_for_evidence(
+        case_id, evidence_id, principal, status=hold_status
+    )
+
+
+@router.post(
+    "/{case_id}/evidence/{evidence_id}/holds/{hold_id}/release",
+    response_model=LegalHoldRead,
+    summary="Release legal hold",
+    description="Release an active legal hold on evidence, requiring dedicated supervisor authorization.",
+)
+async def release_legal_hold(
+    case_id: UUID,
+    evidence_id: UUID,
+    hold_id: UUID,
+    payload: LegalHoldReleaseRequest,
+    request: Request,
+    case_service: CaseServiceDep,
+    client_ip: ClientIpDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_LEGAL_HOLD_RELEASE)),
+    ],
+) -> LegalHoldRead:
+    actor_user_agent = request.headers.get("user-agent")
+    return await case_service.release_legal_hold(
+        case_id,
+        evidence_id,
+        hold_id,
+        payload,
+        principal,
+        actor_ip=client_ip,
+        actor_user_agent=actor_user_agent,
+    )
+
+
+@router.get(
+    "/{case_id}/holds",
+    response_model=list[LegalHoldRead],
+    summary="List all legal holds for a case",
+    description="List all active and released legal holds placed across evidence in this case.",
+)
+async def list_case_legal_holds(
+    case_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_LEGAL_HOLD_READ, Permission.CASE_READ, Permission.CASE_READ_DEPT, Permission.CASE_READ_GLOBAL)),
+    ],
+    hold_status: Annotated[str | None, Query(alias="status", description="Filter by hold status (active, released)")] = None,
+) -> list[LegalHoldRead]:
+    return await case_service.list_legal_holds_for_case(
+        case_id, principal, status=hold_status
+    )
+
+
 # =============================================================================
 # Phase 84: AI Candidate Segments Integration
 # =============================================================================
@@ -477,6 +633,82 @@ async def list_case_ai_segments(
     return await case_service.list_case_ai_segments(case_id, principal)
 
 
+@router.get(
+    "/{case_id}/ai-segments/{segment_id}",
+    response_model=CaseAISegmentRead,
+    summary="Get linked AI candidate segment",
+    description="Retrieve an individual AI candidate segment linked to a case.",
+)
+async def get_case_ai_segment(
+    case_id: UUID,
+    segment_id: UUID,
+    case_service: CaseServiceDep,
+    principal: CurrentUserDep,
+) -> CaseAISegmentRead:
+    return await case_service.get_case_ai_segment(case_id, segment_id, principal)
+
+
+@router.get(
+    "/{case_id}/ai-segments/{segment_id}/history",
+    response_model=list[CaseAISegmentHistoryItemRead],
+    summary="Get AI candidate segment review history",
+    description="Retrieve historical human review decisions recorded for an AI candidate segment.",
+)
+async def get_case_ai_segment_review_history(
+    case_id: UUID,
+    segment_id: UUID,
+    case_service: CaseServiceDep,
+    principal: CurrentUserDep,
+) -> list[CaseAISegmentHistoryItemRead]:
+    return await case_service.get_case_ai_segment_review_history(case_id, segment_id, principal)
+
+
+@router.get(
+    "/{case_id}/evidence/{evidence_id}/ai-segments",
+    response_model=list[CaseAISegmentRead],
+    summary="List candidate segments for case evidence",
+    description="List AI candidate segments associated with a specific evidence attachment in the case.",
+)
+async def list_case_evidence_ai_segments(
+    case_id: UUID,
+    evidence_id: UUID,
+    case_service: CaseServiceDep,
+    principal: CurrentUserDep,
+) -> list[CaseAISegmentRead]:
+    return await case_service.list_case_evidence_ai_segments(case_id, evidence_id, principal)
+
+
+@router.post(
+    "/{case_id}/evidence/{evidence_id}/ai-segments",
+    response_model=CaseAISegmentRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create advisory AI candidate annotation on case evidence",
+    description="Attach an advisory AI candidate segment annotation to case evidence.",
+)
+async def create_case_evidence_ai_segment(
+    case_id: UUID,
+    evidence_id: UUID,
+    payload: CaseCreateAISegmentAnnotationRequest,
+    request: Request,
+    case_service: CaseServiceDep,
+    client_ip: ClientIpDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_AI_SEGMENT_MANAGE)),
+    ],
+) -> CaseAISegmentRead:
+    actor_user_agent = request.headers.get("user-agent")
+    if payload.evidence_id != evidence_id:
+        raise BusinessRuleError("Route evidence_id does not match payload evidence_id.", code="EVIDENCE_MISMATCH")
+    return await case_service.create_and_link_ai_segment_annotation(
+        case_id,
+        payload,
+        principal,
+        actor_ip=client_ip,
+        actor_user_agent=actor_user_agent,
+    )
+
+
 @router.delete(
     "/{case_id}/ai-segments/{segment_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -513,7 +745,7 @@ async def unlink_ai_segment(
     "/{case_id}/ai-segments/{segment_id}/review",
     response_model=CaseAISegmentRead,
     summary="Review AI candidate segment",
-    description="Record authorized human review and correction on an AI candidate segment.",
+    description="Record authorized human review, classification correction, or determination on an AI candidate segment.",
 )
 async def review_ai_segment(
     case_id: UUID,
@@ -524,10 +756,40 @@ async def review_ai_segment(
     client_ip: ClientIpDep,
     principal: Annotated[
         AuthenticatedPrincipal,
-        Depends(require_any_permission(Permission.CASE_AI_SEGMENT_REVIEW)),
+        Depends(require_any_permission(Permission.CASE_AI_SEGMENT_REVIEW, Permission.CASE_AI_SEGMENT_OVERRIDE)),
     ],
 ) -> CaseAISegmentRead:
     actor_user_agent = request.headers.get("user-agent")
+    return await case_service.review_ai_segment(
+        case_id,
+        segment_id,
+        payload,
+        principal,
+        actor_ip=client_ip,
+        actor_user_agent=actor_user_agent,
+    )
+
+
+@router.post(
+    "/{case_id}/ai-segments/{segment_id}/override",
+    response_model=CaseAISegmentRead,
+    summary="Override AI candidate segment review",
+    description="Record an authorized supervisor override of an existing review determination on an AI candidate segment.",
+)
+async def override_ai_segment(
+    case_id: UUID,
+    segment_id: UUID,
+    payload: CaseAISegmentReviewRequest,
+    request: Request,
+    case_service: CaseServiceDep,
+    client_ip: ClientIpDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_AI_SEGMENT_OVERRIDE)),
+    ],
+) -> CaseAISegmentRead:
+    actor_user_agent = request.headers.get("user-agent")
+    payload.is_override = True
     return await case_service.review_ai_segment(
         case_id,
         segment_id,
@@ -579,6 +841,24 @@ async def list_case_notes(
     return await case_service.list_case_notes(case_id, principal)
 
 
+@router.get(
+    "/{case_id}/notes/{note_id}",
+    response_model=CaseNoteRead,
+    summary="Get single case note",
+    description="Retrieve an individual investigation note subject to caller visibility permissions.",
+)
+async def get_case_note(
+    case_id: UUID,
+    note_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_NOTE_READ)),
+    ],
+) -> CaseNoteRead:
+    return await case_service.get_case_note(case_id, note_id, principal)
+
+
 @router.patch(
     "/{case_id}/notes/{note_id}",
     response_model=CaseNoteRead,
@@ -592,10 +872,48 @@ async def update_case_note(
     case_service: CaseServiceDep,
     principal: Annotated[
         AuthenticatedPrincipal,
-        Depends(require_any_permission(Permission.CASE_NOTE_CREATE)),
+        Depends(require_any_permission(Permission.CASE_NOTE_UPDATE, Permission.CASE_NOTE_CREATE)),
     ],
 ) -> CaseNoteRead:
     return await case_service.update_case_note(case_id, note_id, principal, payload)
+
+
+@router.patch(
+    "/{case_id}/notes/{note_id}/visibility",
+    response_model=CaseNoteRead,
+    summary="Modify note visibility tier",
+    description="Modify a case note's visibility tier (e.g. public, internal, confidential, restricted).",
+)
+async def change_note_visibility(
+    case_id: UUID,
+    note_id: UUID,
+    payload: CaseNoteVisibilityUpdate,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_NOTE_VISIBILITY_MANAGE)),
+    ],
+) -> CaseNoteRead:
+    return await case_service.change_note_visibility(case_id, note_id, principal, payload)
+
+
+@router.delete(
+    "/{case_id}/notes/{note_id}",
+    response_model=CaseNoteRead,
+    summary="Archive a case note",
+    description="Soft-archive / redact an investigation note.",
+)
+async def archive_case_note(
+    case_id: UUID,
+    note_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(require_any_permission(Permission.CASE_NOTE_UPDATE, Permission.CASE_NOTE_VISIBILITY_MANAGE, Permission.CASE_NOTE_CREATE)),
+    ],
+    expected_version_id: int | None = None,
+) -> CaseNoteRead:
+    return await case_service.archive_case_note(case_id, note_id, principal, expected_version_id=expected_version_id)
 
 
 @router.get(
@@ -610,7 +928,7 @@ async def get_case_note_history(
     case_service: CaseServiceDep,
     principal: Annotated[
         AuthenticatedPrincipal,
-        Depends(require_any_permission(Permission.CASE_NOTE_READ)),
+        Depends(require_any_permission(Permission.CASE_NOTE_HISTORY_READ, Permission.CASE_NOTE_READ)),
     ],
 ) -> list[CaseNoteHistoryRead]:
     return await case_service.get_case_note_history(case_id, note_id, principal)
@@ -700,6 +1018,126 @@ async def get_case_finding_history(
 # =============================================================================
 # Phase 87: Case Lifecycle Transitions & Approvals
 # =============================================================================
+
+
+@router.post(
+    "/{case_id}/submit-for-review",
+    response_model=CaseRead,
+    summary="Submit case for supervisor review",
+    description="Submit an active case to pending_supervisor_review with readiness validation (Phase 87).",
+)
+@router.post(
+    "/{case_id}/submit_for_review",
+    response_model=CaseRead,
+    include_in_schema=False,
+)
+async def submit_case_for_review(
+    case_id: UUID,
+    payload: CaseSubmitReviewRequest,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.CASE_TRANSITION_SUBMIT,
+                Permission.CASE_UPDATE_DEPT,
+                Permission.CASE_UPDATE_GLOBAL,
+            )
+        ),
+    ],
+) -> CaseRead:
+    return await case_service.submit_case_for_review(case_id, principal, payload)
+
+
+@router.get(
+    "/{case_id}/readiness",
+    response_model=CaseReadinessResult,
+    summary="Evaluate case transition readiness",
+    description="Check all prerequisite conditions for an attempted case lifecycle transition (Phase 87).",
+)
+async def get_case_readiness(
+    case_id: UUID,
+    target_status: str,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.CASE_READ_OWN,
+                Permission.CASE_READ_DEPT,
+                Permission.CASE_READ_GLOBAL,
+            )
+        ),
+    ],
+) -> CaseReadinessResult:
+    return await case_service.get_case_readiness(case_id, target_status, principal)
+
+
+@router.get(
+    "/{case_id}/transitions/history",
+    response_model=list[CaseTransitionHistoryItem],
+    summary="Get case transition and approval history",
+    description="Retrieve chronological history of state transitions, submissions, and supervisory decisions (Phase 87).",
+)
+async def get_case_transition_history(
+    case_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.CASE_TRANSITION_HISTORY_READ,
+                Permission.CASE_READ_OWN,
+                Permission.CASE_READ_DEPT,
+                Permission.CASE_READ_GLOBAL,
+            )
+        ),
+    ],
+) -> list[CaseTransitionHistoryItem]:
+    return await case_service.get_case_transition_history(case_id, principal)
+
+
+@router.get(
+    "/{case_id}/timeline",
+    response_model=CaseTimelineResponse,
+    summary="Get unified case activity timeline",
+    description="Retrieve chronological or paginated activity timeline, audit history, and operational traceability for an investigation case (Phase 88).",
+)
+async def get_case_activity_timeline(
+    case_id: UUID,
+    case_service: CaseServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.CASE_TIMELINE_READ,
+                Permission.CASE_READ_OWN,
+                Permission.CASE_READ_DEPT,
+                Permission.CASE_READ_GLOBAL,
+            )
+        ),
+    ],
+    event_types: Annotated[list[str] | None, Query(description="Filter by specific event types or groups")] = None,
+    actor_id: Annotated[UUID | None, Query(description="Filter by actor user ID")] = None,
+    start_time: Annotated[datetime | None, Query(description="Filter events starting at or after UTC timestamp")] = None,
+    end_time: Annotated[datetime | None, Query(description="Filter events ending at or before UTC timestamp")] = None,
+    outcome: Annotated[str | None, Query(description="Filter by outcome ('success', 'failure', 'denied')")] = None,
+    limit: Annotated[int, Query(ge=1, le=100, description="Page limit (default 50, max 100)")] = 50,
+    cursor: Annotated[str | None, Query(description="Opaque base64 cursor for pagination")] = None,
+    ascending: Annotated[bool, Query(description="Sort ascending instead of default descending")] = False,
+) -> CaseTimelineResponse:
+    return await case_service.get_case_activity_timeline(
+        case_id=case_id,
+        principal=principal,
+        event_types=event_types,
+        actor_id=actor_id,
+        start_time=start_time,
+        end_time=end_time,
+        outcome=outcome,
+        limit=limit,
+        cursor=cursor,
+        ascending=ascending,
+    )
 
 
 @router.post(

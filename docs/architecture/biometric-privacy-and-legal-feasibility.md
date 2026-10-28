@@ -37,26 +37,64 @@ Under the doctrine of data minimization (GDPR Art. 5(1)(c)), biometric processin
 - **Manual Human Review**: Review by trained forensic investigators using standard visual corroboration (clothing, badges, time, location, vehicle plates) without algorithmic biometric template extraction.
 - **Manual Video Redaction**: Viable for short clips, but computationally assisted face *detection* (without identification) is necessary to ensure reliable privacy protection across large volumes of exported video.
 
+### 2.3 Four-Tier Functional Separation and Non-Transitive Authorization
+The platform enforces a strict four-tier hierarchy of biometric and vision capabilities. **Authorization or approval for one operational tier strictly DOES NOT imply or grant authorization for any subsequent tier**:
+
+1. **Tier 1 — Local Face Detection for Privacy Redaction (`PRIVACY_REDACTION_BLURRING`)**:
+   - Bounding-box localization only (`[ymin, xmin, ymax, xmax]`).
+   - Runs 100% locally with zero external network connectivity.
+   - Purpose: Redacting, blurring, or obscuring bystander faces before evidence export.
+   - Does NOT extract embeddings, compute templates, or assert identity.
+2. **Tier 2 — Optional Biometric Feature Extraction (`OPTIONAL_FEATURE_EXTRACTION`)**:
+   - Extraction of mathematical feature vectors from isolated bounding boxes.
+   - Disabled by default (`BIOMETRIC_MATCHING_ENABLED = False`).
+   - Requires explicit active subject consent or court warrant and approved governance record.
+   - Vector buffers exist in ephemeral memory and are never persisted in plaintext.
+3. **Tier 3 — 1:1 Face Verification (`1:1_REFERENCE_VERIFICATION`)**:
+   - Pairwise similarity comparison between a single probe vector and an authorized enrolled reference vector under verified subject consent or judicial warrant.
+   - Produces candidate similarity score with mandatory statutory disclaimer and explicit uncertainty band ($[0.60, 0.85]$).
+   - Never automated: candidate matches require independent, affirmative human review.
+4. **Tier 4 — 1:N Identification and Public Mass Surveillance (`1:N_MASS_SURVEILLANCE_PROHIBITED`)**:
+   - One-to-many search across arbitrary galleries, crowd scanning, real-time public surveillance, and automated subject identification.
+   - **CATEGORICALLY PROHIBITED IN CODE, CONFIGURATION, AND ARCHITECTURE**.
+   - No exception, administrative override, or bypass exists.
+
+### 2.4 Cross-Subsystem Governance: AI Violence Detection (Batch 07) Interaction Boundary
+The E-WITNESS platform strictly segregates the AI Violence Detection subsystem (Batch 07, Phases 61–70) from the Biometric Privacy & Face Verification subsystem (Batch 08, Phases 71–80):
+- **Advisory Candidate Status:** Violence detection outputs (candidate incident segments, violence probabilities) are purely probabilistic advisory triage indicators for authorized human investigators. They do NOT constitute proof or evidence of guilt.
+- **Prohibition on Automated Compound Decisions:** The platform categorically prohibits combining automated violence detection scores with face detection or verification outputs to generate autonomous guilt determinations, disciplinary actions, punitive citations, or automated law enforcement alerts.
+- **Mandatory Human-in-the-Loop:** Any adverse decision requires independent, end-to-end human forensic investigation grounded in corroborating physical evidence.
+
 ---
 
 ## 3. Legal and Regulatory Feasibility Across Jurisdictions
 
-Biometric data constitutes "special category" or sensitive personal data under global data protection frameworks. **Technical implementation alone does not establish a lawful basis. Prior to production activation in any tenant jurisdiction, qualified legal counsel must issue an affirmative written legal opinion.**
+Biometric data constitutes "special category" (GDPR Art. 9) or sensitive personal data under global data protection frameworks. **Technical capability alone does not establish a lawful basis. Prior to production activation in any tenant jurisdiction, qualified legal counsel must issue an affirmative written legal opinion.**
 
-### 3.1 Applicable Statutory Frameworks
+### 3.1 Potentially Applicable Statutory Frameworks
+The following statutory frameworks represent potentially applicable legal regimes depending on tenant deployment geography:
 - **European Union General Data Protection Regulation (GDPR)**:
-  - *Article 9(1)*: General prohibition on processing biometric data for the purpose of uniquely identifying a natural person.
-  - *Article 9(2)* Exceptions: Explicit consent (Art. 9(2)(a)) or reasons of substantial public interest with statutory basis and safeguards (Art. 9(2)(g)). In employment and educational settings, the European Data Protection Board (EDPB) considers consent invalid due to power imbalances.
+  - *Article 9(1)*: General prohibition on processing biometric data for uniquely identifying a natural person.
+  - *Article 9(2)* Exceptions: Explicit consent (Art. 9(2)(a)) or substantial public interest with statutory basis and safeguards (Art. 9(2)(g)). The European Data Protection Board (EDPB) notes that in employment and higher education, power imbalances generally invalidate freely given consent.
 - **Illinois Biometric Information Privacy Act (BIPA, 740 ILCS 14/)**:
-  - Requires written policy, retention schedule, informed written consent prior to capture, prohibition on sale or profiting, and strict storage standards matching general industry encryption.
+  - Requires publicly available written policy, specific retention schedule, informed written consent prior to capture, prohibition on profiting, and encryption matching industry standards.
 - **Texas Capture or Use of Biometric Identifier Act (CUBI, Tex. Bus. & Com. Code § 503.001)**:
   - Requires consent, destruction within one year of purpose expiration, and strict disclosure bans.
 - **California Consumer Privacy Act / CPRA (Cal. Civ. Code § 1798.100 et seq.)**:
   - Treats biometric information as "Sensitive Personal Information" subject to right to limit use and explicit disclosure obligations.
+  - California AB 1215 moratorium on law enforcement facial recognition in body-worn cameras.
 - **Family Educational Rights and Privacy Act (FERPA, 34 CFR Part 99)**:
   - Biometric records of students constitute personally identifiable educational records requiring explicit parental/eligible student consent for disclosure.
 - **Criminal Justice Information Services (CJIS) Security Policy**:
   - Enforces strict tenant separation, audit logging, and encryption for law enforcement biometric data.
+
+### 3.2 Distinction Between Potential Regimes and Confirmed Obligations / Legal Counsel Inquiries
+Listing a statutory framework above identifies a potential compliance regime, NOT a confirmed operational authorization. Prior to activating any biometric processing in a specific tenant environment, qualified legal counsel must address the following formal legal questions:
+1. *Legal Basis Validity:* In the tenant's jurisdiction, does explicit consent provide a legally defensible basis, or does institutional power imbalance (student-institution or employee-employer) invalidate consent under GDPR Art. 7(4) or local labor law?
+2. *Statutory Exemption for Law Enforcement:* If deployed in a campus police or public safety context, does a specific statutory exception apply, or does a judicial search warrant / court order serve as the sole lawful basis?
+3. *BIPA Extraterritoriality & Private Right of Action:* If any video ingested originates from or features an Illinois resident, what written release protocol is required to mitigate liquidated damages risk under 740 ILCS 14/20?
+4. *Retention Schedule Enforceability:* Does the platform's default 90-day retention schedule comply with the applicable state or national maximum retention period?
+5. *Redaction vs. Identification Classification:* Under the governing statute, is pure face detection for privacy blurring exempt from biometric identifier regulations, or does extracting bounding boxes trigger statutory notice obligations?
 
 ---
 

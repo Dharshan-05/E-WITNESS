@@ -1,0 +1,148 @@
+{
+  "model_name": "violence-r3d18-experiment",
+  "model_version": "1.2.0",
+  "checkpoint_sha256": "9c8f627a15cdaddfde9c665a54a3c1d2c954081edc55c9f59e240c936255356a",
+  "evaluation_partition": "validation_authorized_academic_subset",
+  "sample_count": 262,
+  "class_counts": {
+    "non_violence": 160,
+    "violence": 102
+  },
+  "loss": 0.2934,
+  "confusion_matrix": {
+    "tn": 145,
+    "fp": 15,
+    "fn": 11,
+    "tp": 91
+  },
+  "metrics": {
+    "accuracy": 0.9008,
+    "precision": 0.8585,
+    "recall": 0.8922,
+    "specificity": 0.9062,
+    "f1": 0.875,
+    "false_positive_rate": 0.0938,
+    "false_negative_rate": 0.1078,
+    "roc_auc": 0.9676,
+    "pr_auc": 0.9603,
+    "brier_score": 0.0666,
+    "expected_calibration_error": 0.0465,
+    "maximum_calibration_error": 0.3017
+  },
+  "reliability_diagram": [
+    {
+      "bin": 0,
+      "range": [
+        0.0,
+        0.1
+      ],
+      "count": 127,
+      "accuracy": 0.0157,
+      "confidence": 0.0294,
+      "error": 0.0137
+    },
+    {
+      "bin": 1,
+      "range": [
+        0.1,
+        0.2
+      ],
+      "count": 12,
+      "accuracy": 0.25,
+      "confidence": 0.1452,
+      "error": 0.1048
+    },
+    {
+      "bin": 2,
+      "range": [
+        0.2,
+        0.3
+      ],
+      "count": 6,
+      "accuracy": 0.3333,
+      "confidence": 0.2457,
+      "error": 0.0876
+    },
+    {
+      "bin": 3,
+      "range": [
+        0.3,
+        0.4
+      ],
+      "count": 5,
+      "accuracy": 0.2,
+      "confidence": 0.3486,
+      "error": 0.1486
+    },
+    {
+      "bin": 4,
+      "range": [
+        0.4,
+        0.5
+      ],
+      "count": 6,
+      "accuracy": 0.5,
+      "confidence": 0.4552,
+      "error": 0.0448
+    },
+    {
+      "bin": 5,
+      "range": [
+        0.5,
+        0.6
+      ],
+      "count": 8,
+      "accuracy": 0.25,
+      "confidence": 0.5517,
+      "error": 0.3017
+    },
+    {
+      "bin": 6,
+      "range": [
+        0.6,
+        0.7
+      ],
+      "count": 12,
+      "accuracy": 0.75,
+      "confidence": 0.6427,
+      "error": 0.1073
+    },
+    {
+      "bin": 7,
+      "range": [
+        0.7,
+        0.8
+      ],
+      "count": 12,
+      "accuracy": 0.6667,
+      "confidence": 0.7614,
+      "error": 0.0947
+    },
+    {
+      "bin": 8,
+      "range": [
+        0.8,
+        0.9
+      ],
+      "count": 17,
+      "accuracy": 0.8824,
+      "confidence": 0.8461,
+      "error": 0.0362
+    },
+    {
+      "bin": 9,
+      "range": [
+        0.9,
+        1.0
+      ],
+      "count": 57,
+      "accuracy": 1.0,
+      "confidence": 0.9616,
+      "error": 0.0384
+    }
+  ],
+  "sample_sum_check": {
+    "sum_cm": 262,
+    "matches_total": true
+  }
+}

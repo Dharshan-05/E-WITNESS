@@ -1,0 +1,546 @@
+{
+  "report_id": "eval-violence-r3d18-experiment-1.2.0-c443a61d",
+  "dataset_name": "yash07yadav-violence-detection-combined",
+  "dataset_version": "1.0.0",
+  "manifest_sha256": "9c8f627a15cdaddfde9c665a54a3c1d2c954081edc55c9f59e240c936255356a",
+  "model_name": "violence-r3d18-experiment",
+  "model_version": "1.2.0",
+  "evaluation_level": "clip_level",
+  "threshold_used": 0.5,
+  "primary_metrics": {
+    "tp": 142,
+    "fp": 5,
+    "tn": 107,
+    "fn": 31,
+    "total": 285,
+    "precision": 0.966,
+    "recall": 0.8208,
+    "specificity": 0.9554,
+    "false_positive_rate": 0.0446,
+    "false_negative_rate": 0.1792,
+    "f1_score": 0.8875,
+    "brier_score": 0.0904,
+    "expected_calibration_error": 0.138959649122807,
+    "is_statistically_reliable": true,
+    "uncalibrated_ece": 0.09835104004698485,
+    "is_ece_target_met": false,
+    "roc_auc": 0.971175681255161,
+    "pr_auc": 0.978020722715533,
+    "is_single_class_eval": false
+  },
+  "threshold_sweep": {
+    "threshold_0.10": {
+      "tp": 171,
+      "fp": 22,
+      "tn": 90,
+      "fn": 2,
+      "total": 285,
+      "precision": 0.886,
+      "recall": 0.9884,
+      "specificity": 0.8036,
+      "false_positive_rate": 0.1964,
+      "false_negative_rate": 0.0116,
+      "f1_score": 0.9344,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.20": {
+      "tp": 164,
+      "fp": 12,
+      "tn": 100,
+      "fn": 9,
+      "total": 285,
+      "precision": 0.9318,
+      "recall": 0.948,
+      "specificity": 0.8929,
+      "false_positive_rate": 0.1071,
+      "false_negative_rate": 0.052,
+      "f1_score": 0.9398,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.30": {
+      "tp": 156,
+      "fp": 9,
+      "tn": 103,
+      "fn": 17,
+      "total": 285,
+      "precision": 0.9455,
+      "recall": 0.9017,
+      "specificity": 0.9196,
+      "false_positive_rate": 0.0804,
+      "false_negative_rate": 0.0983,
+      "f1_score": 0.9231,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.40": {
+      "tp": 147,
+      "fp": 6,
+      "tn": 106,
+      "fn": 26,
+      "total": 285,
+      "precision": 0.9608,
+      "recall": 0.8497,
+      "specificity": 0.9464,
+      "false_positive_rate": 0.0536,
+      "false_negative_rate": 0.1503,
+      "f1_score": 0.9018,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.50": {
+      "tp": 142,
+      "fp": 5,
+      "tn": 107,
+      "fn": 31,
+      "total": 285,
+      "precision": 0.966,
+      "recall": 0.8208,
+      "specificity": 0.9554,
+      "false_positive_rate": 0.0446,
+      "false_negative_rate": 0.1792,
+      "f1_score": 0.8875,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.60": {
+      "tp": 137,
+      "fp": 4,
+      "tn": 108,
+      "fn": 36,
+      "total": 285,
+      "precision": 0.9716,
+      "recall": 0.7919,
+      "specificity": 0.9643,
+      "false_positive_rate": 0.0357,
+      "false_negative_rate": 0.2081,
+      "f1_score": 0.8726,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.70": {
+      "tp": 125,
+      "fp": 4,
+      "tn": 108,
+      "fn": 48,
+      "total": 285,
+      "precision": 0.969,
+      "recall": 0.7225,
+      "specificity": 0.9643,
+      "false_positive_rate": 0.0357,
+      "false_negative_rate": 0.2775,
+      "f1_score": 0.8278,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.80": {
+      "tp": 115,
+      "fp": 4,
+      "tn": 108,
+      "fn": 58,
+      "total": 285,
+      "precision": 0.9664,
+      "recall": 0.6647,
+      "specificity": 0.9643,
+      "false_positive_rate": 0.0357,
+      "false_negative_rate": 0.3353,
+      "f1_score": 0.7877,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    },
+    "threshold_0.90": {
+      "tp": 46,
+      "fp": 0,
+      "tn": 112,
+      "fn": 127,
+      "total": 285,
+      "precision": 1.0,
+      "recall": 0.2659,
+      "specificity": 1.0,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.7341,
+      "f1_score": 0.4201,
+      "brier_score": 0.0904,
+      "expected_calibration_error": 0.139,
+      "is_statistically_reliable": true
+    }
+  },
+  "subgroup_metrics": {},
+  "created_at": "2026-10-27T02:29:49.464164+00:00",
+  "reproducibility_hash": "0b163a302a7b64bf10d4d12f9d3bea8bd036ae3126f4054a63798f222fe1657e",
+  "disclaimer": "NOTICE: AI-assisted violence detection outputs are probabilistic, advisory decision-support signals only. They do not constitute factual determinations of guilt, unlawful conduct, or disciplinary infractions. Every candidate detection requires mandatory independent human review by an authorized investigator or administrator prior to taking any investigative, disciplinary, or administrative action.",
+  "evaluation_kind": "FULL_TEST_SET_EVALUATION",
+  "evaluation_type": "INTERNAL_TEST_SPLIT",
+  "is_smoke_test": false,
+  "calibration_validation_status": "NOT VALIDATED",
+  "is_statistically_reliable": true,
+  "is_statistically_adequate_benchmark": true,
+  "per_class_metrics": {
+    "accuracy": 0.8737,
+    "class_0_non_violence": {
+      "label": 0,
+      "name": "non_violence",
+      "support": 112,
+      "precision": 0.7754,
+      "recall": 0.9554,
+      "f1_score": 0.856
+    },
+    "class_1_violence": {
+      "label": 1,
+      "name": "violence",
+      "support": 173,
+      "precision": 0.966,
+      "recall": 0.8208,
+      "f1_score": 0.8875
+    }
+  },
+  "reliability_diagram": {
+    "bins": [
+      {
+        "bin_index": 0,
+        "bin_lower": 0.0,
+        "bin_upper": 0.1,
+        "sample_count": 92,
+        "empirical_accuracy": 0.0217,
+        "mean_confidence": 0.0719,
+        "calibration_error": 0.0502
+      },
+      {
+        "bin_index": 1,
+        "bin_lower": 0.1,
+        "bin_upper": 0.2,
+        "sample_count": 17,
+        "empirical_accuracy": 0.4118,
+        "mean_confidence": 0.1369,
+        "calibration_error": 0.2749
+      },
+      {
+        "bin_index": 2,
+        "bin_lower": 0.2,
+        "bin_upper": 0.3,
+        "sample_count": 11,
+        "empirical_accuracy": 0.7273,
+        "mean_confidence": 0.2434,
+        "calibration_error": 0.4838
+      },
+      {
+        "bin_index": 3,
+        "bin_lower": 0.3,
+        "bin_upper": 0.4,
+        "sample_count": 12,
+        "empirical_accuracy": 0.75,
+        "mean_confidence": 0.3551,
+        "calibration_error": 0.3949
+      },
+      {
+        "bin_index": 4,
+        "bin_lower": 0.4,
+        "bin_upper": 0.5,
+        "sample_count": 6,
+        "empirical_accuracy": 0.8333,
+        "mean_confidence": 0.44,
+        "calibration_error": 0.3933
+      },
+      {
+        "bin_index": 5,
+        "bin_lower": 0.5,
+        "bin_upper": 0.6,
+        "sample_count": 6,
+        "empirical_accuracy": 0.8333,
+        "mean_confidence": 0.5616,
+        "calibration_error": 0.2717
+      },
+      {
+        "bin_index": 6,
+        "bin_lower": 0.6,
+        "bin_upper": 0.7,
+        "sample_count": 12,
+        "empirical_accuracy": 1.0,
+        "mean_confidence": 0.6534,
+        "calibration_error": 0.3466
+      },
+      {
+        "bin_index": 7,
+        "bin_lower": 0.7,
+        "bin_upper": 0.8,
+        "sample_count": 10,
+        "empirical_accuracy": 1.0,
+        "mean_confidence": 0.762,
+        "calibration_error": 0.238
+      },
+      {
+        "bin_index": 8,
+        "bin_lower": 0.8,
+        "bin_upper": 0.9,
+        "sample_count": 73,
+        "empirical_accuracy": 0.9452,
+        "mean_confidence": 0.8676,
+        "calibration_error": 0.0776
+      },
+      {
+        "bin_index": 9,
+        "bin_lower": 0.9,
+        "bin_upper": 1.0,
+        "sample_count": 46,
+        "empirical_accuracy": 1.0,
+        "mean_confidence": 0.9117,
+        "calibration_error": 0.0883
+      }
+    ],
+    "ece": 0.139,
+    "mce": 0.4838,
+    "brier_score": 0.0904,
+    "n_bins": 10,
+    "sample_count": 285
+  },
+  "calibration_method_comparison": {
+    "uncalibrated": {
+      "method": "Uncalibrated Softmax",
+      "ece": 0.0984,
+      "mce": 0.5366,
+      "brier_score": 0.0812,
+      "parameters": {},
+      "status": "BASELINE"
+    },
+    "platt_scaling": {
+      "method": "Platt Scaling (Logistic Sigmoid)",
+      "ece": 0.139,
+      "mce": 0.4838,
+      "brier_score": 0.0904,
+      "parameters": {
+        "slope": 5.1582,
+        "intercept": -2.7391
+      },
+      "status": "FITTED_CONVERGED"
+    },
+    "temperature_scaling": {
+      "method": "Temperature Scaling",
+      "ece": 0.0886,
+      "mce": 0.4557,
+      "brier_score": 0.0815,
+      "parameters": {
+        "temperature": 0.8812
+      },
+      "status": "FITTED_CONVERGED"
+    }
+  },
+  "real_world_stress_testing": {
+    "baseline": {
+      "condition": "baseline",
+      "description": "Original unperturbed video stream",
+      "sample_count": 285,
+      "tp": 144,
+      "fp": 5,
+      "tn": 107,
+      "fn": 29,
+      "accuracy": 0.8807,
+      "precision": 0.9664,
+      "recall": 0.8324,
+      "f1_score": 0.8944,
+      "false_positive_rate": 0.0446,
+      "false_negative_rate": 0.1676,
+      "mean_violence_score": 0.5163
+    },
+    "low_light": {
+      "condition": "low_light",
+      "description": "Low ambient illumination (intensity x0.40)",
+      "sample_count": 285,
+      "tp": 138,
+      "fp": 4,
+      "tn": 108,
+      "fn": 35,
+      "accuracy": 0.8632,
+      "precision": 0.9718,
+      "recall": 0.7977,
+      "f1_score": 0.8762,
+      "false_positive_rate": 0.0357,
+      "false_negative_rate": 0.2023,
+      "mean_violence_score": 0.4851
+    },
+    "bright_glare": {
+      "condition": "bright_glare",
+      "description": "Direct glare / overexposure (intensity x1.60)",
+      "sample_count": 285,
+      "tp": 143,
+      "fp": 5,
+      "tn": 107,
+      "fn": 30,
+      "accuracy": 0.8772,
+      "precision": 0.9662,
+      "recall": 0.8266,
+      "f1_score": 0.891,
+      "false_positive_rate": 0.0446,
+      "false_negative_rate": 0.1734,
+      "mean_violence_score": 0.5123
+    },
+    "low_resolution": {
+      "condition": "low_resolution",
+      "description": "Heavy spatial compression (56x56 downsampled & restored)",
+      "sample_count": 285,
+      "tp": 98,
+      "fp": 3,
+      "tn": 109,
+      "fn": 75,
+      "accuracy": 0.7263,
+      "precision": 0.9703,
+      "recall": 0.5665,
+      "f1_score": 0.7153,
+      "false_positive_rate": 0.0268,
+      "false_negative_rate": 0.4335,
+      "mean_violence_score": 0.3498
+    },
+    "camera_motion_blur": {
+      "condition": "camera_motion_blur",
+      "description": "Horizontal camera pan / motion shake blur",
+      "sample_count": 285,
+      "tp": 92,
+      "fp": 2,
+      "tn": 110,
+      "fn": 81,
+      "accuracy": 0.7088,
+      "precision": 0.9787,
+      "recall": 0.5318,
+      "f1_score": 0.6891,
+      "false_positive_rate": 0.0179,
+      "false_negative_rate": 0.4682,
+      "mean_violence_score": 0.3358
+    },
+    "spatial_occlusion": {
+      "condition": "spatial_occlusion",
+      "description": "Partial scene occlusion (32x32 center masking)",
+      "sample_count": 285,
+      "tp": 78,
+      "fp": 3,
+      "tn": 109,
+      "fn": 95,
+      "accuracy": 0.6561,
+      "precision": 0.963,
+      "recall": 0.4509,
+      "f1_score": 0.6142,
+      "false_positive_rate": 0.0268,
+      "false_negative_rate": 0.5491,
+      "mean_violence_score": 0.3178
+    },
+    "sensor_noise": {
+      "condition": "sensor_noise",
+      "description": "Additive sensor noise (sigma=0.15 Gaussian noise)",
+      "sample_count": 285,
+      "tp": 111,
+      "fp": 4,
+      "tn": 108,
+      "fn": 62,
+      "accuracy": 0.7684,
+      "precision": 0.9652,
+      "recall": 0.6416,
+      "f1_score": 0.7708,
+      "false_positive_rate": 0.0357,
+      "false_negative_rate": 0.3584,
+      "mean_violence_score": 0.4049
+    },
+    "temporal_truncation": {
+      "condition": "temporal_truncation",
+      "description": "Short clip / frame stutter (half-sequence repetition)",
+      "sample_count": 285,
+      "tp": 143,
+      "fp": 8,
+      "tn": 104,
+      "fn": 30,
+      "accuracy": 0.8667,
+      "precision": 0.947,
+      "recall": 0.8266,
+      "f1_score": 0.8827,
+      "false_positive_rate": 0.0714,
+      "false_negative_rate": 0.1734,
+      "mean_violence_score": 0.5128
+    }
+  },
+  "data_leakage_and_splits_audit": {
+    "status": "AUDITED",
+    "total_items": 3265,
+    "manifest_sha256": "9c8f627a15cdaddfde9c665a54a3c1d2c954081edc55c9f59e240c936255356a",
+    "split_counts": {
+      "train": 2583,
+      "val": 328,
+      "test": 354
+    },
+    "cross_split_hash_leakage": false,
+    "hash_leakage_details": {
+      "train_val_collisions": 0,
+      "train_test_collisions": 0,
+      "val_test_collisions": 0
+    },
+    "scene_grouping_audit": {
+      "verifiable_scene_prefix_clips": 1755,
+      "ungroupable_opaque_clips": 1510,
+      "leaking_scene_groups_count": 0,
+      "is_scene_leakage_detected": false
+    },
+    "class_distribution_by_split": {
+      "train": {
+        "total": 2583,
+        "violence": 1584,
+        "non_violence": 999
+      },
+      "val": {
+        "total": 328,
+        "violence": 168,
+        "non_violence": 160
+      },
+      "test": {
+        "total": 354,
+        "violence": 242,
+        "non_violence": 112
+      }
+    }
+  },
+  "excluded_test_subset": {
+    "sample_count": 69,
+    "reasons": "Commercial Hollywood cinema (MovieFights) and broadcast NHL games (HockeyFight) excluded due to copyright licensing and domain mismatch with surveillance evidence",
+    "class_counts": {
+      "violence": 69,
+      "non_violence": 0
+    },
+    "confusion_matrix": {
+      "tn": 0,
+      "fp": 0,
+      "fn": 51,
+      "tp": 18
+    },
+    "accuracy": 0.2609,
+    "recall": 0.2609,
+    "mean_calibrated_probability": 0.321
+  },
+  "is_authorized_subset_only": true,
+  "manifest_compatibility": true,
+  "calibration_artifact": {
+    "artifact_id": "calib-violence-r3d18-experiment-1.2.0-8027894d",
+    "method": "platt_scaling",
+    "model_name": "violence-r3d18-experiment",
+    "model_version": "1.2.0",
+    "dataset_name": "yash07yadav-violence-detection-combined",
+    "manifest_sha256": "9c8f627a15cdaddfde9c665a54a3c1d2c954081edc55c9f59e240c936255356a",
+    "split_name": "validation",
+    "parameters": {
+      "slope": 5.158232128914982,
+      "intercept": -2.7390831251924683,
+      "fit_status": "FITTED_CONVERGED",
+      "temperature": 0.8811767630588064,
+      "score_type": "probability",
+      "is_identity_fallback": false
+    },
+    "metrics": {
+      "val_uncalibrated_ece": 0.046467006637293584
+    },
+    "created_at": "2026-10-27T02:23:13.189194+00:00",
+    "is_approved": true
+  }
+}

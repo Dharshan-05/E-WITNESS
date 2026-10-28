@@ -1,0 +1,505 @@
+{
+  "validation_fitted_parameters": {
+    "platt_logits": {
+      "slope": 1.1141886345191165,
+      "intercept": 0.012565712586051643
+    },
+    "temperature": {
+      "T": 0.881186824434081
+    },
+    "platt_probs": {
+      "slope": 5.158232128914982,
+      "intercept": -2.7390831251924683
+    }
+  },
+  "test_calibration_comparison": {
+    "Uncalibrated": {
+      "ece": 0.0984,
+      "mce": 0.5366,
+      "brier": 0.0812,
+      "accuracy": 88.07,
+      "target_met": false,
+      "bins": [
+        {
+          "bin": 0,
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 92,
+          "acc": 0.0217,
+          "conf": 0.0335,
+          "error": 0.0118
+        },
+        {
+          "bin": 1,
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 13,
+          "acc": 0.3077,
+          "conf": 0.1537,
+          "error": 0.154
+        },
+        {
+          "bin": 2,
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 9,
+          "acc": 0.6667,
+          "conf": 0.2572,
+          "error": 0.4094
+        },
+        {
+          "bin": 3,
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 9,
+          "acc": 0.8889,
+          "conf": 0.3523,
+          "error": 0.5366
+        },
+        {
+          "bin": 4,
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 13,
+          "acc": 0.6923,
+          "conf": 0.438,
+          "error": 0.2543
+        },
+        {
+          "bin": 5,
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 5,
+          "acc": 0.8,
+          "conf": 0.5357,
+          "error": 0.2643
+        },
+        {
+          "bin": 6,
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 15,
+          "acc": 1.0,
+          "conf": 0.6449,
+          "error": 0.3551
+        },
+        {
+          "bin": 7,
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 10,
+          "acc": 1.0,
+          "conf": 0.7577,
+          "error": 0.2423
+        },
+        {
+          "bin": 8,
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 28,
+          "acc": 0.8929,
+          "conf": 0.8469,
+          "error": 0.046
+        },
+        {
+          "bin": 9,
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 91,
+          "acc": 0.989,
+          "conf": 0.9586,
+          "error": 0.0304
+        }
+      ]
+    },
+    "Platt (from Logits)": {
+      "ece": 0.0879,
+      "mce": 0.5494,
+      "brier": 0.081,
+      "accuracy": 88.07,
+      "target_met": false,
+      "bins": [
+        {
+          "bin": 0,
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 95,
+          "acc": 0.0316,
+          "conf": 0.0265,
+          "error": 0.0051
+        },
+        {
+          "bin": 1,
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 11,
+          "acc": 0.2727,
+          "conf": 0.148,
+          "error": 0.1247
+        },
+        {
+          "bin": 2,
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 8,
+          "acc": 0.75,
+          "conf": 0.244,
+          "error": 0.506
+        },
+        {
+          "bin": 3,
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 9,
+          "acc": 0.8889,
+          "conf": 0.3395,
+          "error": 0.5494
+        },
+        {
+          "bin": 4,
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 13,
+          "acc": 0.6923,
+          "conf": 0.4341,
+          "error": 0.2582
+        },
+        {
+          "bin": 5,
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 5,
+          "acc": 0.8,
+          "conf": 0.5429,
+          "error": 0.2571
+        },
+        {
+          "bin": 6,
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 12,
+          "acc": 1.0,
+          "conf": 0.6506,
+          "error": 0.3494
+        },
+        {
+          "bin": 7,
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 9,
+          "acc": 1.0,
+          "conf": 0.7476,
+          "error": 0.2524
+        },
+        {
+          "bin": 8,
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 25,
+          "acc": 0.96,
+          "conf": 0.8509,
+          "error": 0.1091
+        },
+        {
+          "bin": 9,
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 98,
+          "acc": 0.9694,
+          "conf": 0.9656,
+          "error": 0.0038
+        }
+      ]
+    },
+    "Temperature Scaling": {
+      "ece": 0.0886,
+      "mce": 0.4557,
+      "brier": 0.0815,
+      "accuracy": 88.07,
+      "target_met": false,
+      "bins": [
+        {
+          "bin": 0,
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 96,
+          "acc": 0.0312,
+          "conf": 0.0255,
+          "error": 0.0058
+        },
+        {
+          "bin": 1,
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 12,
+          "acc": 0.4167,
+          "conf": 0.155,
+          "error": 0.2617
+        },
+        {
+          "bin": 2,
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 7,
+          "acc": 0.7143,
+          "conf": 0.2585,
+          "error": 0.4557
+        },
+        {
+          "bin": 3,
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 9,
+          "acc": 0.7778,
+          "conf": 0.3452,
+          "error": 0.4326
+        },
+        {
+          "bin": 4,
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 12,
+          "acc": 0.75,
+          "conf": 0.4324,
+          "error": 0.3176
+        },
+        {
+          "bin": 5,
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 5,
+          "acc": 0.8,
+          "conf": 0.5405,
+          "error": 0.2595
+        },
+        {
+          "bin": 6,
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 11,
+          "acc": 1.0,
+          "conf": 0.6458,
+          "error": 0.3542
+        },
+        {
+          "bin": 7,
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 10,
+          "acc": 1.0,
+          "conf": 0.7441,
+          "error": 0.2559
+        },
+        {
+          "bin": 8,
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 25,
+          "acc": 0.96,
+          "conf": 0.8533,
+          "error": 0.1067
+        },
+        {
+          "bin": 9,
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 98,
+          "acc": 0.9694,
+          "conf": 0.9669,
+          "error": 0.0024
+        }
+      ]
+    },
+    "Platt (from Probs - Historical)": {
+      "ece": 0.139,
+      "mce": 0.4838,
+      "brier": 0.0904,
+      "accuracy": 87.37,
+      "target_met": false,
+      "bins": [
+        {
+          "bin": 0,
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 92,
+          "acc": 0.0217,
+          "conf": 0.0719,
+          "error": 0.0502
+        },
+        {
+          "bin": 1,
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 17,
+          "acc": 0.4118,
+          "conf": 0.1369,
+          "error": 0.2749
+        },
+        {
+          "bin": 2,
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 11,
+          "acc": 0.7273,
+          "conf": 0.2435,
+          "error": 0.4838
+        },
+        {
+          "bin": 3,
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 12,
+          "acc": 0.75,
+          "conf": 0.3551,
+          "error": 0.3949
+        },
+        {
+          "bin": 4,
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 6,
+          "acc": 0.8333,
+          "conf": 0.44,
+          "error": 0.3933
+        },
+        {
+          "bin": 5,
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 6,
+          "acc": 0.8333,
+          "conf": 0.5616,
+          "error": 0.2717
+        },
+        {
+          "bin": 6,
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 12,
+          "acc": 1.0,
+          "conf": 0.6534,
+          "error": 0.3466
+        },
+        {
+          "bin": 7,
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 10,
+          "acc": 1.0,
+          "conf": 0.762,
+          "error": 0.238
+        },
+        {
+          "bin": 8,
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 73,
+          "acc": 0.9452,
+          "conf": 0.8676,
+          "error": 0.0776
+        },
+        {
+          "bin": 9,
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 46,
+          "acc": 1.0,
+          "conf": 0.9117,
+          "error": 0.0883
+        }
+      ]
+    }
+  },
+  "excluded_test_metrics": {
+    "sample_count": 69,
+    "confusion_matrix": {
+      "tp": 19,
+      "fn": 50,
+      "tn": 0,
+      "fp": 0
+    },
+    "recall": 0.2754,
+    "specificity": null,
+    "specificity_note": "Mathematically undefined: 0 negative ground truth samples exist in the excluded set"
+  }
+}
