@@ -120,6 +120,11 @@ def create_app(
     app.state.db_manager = resolved_db_manager
     app.state.readiness_probes = effective_probes
     app.state.is_running = False
+    if resolved_settings.ENVIRONMENT == "development":
+        from backend.app.infrastructure.storage import get_local_storage_client
+        from backend.app.infrastructure.scanner import MockMalwareScanner
+        app.state.storage_client = get_local_storage_client()
+        app.state.malware_scanner = MockMalwareScanner()
 
     # 1. Register centralized exception handlers
     register_exception_handlers(app)

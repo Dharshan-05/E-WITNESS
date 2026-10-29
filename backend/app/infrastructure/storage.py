@@ -10,6 +10,8 @@ Enforces:
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
 import hashlib
 import hmac
 import uuid
@@ -764,3 +766,164 @@ class InMemoryStorageClient:
     ) -> str:
         """Async test helper to store a chunk/part for a multipart upload session and return an ETag."""
         return self.store_multipart_part(upload_id, part_number, data)
+
+
+class LocalStorageClient:
+    """Local filesystem and in-memory storage client for development and local workflows."""
+
+    def __init__(self, base_dir: Path | None = None) -> None:
+        if base_dir is None:
+            self._base_dir = Path("storage_data").resolve()
+        else:
+            self._base_dir = Path(base_dir).resolve()
+        self._base_dir.mkdir(parents=True, exist_ok=True)
+        self._memory_cache: dict[str, tuple[bytes, str]] = {}
+        self._multiparts: dict[str, dict[str, Any]] = {}
+
+    def _get_file_path(self, storage_key: str) -> Path:
+        clean = storage_key.lstrip("/\\").replace("/", os.sep).replace("\\", os.sep)
+        full_path = (self._base_dir / clean).resolve()
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        return full_path
+
+    def generate_presigned_upload_url(
+        self,
+        storage_key: str,
+        content_type: str,
+        expires_in_seconds: int = 900,
+    ) -> PresignedUploadData:
+        expires_at = datetime.now(UTC) + timedelta(seconds=expires_in_seconds)
+        url = f"/api/v1/storage/upload/{quote(storage_key)}"
+        return PresignedUploadData(
+            upload_url=url,
+            upload_method="PUT",
+            headers={"Content-Type": content_type},
+            expires_at=expires_at,
+        )
+
+    def generate_presigned_download_url(
+        self,
+        storage_key: str,
+        expires_in_seconds: int = 300,
+    ) -> str:
+        return f"/api/v1/storage/download/{quote(storage_key)}"
+
+    def generate_presigned_part_upload_url(
+        self,
+        storage_key: str,
+        upload_id: str,
+        part_number: int,
+        expires_in_seconds: int = 900,
+    ) -> str:
+        return f"/api/v1/storage/multipart/{upload_id}/part/{part_number}"
+
+    async def initiate_multipart_upload(self, storage_key: str, content_type: str) -> str:
+        upload_id = uuid.uuid4().hex
+        self._multiparts[upload_id] = {
+            "key": storage_key,
+            "content_type": content_type,
+            "parts": {},
+        }
+        return upload_id
+
+    def store_multipart_part(self, upload_id: str, part_number: int, data: bytes) -> str:
+        if upload_id not in self._multiparts:
+            raise BusinessRuleError("Invalid upload ID", code="INVALID_UPLOAD_ID")
+        self._multiparts[upload_id]["parts"][part_number] = data
+        return hashlib.md5(data, usedforsecurity=False).hexdigest()
+
+    async def complete_multipart_upload(
+        self,
+        storage_key: str,
+        upload_id: str,
+        parts: list[dict[str, Any]],
+    ) -> StorageObjectMetadata:
+        if upload_id not in self._multiparts:
+            raise BusinessRuleError("Invalid upload ID", code="INVALID_UPLOAD_ID")
+        mp = self._multiparts[upload_id]
+        assembled: list[bytes] = []
+        for p in sorted(parts, key=lambda x: int(x["part_number"])):
+            pn = int(p["part_number"])
+            if pn not in mp["parts"]:
+                raise BusinessRuleError(f"Missing part {pn}", code="MISSING_PART")
+            assembled.append(mp["parts"][pn])
+        combined = b"".join(assembled)
+        await self.put_object(storage_key, combined, mp["content_type"])
+        del self._multiparts[upload_id]
+        return StorageObjectMetadata(
+            storage_key=storage_key,
+            content_length=len(combined),
+            content_type=mp["content_type"],
+            etag=hashlib.md5(combined, usedforsecurity=False).hexdigest(),
+        )
+
+    async def abort_multipart_upload(self, storage_key: str, upload_id: str) -> bool:
+        if upload_id in self._multiparts:
+            del self._multiparts[upload_id]
+            return True
+        return False
+
+    async def verify_object_exists(self, storage_key: str) -> bool:
+        if storage_key in self._memory_cache:
+            return True
+        p = self._get_file_path(storage_key)
+        return p.is_file()
+
+    async def get_object_metadata(self, storage_key: str) -> StorageObjectMetadata | None:
+        if storage_key in self._memory_cache:
+            data, ctype = self._memory_cache[storage_key]
+            return StorageObjectMetadata(
+                storage_key=storage_key,
+                content_length=len(data),
+                content_type=ctype,
+                etag=hashlib.md5(data, usedforsecurity=False).hexdigest(),
+            )
+        p = self._get_file_path(storage_key)
+        if not p.is_file():
+            return None
+        size = p.stat().st_size
+        return StorageObjectMetadata(
+            storage_key=storage_key,
+            content_length=size,
+            content_type="application/octet-stream",
+            etag=hashlib.md5(p.read_bytes(), usedforsecurity=False).hexdigest(),
+        )
+
+    async def get_object_bytes(self, storage_key: str) -> bytes:
+        if storage_key in self._memory_cache:
+            return self._memory_cache[storage_key][0]
+        p = self._get_file_path(storage_key)
+        if not p.is_file():
+            raise ResourceNotFoundError("Object not found in storage.", code="OBJECT_NOT_FOUND")
+        return p.read_bytes()
+
+    async def delete_object(self, storage_key: str) -> bool:
+        deleted = False
+        if storage_key in self._memory_cache:
+            del self._memory_cache[storage_key]
+            deleted = True
+        p = self._get_file_path(storage_key)
+        if p.is_file():
+            p.unlink()
+            deleted = True
+        return deleted
+
+    async def put_object(self, storage_key: str, payload: bytes, content_type: str) -> None:
+        self._memory_cache[storage_key] = (payload, content_type)
+        p = self._get_file_path(storage_key)
+        p.write_bytes(payload)
+
+    def store_mock_object(self, storage_key: str, payload: bytes, content_type: str) -> None:
+        self._memory_cache[storage_key] = (payload, content_type)
+        p = self._get_file_path(storage_key)
+        p.write_bytes(payload)
+
+
+_LOCAL_STORAGE_INSTANCE: LocalStorageClient | None = None
+
+
+def get_local_storage_client() -> LocalStorageClient:
+    global _LOCAL_STORAGE_INSTANCE
+    if _LOCAL_STORAGE_INSTANCE is None:
+        _LOCAL_STORAGE_INSTANCE = LocalStorageClient()
+    return _LOCAL_STORAGE_INSTANCE

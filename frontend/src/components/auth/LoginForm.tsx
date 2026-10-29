@@ -27,6 +27,43 @@ export const LoginForm: React.FC = () => {
   const emailError = touched.email && !isEmailValid ? 'Please enter a valid institutional email address.' : null;
   const passwordError = touched.password && !isPasswordValid ? 'Password credential is required.' : null;
 
+  const handleQuickLogin = async (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setTouched({ email: true, password: true });
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await login({
+        email: demoEmail.trim(),
+        password: demoPassword,
+      });
+
+      interface LocationState {
+        from?: {
+          pathname?: string;
+          search?: string;
+        };
+      }
+      const state = location.state as LocationState | null;
+      const targetPath = state?.from?.pathname
+        ? `${state.from.pathname}${state.from.search || ''}`
+        : '/incidents';
+      const safeRedirect = sanitizeInternalRedirect(targetPath);
+      navigate(safeRedirect, { replace: true });
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setErrorMessage(err.message || 'Sign-in failed. Please verify credentials.');
+      } else {
+        setErrorMessage('Sign-in failed. Please verify credentials.');
+      }
+      setPassword(demoPassword);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({ email: true, password: true });
@@ -175,6 +212,72 @@ export const LoginForm: React.FC = () => {
         >
           Sign In
         </Button>
+      </div>
+
+      {/* Demo Credentials Quick-Fill & 1-Click Sign-In Section */}
+      <div className="pt-4 border-t border-slate-200 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            Quick 1-Click Demo Login
+          </span>
+          <span className="text-[10px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+            Instant Sign-In
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => handleQuickLogin('student@campus.edu', 'Student12345!')}
+            className="flex flex-col items-start p-2.5 rounded-lg border-2 border-indigo-400 bg-indigo-50/80 hover:bg-indigo-100 hover:border-indigo-600 text-indigo-950 text-left transition-all shadow-xs group"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="font-bold text-xs text-indigo-700 group-hover:text-indigo-900">
+                👉 Student
+              </span>
+              <span className="text-[9px] uppercase font-bold text-white bg-indigo-600 px-1.5 py-0.5 rounded">
+                1-Click
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-700 font-mono mt-1">student@campus.edu</span>
+            <span className="text-[10px] text-slate-500 font-mono">Student12345!</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => handleQuickLogin('admin@campus.edu', 'Admin12345!')}
+            className="flex flex-col items-start p-2.5 rounded-lg border-2 border-purple-400 bg-purple-50/80 hover:bg-purple-100 hover:border-purple-600 text-purple-950 text-left transition-all shadow-xs group"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="font-bold text-xs text-purple-700 group-hover:text-purple-900">
+                ⚡ Super Admin
+              </span>
+              <span className="text-[9px] uppercase font-bold text-white bg-purple-600 px-1.5 py-0.5 rounded">
+                1-Click
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-700 font-mono mt-1">admin@campus.edu</span>
+            <span className="text-[10px] text-slate-500 font-mono">Admin12345!</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => handleQuickLogin('investigator@campus.edu', 'Investigator123!')}
+            className="flex flex-col items-start p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-900 text-left transition-colors"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="font-bold text-xs text-slate-700">Investigator</span>
+              <span className="text-[9px] uppercase font-bold text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
+                1-Click
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-600 font-mono mt-1">investigator@campus.edu</span>
+            <span className="text-[10px] text-slate-400 font-mono">Investigator123!</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 pt-2 text-xs text-slate-500 justify-center">

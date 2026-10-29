@@ -28,6 +28,13 @@ class AuditRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def get_by_id(self, event_id: UUID) -> SecurityAuditEvent | None:
+        """Fetch a single security audit event by its primary UUID."""
+        result = await self.session.execute(
+            select(SecurityAuditEvent).where(SecurityAuditEvent.id == event_id)
+        )
+        return result.scalars().first()
+
     async def get_latest_event(self) -> SecurityAuditEvent | None:
         """Fetch the most recent security audit event in the chain."""
         result = await self.session.execute(

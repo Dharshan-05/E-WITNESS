@@ -11,6 +11,7 @@ Provides RESTful operations for:
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -23,30 +24,22 @@ from backend.app.api.dependencies import (
     require_any_permission,
 )
 from backend.app.core.authorization import Permission
+from backend.app.core.exceptions import BusinessRuleError
 from backend.app.schemas.auth import AuthenticatedPrincipal
 from backend.app.schemas.case import (
+    CaseAISegmentHistoryItemRead,
     CaseAISegmentRead,
     CaseAISegmentReviewRequest,
-    CaseCreateAISegmentAnnotationRequest,
-    CaseAISegmentHistoryItemRead,
     CaseApprovalRead,
     CaseApprovalRequest,
     CaseAssignmentRead,
     CaseAssignRequest,
     CaseCloseRequest,
     CaseCreate,
-    CaseSubmitReviewRequest,
-    CaseReadinessResult,
-    CaseTransitionHistoryItem,
-    CaseTimelineEventRead,
-    CaseTimelineResponse,
+    CaseCreateAISegmentAnnotationRequest,
     CaseEscalationRead,
     CaseEscalationRequest,
     CaseEvidenceItemRead,
-    LegalHoldPlaceRequest,
-    LegalHoldReleaseRequest,
-    LegalHoldRead,
-    LegalHoldStatusRead,
     CaseExportRead,
     CaseExportRequest,
     CaseFindingCreate,
@@ -63,13 +56,20 @@ from backend.app.schemas.case import (
     CaseNoteUpdate,
     CaseNoteVisibilityUpdate,
     CaseRead,
+    CaseReadinessResult,
     CaseReferralCreate,
     CaseReferralRead,
     CaseReferralUpdate,
     CaseReopenRequest,
+    CaseSubmitReviewRequest,
+    CaseTimelineResponse,
+    CaseTransitionHistoryItem,
     CaseTransitionRequest,
     CaseUpdate,
     InvestigatorWorkloadRead,
+    LegalHoldPlaceRequest,
+    LegalHoldRead,
+    LegalHoldReleaseRequest,
     PaginatedCasesRead,
 )
 

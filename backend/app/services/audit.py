@@ -9,7 +9,9 @@ Enforces:
 
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import json
 from datetime import UTC, datetime
 from typing import Any
@@ -30,11 +32,14 @@ from backend.app.core.exceptions import (
     SecurityError,
 )
 from backend.app.core.logging import get_logger
+from backend.app.core.secrets import redact_mapping
 from backend.app.models.audit import EvidenceExport, SecurityAuditEvent
 from backend.app.repositories.audit import AuditRepository
 from backend.app.repositories.evidence import EvidenceRepository
 from backend.app.repositories.incident import IncidentRepository
 from backend.app.schemas.audit import (
+    AuditEventExportRequest,
+    AuditEventExportResponse,
     AuditSearchFilterParams,
     AuditVerificationReport,
     EvidenceExportRequest,
@@ -362,3 +367,144 @@ class AuditService:
         )
 
         return PaginatedResponse(items=items, pagination=metadata)
+
+
+    async def get_audit_event_detail(
+        self,
+        event_id: UUID,
+        principal: AuthenticatedPrincipal,
+    ) -> SecurityAuditEventRead:
+        """Retrieve a single security audit event with redacted details and tenant scoping."""
+        can_read_global = has_permission(principal.role_code, Permission.AUDIT_EVENT_READ_GLOBAL)
+        can_read_dept = has_permission(principal.role_code, Permission.AUDIT_EVENT_READ_DEPT)
+
+        if not can_read_global and not can_read_dept:
+            raise PermissionDeniedError(
+                "You do not have permission to view security audit events.",
+                code="PERMISSION_DENIED",
+            )
+
+        event = await self.audit_repo.get_by_id(event_id)
+        if event is None:
+            raise ResourceNotFoundError("Security audit event not found.", code="AUDIT_EVENT_NOT_FOUND")
+
+        if not can_read_global and event.department_id != principal.department_id:
+            raise ResourceNotFoundError("Security audit event not found.", code="AUDIT_EVENT_NOT_FOUND")
+
+        details_dict: dict[str, Any] | None = None
+        if event.details:
+            try:
+                raw_details = json.loads(event.details) if isinstance(event.details, str) else event.details
+                if isinstance(raw_details, dict):
+                    details_dict = redact_mapping(raw_details)
+                else:
+                    details_dict = {"raw": raw_details}
+            except Exception:
+                details_dict = {"raw": event.details}
+
+        event_read = SecurityAuditEventRead.model_validate(event)
+        if details_dict is not None:
+            event_read.details = details_dict
+        return event_read
+
+    async def export_audit_events(
+        self,
+        request: AuditEventExportRequest,
+        principal: AuthenticatedPrincipal,
+    ) -> AuditEventExportResponse:
+        """Export security audit events in CSV or JSON format with formula injection protection."""
+        can_read_global = has_permission(principal.role_code, Permission.AUDIT_EVENT_READ_GLOBAL)
+        can_read_dept = has_permission(principal.role_code, Permission.AUDIT_EVENT_READ_DEPT)
+
+        if not can_read_global and not can_read_dept:
+            raise PermissionDeniedError(
+                "You do not have permission to export security audit events.",
+                code="PERMISSION_DENIED",
+            )
+
+        department_scope: UUID | None = request.department_id
+        if not can_read_global:
+            department_scope = principal.department_id
+
+        limit = min(request.limit, 1000)
+        events, _total_count = await self.audit_repo.list_events_paginated(
+            actor_id=request.actor_id,
+            action=request.action,
+            target_type=request.target_type,
+            target_id=request.target_id,
+            department_id=department_scope,
+            outcome=request.outcome,
+            start_time=request.start_time,
+            end_time=request.end_time,
+            limit=limit,
+            offset=0,
+        )
+
+        export_id = uuid4()
+        now = datetime.now(UTC)
+
+        def _sanitize_cell(val: Any) -> str:
+            s = "" if val is None else str(val)
+            if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+                return f"'{s}"
+            return s
+
+        if request.export_format == "csv":
+            output = io.StringIO()
+            writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+            writer.writerow([
+                "id", "sequence_number", "action", "actor_id", "actor_role",
+                "department_id", "target_type", "target_id", "outcome",
+                "created_at", "previous_event_hash", "event_hash"
+            ])
+            for ev in events:
+                writer.writerow([
+                    _sanitize_cell(ev.id),
+                    _sanitize_cell(ev.sequence_number),
+                    _sanitize_cell(ev.action),
+                    _sanitize_cell(ev.actor_id),
+                    _sanitize_cell(ev.actor_role),
+                    _sanitize_cell(ev.department_id),
+                    _sanitize_cell(ev.target_type),
+                    _sanitize_cell(ev.target_id),
+                    _sanitize_cell(ev.outcome),
+                    _sanitize_cell(ev.created_at.isoformat() if hasattr(ev.created_at, "isoformat") else ev.created_at),
+                    _sanitize_cell(ev.previous_event_hash),
+                    _sanitize_cell(ev.event_hash),
+                ])
+            content_str = output.getvalue()
+        else:
+            records = []
+            for ev in events:
+                ev_read = SecurityAuditEventRead.model_validate(ev)
+                if ev_read.details:
+                    ev_read.details = redact_mapping(ev_read.details)
+                records.append(ev_read.model_dump(mode="json"))
+            content_str = json.dumps(records, indent=2, sort_keys=True)
+
+        hash_digest = hashlib.sha256(content_str.encode("utf-8")).hexdigest()
+
+        await self.record_security_event(
+            action="audit:events:exported",
+            actor_id=principal.user_id,
+            actor_role=principal.role_code,
+            department_id=principal.department_id,
+            target_type="audit",
+            target_id=str(export_id),
+            outcome="success",
+            details={
+                "export_format": request.export_format,
+                "total_records": len(events),
+                "hash_digest": hash_digest,
+            },
+            fail_closed=True,
+        )
+
+        return AuditEventExportResponse(
+            export_id=export_id,
+            exported_at=now,
+            export_format=request.export_format,
+            total_records=len(events),
+            content=content_str,
+            hash_digest=hash_digest,
+        )

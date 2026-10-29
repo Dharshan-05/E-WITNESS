@@ -160,3 +160,35 @@ class EvidenceExportResponse(BaseModel):
     status: str = Field(..., description="Status of the export package.")
     reason: str | None = Field(None, description="Justification provided by exporter.")
     created_at: datetime = Field(..., description="UTC creation timestamp.")
+
+
+class AuditEventExportRequest(BaseModel):
+    """Payload for exporting security audit events (Phase 118)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    actor_id: UUID | None = Field(None, description="Filter by initiating actor ID.")
+    action: str | None = Field(None, description="Filter by audit action.")
+    target_type: str | None = Field(None, description="Filter by target classification.")
+    target_id: str | None = Field(None, max_length=128, description="Filter by exact target ID.")
+    department_id: UUID | None = Field(None, description="Filter by department ID.")
+    outcome: str | None = Field(None, description="Filter by outcome.")
+    start_time: datetime | None = Field(None, description="Earliest UTC created_at timestamp.")
+    end_time: datetime | None = Field(None, description="Latest UTC created_at timestamp.")
+    export_format: str = Field(
+        default="json",
+        pattern=r"^(json|csv)$",
+        description="Export format: json or csv.",
+    )
+    limit: int = Field(default=500, ge=1, le=1000, description="Max audit entries to export (max 1000).")
+
+
+class AuditEventExportResponse(BaseModel):
+    """Result payload for security audit export (Phase 118)."""
+
+    export_id: UUID = Field(..., description="Unique ID for this export execution.")
+    exported_at: datetime = Field(..., description="UTC timestamp of the export.")
+    export_format: str = Field(..., description="Export format used.")
+    total_records: int = Field(..., description="Number of exported audit events.")
+    content: str = Field(..., description="Exported CSV or JSON formatted audit data.")
+    hash_digest: str = Field(..., description="SHA-256 digest of the raw content payload.")

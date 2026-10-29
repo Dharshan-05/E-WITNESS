@@ -57,7 +57,6 @@ class SecurityAuditEvent(UUIDPrimaryKeyMixin, Base):
         ),
         Index("ix_security_audit_events_target_type_id", "target_type", "target_id"),
         Index("ix_security_audit_events_department_created", "department_id", "created_at"),
-        Index("ix_security_audit_events_case_id", "case_id"),
         Index("ix_security_audit_events_case_created", "case_id", "created_at"),
     )
 

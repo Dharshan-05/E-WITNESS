@@ -61,6 +61,9 @@ class RequestBodyLimitMiddleware:
             await self.app(scope, receive, send)
             return
 
+        path = scope.get("path", "")
+        effective_limit = 524_288_000 if "/storage/" in path else self.max_body_bytes
+
         # 1. Fast rejection if Content-Length header exceeds ceiling
         for key, val in scope.get("headers", []):
             if key.lower() == b"content-length":
@@ -68,15 +71,15 @@ class RequestBodyLimitMiddleware:
                     declared_length = int(val.decode("ascii").strip())
                 except ValueError:
                     break
-                if declared_length > self.max_body_bytes:
+                if declared_length > effective_limit:
                     logger.warning(
                         "Rejected oversized request via Content-Length header",
                         extra={
                             "declared_bytes": declared_length,
-                            "max_body_bytes": self.max_body_bytes,
+                            "max_body_bytes": effective_limit,
                         },
                     )
-                    await _send_413_response(send, self.max_body_bytes)
+                    await _send_413_response(send, effective_limit)
                     return
 
         # 2. Stream inspection for chunked or undeclared request bodies
@@ -90,13 +93,13 @@ class RequestBodyLimitMiddleware:
             if message["type"] == "http.request":
                 chunk = message.get("body", b"")
                 received_bytes += len(chunk)
-                if received_bytes > self.max_body_bytes:
+                if received_bytes > effective_limit:
                     limit_exceeded = True
                     logger.warning(
                         "Rejected oversized streaming request body",
                         extra={
                             "received_bytes": received_bytes,
-                            "max_body_bytes": self.max_body_bytes,
+                            "max_body_bytes": effective_limit,
                         },
                     )
                     raise _PayloadLimitExceeded
@@ -115,4 +118,4 @@ class RequestBodyLimitMiddleware:
             await self.app(scope, guarded_receive, tracking_send)
 
         if limit_exceeded and not response_started:
-            await _send_413_response(send, self.max_body_bytes)
+            await _send_413_response(send, effective_limit)

@@ -138,8 +138,9 @@ describe('IncidentsPage Component & Role Scoping', () => {
     expect(within(nav).getByRole('button', { name: /Report Incident/i })).toBeInTheDocument();
     expect(within(nav).getByRole('button', { name: /My Submissions/i })).toBeInTheDocument();
 
-    // Default view is Incident Intake Wizard (Step 1)
-    expect(screen.getByText('Select Incident Category & Severity')).toBeInTheDocument();
+    // Default view is streamlined 1-Step Student Complaint
+    expect(screen.getByText('1-Step Student Complaint')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Single-Line Complaint/i)).toBeInTheDocument();
   });
 
   it('switches tabs cleanly between Report Incident and My Submissions for a student', async () => {
@@ -161,7 +162,7 @@ describe('IncidentsPage Component & Role Scoping', () => {
     renderWithRouterAndAuth(auth);
 
     // Currently on Report Incident
-    expect(screen.getByText('Select Incident Category & Severity')).toBeInTheDocument();
+    expect(screen.getByText('1-Step Student Complaint')).toBeInTheDocument();
 
     // Click My Submissions tab in nav
     const nav = screen.getByRole('navigation', { name: /Incident Management Views/i });

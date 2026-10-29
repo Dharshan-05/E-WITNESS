@@ -124,6 +124,13 @@ class ModelUnavailableError(AppError):
     default_status_code = 503
 
 
+class ModelOperationalApprovalError(BusinessRuleError):
+    """Raised when an AI model is not approved for operational use in the current environment (Phase 120 / DEF-03)."""
+
+    default_code = "UNAPPROVED_OPERATIONAL_MODEL"
+    default_status_code = 422
+
+
 class VideoProcessingError(AppError):
     """Raised when video parsing, decoding, or preprocessing fails safely (Phase 63)."""
 

@@ -9,7 +9,8 @@ import {
   CasesPage,
   AnalyticsPage,
   EvidencePlaceholderPage,
-  AuditPlaceholderPage,
+  AuditPage,
+  AdminPage,
   HealthPage,
   NotFoundPage,
 } from '../pages';
@@ -67,7 +68,15 @@ export const appRoutes: RouteObject[] = [
             path: 'audit',
             element: (
               <RequireAuth allowedRoles={['ROLE_DEPT_ADMIN', 'ROLE_SUPER_ADMIN']}>
-                <AuditPlaceholderPage />
+                <AuditPage />
+              </RequireAuth>
+            ),
+          },
+          {
+            path: 'admin',
+            element: (
+              <RequireAuth allowedRoles={['ROLE_DEPT_ADMIN', 'ROLE_SUPER_ADMIN']}>
+                <AdminPage />
               </RequireAuth>
             ),
           },

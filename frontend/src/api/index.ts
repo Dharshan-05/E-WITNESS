@@ -9,3 +9,7 @@ export * as caseApi from './case';
 export * from './case';
 export * as analyticsApi from './analytics';
 export * from './analytics';
+export * as auditApi from './audit';
+export * from './audit';
+export * as adminApi from './admin';
+export * from './admin';

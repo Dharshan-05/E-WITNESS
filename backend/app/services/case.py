@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.config.settings import Settings
@@ -50,6 +51,7 @@ from backend.app.core.exceptions import (
 )
 from backend.app.core.logging import get_logger
 from backend.app.models.base import utc_now
+from backend.app.models.ai import AICandidateSegment, AIAnalysisJob
 from backend.app.models.case import (
     Case,
     CaseAISegment,
@@ -1862,10 +1864,38 @@ class CaseService:
             evidence_digest = evidence.sha256_hash
             incident_id = getattr(evidence, "incident_id", incident_id)
 
+        # Ensure AIAnalysisJob exists to satisfy FK constraint
+        session = self.ai_segment_repo._session
+        job_id = payload.job_id
+        if job_id is None:
+            job_stmt = select(AIAnalysisJob).where(
+                AIAnalysisJob.evidence_id == payload.evidence_id,
+                AIAnalysisJob.department_id == case_record.department_id,
+            ).limit(1)
+            job_res = (await session.execute(job_stmt)).scalar_one_or_none()
+            if job_res is not None:
+                job_id = job_res.id
+            else:
+                new_job = AIAnalysisJob(
+                    id=uuid4(),
+                    evidence_id=payload.evidence_id,
+                    incident_id=incident_id,
+                    department_id=case_record.department_id,
+                    submitted_by_id=principal.user_id,
+                    status="succeeded",
+                    progress_percent=100,
+                    current_step="completed",
+                    model_name=payload.model_name,
+                    model_version=payload.model_version,
+                )
+                session.add(new_job)
+                await session.flush()
+                job_id = new_job.id
+
         # Construct AICandidateSegment entity
         new_segment = AICandidateSegment(
             id=uuid4(),
-            job_id=payload.job_id or uuid4(),
+            job_id=job_id,
             evidence_id=payload.evidence_id,
             incident_id=incident_id,
             department_id=case_record.department_id,

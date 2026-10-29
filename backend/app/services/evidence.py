@@ -58,6 +58,7 @@ from backend.app.infrastructure.scanner import (
 )
 from backend.app.infrastructure.storage import (
     InMemoryStorageClient,
+    get_local_storage_client,
     ObjectStorageClient,
     S3StorageClient,
 )
@@ -116,10 +117,14 @@ class EvidenceService:
         client = storage_client or (
             InMemoryStorageClient(settings.STORAGE_ENDPOINT_URL)
             if settings.ENVIRONMENT == "testing" and "test" in settings.STORAGE_ENDPOINT_URL
-            else S3StorageClient(settings)
+            else (
+                get_local_storage_client()
+                if settings.ENVIRONMENT == "development"
+                else S3StorageClient(settings)
+            )
         )
         malware_scanner = scanner or (
-            MockMalwareScanner() if settings.ENVIRONMENT == "testing" else ClamAVScanner()
+            MockMalwareScanner() if settings.ENVIRONMENT in {"testing", "development"} else ClamAVScanner()
         )
         return cls(
             evidence_repo=EvidenceRepository(session),

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Final
 
@@ -200,3 +201,136 @@ def compute_manifest_sha256(manifest_items: list[dict[str, Any]]) -> str:
         ensure_ascii=True,
     )
     return hashlib.sha256(canonical_repr.encode("utf-8")).hexdigest()
+
+class ModelOperationalStatus(StrEnum):
+    """Operational approval and deployment status for AI inference models (DEF-03)."""
+
+    OPERATIONAL_APPROVED = "operational_approved"
+    TEST_SYNTHETIC_ONLY = "test_synthetic_only"
+    PENDING_EVALUATION = "pending_evaluation"
+    DEPRECATED = "deprecated"
+    REJECTED = "rejected"
+
+
+@dataclass(frozen=True)
+class ModelRegistryEntry:
+    """Catalog record defining model provenance, operational status, and verification bounds."""
+
+    model_name: str
+    model_version: str
+    status: ModelOperationalStatus
+    architecture: str
+    is_synthetic: bool
+    expected_weight_sha256: str | None = None
+    description: str = ""
+    evaluation_report_ref: str | None = None
+
+
+# Authoritative AI Model Registry and Governance Catalog (DEF-03)
+AI_MODEL_REGISTRY: Final[dict[tuple[str, str], ModelRegistryEntry]] = {
+    ("violence-r3d18", "1.0.0"): ModelRegistryEntry(
+        model_name="violence-r3d18",
+        model_version="1.0.0",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="r3d_18",
+        is_synthetic=True,
+        expected_weight_sha256="e3b4337bea8b98c0a64b13b471d2d174526a31a29e2dbcc07944b6818eab5af9",
+        description="Synthetic smoke-test checkpoint. NOT APPROVED FOR OPERATIONAL VIOLENCE DETECTION.",
+        evaluation_report_ref="violence-r3d18-v1.0.0-evaluation-report.json",
+    ),
+    ("violence-classifier", "0.1.0"): ModelRegistryEntry(
+        model_name="violence-classifier",
+        model_version="0.1.0",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="timesformer_base",
+        is_synthetic=True,
+        description="Legacy prototype model. Test-only.",
+    ),
+    ("violence-classifier", "1.0.0"): ModelRegistryEntry(
+        model_name="violence-classifier",
+        model_version="1.0.0",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="timesformer_base",
+        is_synthetic=True,
+        description="Synthetic model checkpoint. Test-only.",
+    ),
+    ("violence-timesformer-b16", "1.0.0"): ModelRegistryEntry(
+        model_name="violence-timesformer-b16",
+        model_version="1.0.0",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="timesformer_b16",
+        is_synthetic=True,
+        description="Synthetic model checkpoint. Test-only.",
+    ),
+    ("mock-violence-classifier", "0.1.0-test"): ModelRegistryEntry(
+        model_name="mock-violence-classifier",
+        model_version="0.1.0-test",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="mock",
+        is_synthetic=True,
+        description="Unit test mock classifier.",
+    ),
+    ("violence_v1", "1.0.0"): ModelRegistryEntry(
+        model_name="violence_v1",
+        model_version="1.0.0",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="r3d_18",
+        is_synthetic=True,
+        description="Synthetic model checkpoint. Test-only.",
+    ),
+    ("violence_v1", "0.1.0"): ModelRegistryEntry(
+        model_name="violence_v1",
+        model_version="0.1.0",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="r3d_18",
+        is_synthetic=True,
+        description="Synthetic model checkpoint. Test-only.",
+    ),
+    ("m", "1"): ModelRegistryEntry(
+        model_name="m",
+        model_version="1",
+        status=ModelOperationalStatus.TEST_SYNTHETIC_ONLY,
+        architecture="mock",
+        is_synthetic=True,
+        description="Minimal test classifier.",
+    ),
+}
+
+
+def validate_model_operational_approval(
+    model_name: str,
+    model_version: str,
+    *,
+    environment: str = "production",
+) -> ModelRegistryEntry:
+    """Validate model provenance and enforce fail-closed operational approval.
+
+    In production mode:
+    - Synthetic/test-only models are strictly rejected (raises ModelOperationalApprovalError).
+    - Unapproved models are strictly rejected.
+    - Only models with status OPERATIONAL_APPROVED and is_synthetic=False are permitted.
+
+    In testing/development mode:
+    - Synthetic models are allowed for unit testing and CI pipeline smoke testing.
+    """
+    from backend.app.core.exceptions import ModelOperationalApprovalError
+
+    validate_model_provenance(model_name, model_version)
+    clean_name = model_name.strip()
+    clean_version = model_version.strip()
+    key = (clean_name, clean_version)
+
+    entry = AI_MODEL_REGISTRY.get(key)
+    if entry is None:
+        raise ValueError(f"Model '{clean_name}:{clean_version}' is not registered in AI_MODEL_REGISTRY.")
+
+    is_prod = environment.lower() in ("production", "prod", "staging")
+    if is_prod:
+        if entry.is_synthetic or entry.status != ModelOperationalStatus.OPERATIONAL_APPROVED:
+            raise ModelOperationalApprovalError(
+                f"Model '{clean_name}:{clean_version}' is a synthetic test-only artifact and is NOT approved "
+                "for operational violence detection in production. Operational models require verified dataset provenance, "
+                "rigorous benchmark evaluation, and formal governance sign-off."
+            )
+
+    return entry

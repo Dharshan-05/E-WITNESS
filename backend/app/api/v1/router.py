@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from backend.app.api.v1.admin import v1_admin_router
 from backend.app.api.v1.ai import router as v1_ai_router
 from backend.app.api.v1.analytics import router as v1_analytics_router
 from backend.app.api.v1.audit import v1_audit_router
@@ -17,6 +18,7 @@ from backend.app.api.v1.incidents import v1_incidents_router
 from backend.app.api.v1.notifications import router as v1_notifications_router
 from backend.app.api.v1.reports import router as v1_reports_router
 from backend.app.api.v1.users import v1_users_router
+from backend.app.api.v1.storage import v1_storage_router
 
 
 def build_v1_router() -> APIRouter:
@@ -35,4 +37,6 @@ def build_v1_router() -> APIRouter:
     router.include_router(v1_dashboards_router)
     router.include_router(v1_analytics_router)
     router.include_router(v1_reports_router)
+    router.include_router(v1_admin_router)
+    router.include_router(v1_storage_router)
     return router

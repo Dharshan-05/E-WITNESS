@@ -20,6 +20,8 @@ from backend.app.api.dependencies import (
 )
 from backend.app.core.authorization import Permission
 from backend.app.schemas.audit import (
+    AuditEventExportRequest,
+    AuditEventExportResponse,
     AuditSearchFilterParams,
     AuditVerificationReport,
     EvidenceExportResponse,
@@ -137,3 +139,48 @@ async def list_evidence_exports(
         page=page,
         page_size=page_size,
     )
+
+
+
+@router.get(
+    "/events/{event_id}",
+    response_model=SecurityAuditEventRead,
+    summary="Get security audit event details",
+    description="Retrieve a single tamper-evident audit record with sanitized details and department scoping (Phase 118).",
+)
+async def get_security_audit_event(
+    event_id: UUID,
+    audit_service: AuditServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.AUDIT_EVENT_READ_DEPT,
+                Permission.AUDIT_EVENT_READ_GLOBAL,
+            )
+        ),
+    ],
+) -> SecurityAuditEventRead:
+    return await audit_service.get_audit_event_detail(event_id, principal)
+
+
+@router.post(
+    "/events/export",
+    response_model=AuditEventExportResponse,
+    summary="Export security audit events",
+    description="Export authorized audit events in CSV or JSON format with formula injection protection and audit logging (Phase 118).",
+)
+async def export_security_audit_events(
+    body: AuditEventExportRequest,
+    audit_service: AuditServiceDep,
+    principal: Annotated[
+        AuthenticatedPrincipal,
+        Depends(
+            require_any_permission(
+                Permission.AUDIT_EVENT_READ_DEPT,
+                Permission.AUDIT_EVENT_READ_GLOBAL,
+            )
+        ),
+    ],
+) -> AuditEventExportResponse:
+    return await audit_service.export_audit_events(body, principal)

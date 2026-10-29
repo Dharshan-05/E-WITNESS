@@ -8,9 +8,12 @@ import {
   ScrollText,
   BarChart3,
   Activity,
+  Sliders,
   Lock,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useAuth } from '../../auth';
+import type { RoleCode } from '../../types/auth';
 
 export interface SidebarProps {
   isOpen?: boolean;
@@ -21,20 +24,81 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  phase?: string;
+  allowedRoles?: RoleCode[];
 }
 
 const navigation: NavItem[] = [
   { name: 'Dashboard Overview', href: '/', icon: LayoutDashboard },
-  { name: 'Incident Intake', href: '/incidents', icon: AlertTriangle, phase: 'Phase 113' },
-  { name: 'Investigation Cases', href: '/cases', icon: FolderLock, phase: 'Phase 115' },
-  { name: 'Evidence Custody', href: '/evidence', icon: FileCheck2, phase: 'Phase 114' },
-  { name: 'Analytics & Metrics', href: '/analytics', icon: BarChart3, phase: 'Phase 117' },
-  { name: 'Audit & Traceability', href: '/audit', icon: ScrollText, phase: 'Phase 118' },
+  { name: 'Incident Intake', href: '/incidents', icon: AlertTriangle },
+  {
+    name: 'Investigation Cases',
+    href: '/cases',
+    icon: FolderLock,
+    allowedRoles: [
+      'ROLE_INVESTIGATOR',
+      'ROLE_DEPT_ADMIN',
+      'ROLE_SUPER_ADMIN',
+      'investigator',
+      'department_admin',
+      'super_admin',
+    ],
+  },
+  {
+    name: 'Evidence Custody',
+    href: '/evidence',
+    icon: FileCheck2,
+    allowedRoles: [
+      'ROLE_INVESTIGATOR',
+      'ROLE_DEPT_ADMIN',
+      'ROLE_SUPER_ADMIN',
+      'investigator',
+      'department_admin',
+      'super_admin',
+    ],
+  },
+  {
+    name: 'Analytics & Metrics',
+    href: '/analytics',
+    icon: BarChart3,
+    allowedRoles: [
+      'ROLE_INVESTIGATOR',
+      'ROLE_DEPT_ADMIN',
+      'ROLE_SUPER_ADMIN',
+      'investigator',
+      'department_admin',
+      'super_admin',
+    ],
+  },
+  {
+    name: 'Audit & Traceability',
+    href: '/audit',
+    icon: ScrollText,
+    allowedRoles: ['ROLE_DEPT_ADMIN', 'ROLE_SUPER_ADMIN', 'department_admin', 'super_admin'],
+  },
+  {
+    name: 'Administration',
+    href: '/admin',
+    icon: Sliders,
+    allowedRoles: ['ROLE_DEPT_ADMIN', 'ROLE_SUPER_ADMIN', 'department_admin', 'super_admin'],
+  },
   { name: 'System Diagnostics', href: '/health', icon: Activity },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
+  let isAuthorized = (_roles: RoleCode[]) => true;
+  try {
+    const auth = useAuth();
+    isAuthorized = (roles: RoleCode[]) => auth.hasRole(roles);
+  } catch {
+    // If rendered without AuthProvider in tests, show all
+    isAuthorized = () => true;
+  }
+
+  const visibleNav = navigation.filter((item) => {
+    if (!item.allowedRoles) return true;
+    return isAuthorized(item.allowedRoles);
+  });
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -61,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
             <div className="px-2 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
               Operations & Custody
             </div>
-            {navigation.map((item) => {
+            {visibleNav.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
@@ -70,34 +134,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
                   onClick={onClose}
                   className={({ isActive }) =>
                     clsx(
-                      'group flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                      'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
                       isActive
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/25'
+                        : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-900'
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <div className="flex items-center gap-3">
-                        <Icon
-                          className={clsx(
-                            'h-4 w-4 shrink-0',
-                            isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'
-                          )}
-                        />
-                        <span>{item.name}</span>
-                      </div>
-                      {item.phase && (
-                        <span
-                          className={clsx(
-                            'text-[10px] font-mono px-1.5 py-0.5 rounded',
-                            isActive ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-500'
-                          )}
-                        >
-                          {item.phase}
-                        </span>
-                      )}
+                      <Icon
+                        className={clsx(
+                          'h-4.5 w-4.5 shrink-0 transition-colors',
+                          isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600'
+                        )}
+                      />
+                      <span className="truncate tracking-tight">{item.name}</span>
                     </>
                   )}
                 </NavLink>

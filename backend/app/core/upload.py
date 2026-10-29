@@ -89,6 +89,7 @@ ALLOWED_MEDIA_TYPES: Final[dict[str, frozenset[str]]] = {
     "image/jpeg": frozenset({".jpg", ".jpeg"}),
     "image/webp": frozenset({".webp"}),
     "video/mp4": frozenset({".mp4"}),
+    "video/webm": frozenset({".webm"}),
     "audio/wav": frozenset({".wav"}),
     "audio/x-wav": frozenset({".wav"}),
     "audio/mpeg": frozenset({".mp3"}),
@@ -202,6 +203,10 @@ def detect_magic_bytes(header: bytes) -> str | None:
     # MP4 signature: bytes 4-8 are 'ftyp'
     if len(header) >= 12 and header[4:8] == b"ftyp":
         return "video/mp4"
+
+    # WebM / Matroska signature: 0x1A 0x45 0xDF 0xA3 at start
+    if len(header) >= 4 and header.startswith(b"\x1a\x45\xdf\xa3"):
+        return "video/webm"
 
     # WAV signature: starts with 'RIFF' and contains 'WAVE' at offset 8-12
     if len(header) >= 12 and header.startswith(b"RIFF") and header[8:12] == b"WAVE":

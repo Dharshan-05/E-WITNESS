@@ -557,39 +557,6 @@ export const AnalyticsDashboardView: React.FC = () => {
               Individual investigator capacity and workload distributions are restricted to supervisory personnel.
             </div>
           )}
-
-          {/* Operational Notification & Delivery Dispatch Metrics */}
-          {hasOpsAccess && opsDashboard && (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
-              <h4 className="text-sm font-bold text-slate-900">Notification & Alert Delivery Operations</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Notifications Total</span>
-                  <div className="text-lg font-bold font-mono text-slate-900 mt-1">
-                    {opsDashboard.notifications_total}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Delivery Attempts</span>
-                  <div className="text-lg font-bold font-mono text-slate-900 mt-1">
-                    {opsDashboard.delivery_attempts_total}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Delivery Failures</span>
-                  <div className="text-lg font-bold font-mono text-rose-600 mt-1">
-                    {opsDashboard.delivery_failures_total}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Active Channels</span>
-                  <div className="text-lg font-bold font-mono text-slate-900 mt-1">
-                    {Object.keys(opsDashboard.notifications_by_channel).length}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
 

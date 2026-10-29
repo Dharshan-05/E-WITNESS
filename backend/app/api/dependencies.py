@@ -28,6 +28,7 @@ from backend.app.infrastructure.database import (
     DatabaseSessionManager,
 )
 from backend.app.schemas.auth import AuthenticatedPrincipal
+from backend.app.services.admin import AdminService
 from backend.app.services.ai_dataset import AIDatasetService
 from backend.app.services.ai_job import AIAnalysisJobService
 from backend.app.services.ai_retention import AIRetentionService
@@ -40,9 +41,9 @@ from backend.app.services.biometrics import (
     BiometricGovernanceService,
     BiometricReferenceService,
     BiometricVerificationService,
-    QualityReviewWorkflowService,
     FaceDetectionService,
     FaceMatchingService,
+    QualityReviewWorkflowService,
 )
 from backend.app.services.case import CaseService
 from backend.app.services.dashboard import DashboardService
@@ -514,3 +515,14 @@ def get_operational_monitoring_service(
 OperationalMonitoringServiceDep = Annotated[
     OperationalMonitoringService, Depends(get_operational_monitoring_service)
 ]
+
+
+def get_admin_service(
+    db_session: DbSessionDep,
+    settings: SettingsDep,
+) -> AdminService:
+    """Construct an AdminService bound to the active request DB session and settings."""
+    return AdminService.from_session(session=db_session, settings=settings)
+
+
+AdminServiceDep = Annotated[AdminService, Depends(get_admin_service)]

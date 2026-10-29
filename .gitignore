@@ -47,6 +47,7 @@ dmypy.json
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # -----------------------------------------------------------------------------
 # 5. Credentials, Private Keys, Certificates, and Secret Files
@@ -126,6 +127,7 @@ temp/
 local_storage/
 quarantine/
 evidence_uploads/
+storage_data/
 
 # -----------------------------------------------------------------------------
 # 9. Local Datasets, Model Binaries, and Scratch Directories

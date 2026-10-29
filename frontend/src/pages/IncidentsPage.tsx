@@ -11,6 +11,7 @@ import {
   ReviewQueueTable,
   MyIncidentsList,
 } from '../components/incident';
+import { StudentProfileCard, StudentQuickComplaint } from '../components/student';
 import { getReviewQueueWorkload } from '../api/incident';
 import type { ReviewQueueWorkloadSummary } from '../types/incident';
 
@@ -30,6 +31,7 @@ export const IncidentsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'queue' | 'intake' | 'my-reports'>(
     isReviewer ? 'queue' : 'intake'
   );
+  const [useDetailedForm, setUseDetailedForm] = useState(false);
 
   // Workload Summary (for Reviewers)
   const [workload, setWorkload] = useState<ReviewQueueWorkloadSummary | null>(null);
@@ -87,6 +89,14 @@ export const IncidentsPage: React.FC = () => {
           ) : undefined
         }
       />
+
+      {/* Student Profile & Digital Attestation Card */}
+      {!isReviewer && (
+        <StudentProfileCard
+          onReportIncident={() => setActiveTab('intake')}
+          onViewMySubmissions={() => setActiveTab('my-reports')}
+        />
+      )}
 
       {/* Reviewer Workload Summary (Shown when reviewer is on queue tab) */}
       {isReviewer && activeTab === 'queue' && (
@@ -150,15 +160,45 @@ export const IncidentsPage: React.FC = () => {
       <div>
         {activeTab === 'queue' && isReviewer && <ReviewQueueTable />}
 
-        {activeTab === 'intake' && (
-          <IncidentIntakeWizard
-            onSuccess={() => {
-              if (isReviewer) {
-                fetchWorkload();
-              }
-            }}
-            onViewMyReports={() => setActiveTab('my-reports')}
-          />
+        {activeTab === 'intake' && !isReviewer && !useDetailedForm && (
+          <div className="space-y-3">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setUseDetailedForm(true)}
+                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
+              >
+                Need multi-category classification? Switch to Detailed Form
+              </button>
+            </div>
+            <StudentQuickComplaint
+              onViewMySubmissions={() => setActiveTab('my-reports')}
+            />
+          </div>
+        )}
+
+        {activeTab === 'intake' && (isReviewer || useDetailedForm) && (
+          <div className="space-y-3">
+            {!isReviewer && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setUseDetailedForm(false)}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
+                >
+                  ← Switch back to 1-Step Quick Complaint
+                </button>
+              </div>
+            )}
+            <IncidentIntakeWizard
+              onSuccess={() => {
+                if (isReviewer) {
+                  fetchWorkload();
+                }
+              }}
+              onViewMyReports={() => setActiveTab('my-reports')}
+            />
+          </div>
         )}
 
         {activeTab === 'my-reports' && (

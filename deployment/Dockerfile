@@ -1,20 +1,21 @@
 # =============================================================================
 # E-WITNESS Production Multi-Stage Hardened Dockerfile
-# Phase 108: Container & Supply-Chain Security Hardening
+# Phase 117: Production Deployment and Infrastructure Hardening
 #
-# Security Controls:
-# - Multi-stage build with build tool isolation
+# Security & Operational Controls:
+# - Multi-stage build with build tool isolation (zero compilers in final image)
 # - Minimal unprivileged non-root execution (UID 10001, GID 10001)
-# - No hardcoded secrets or environment variables
+# - No baked-in secrets or default credentials (SEC-001)
 # - Read-only filesystem friendly with bounded temporary directory
-# - Hardened Python runtime flags (no bytecode writing in runtime, unbuffered)
-# - Strict health check using Python standard library without curl/wget dependencies
+# - Hardened Python runtime flags (PYTHONDONTWRITEBYTECODE=1, PYTHONUNBUFFERED=1)
+# - Tini init process for signal forwarding (SIGTERM) and zombie process reaping
+# - Strict health check using Python standard library (no curl/wget attack surface)
+# - Reverse proxy headers support enabled for ingress/gateway integration
 # =============================================================================
 
 # --- Stage 1: Build & Dependency Wheel Builder ---
 FROM python:3.13-slim-bookworm AS builder
 
-# Prevent interactive debconf prompts and install build tools
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -40,13 +41,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     PORT=8000
 
-# Install runtime shared libraries (libpq for asyncpg/postgresql)
+# Install runtime shared libraries and init manager (tini)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     ca-certificates \
+    tini \
     && rm -rf /var/lib/apt/lists/*
 
-# Create unprivileged application user and group
+# Create unprivileged application user and group (UID 10001: GID 10001)
 RUN groupadd -g 10001 appgroup && \
     useradd -u 10001 -g appgroup -s /sbin/nologin -d /app -M appuser
 
@@ -58,12 +60,13 @@ COPY requirements.txt /app/requirements.txt
 RUN python -m pip install --no-cache-dir --no-index --find-links=/tmp/wheels -r /app/requirements.txt && \
     rm -rf /tmp/wheels
 
-# Copy application source code
+# Copy application source code, scripts, and Alembic configuration
 COPY backend /app/backend
 COPY ai_services /app/ai_services
+COPY scripts /app/scripts
 COPY alembic.ini /app/alembic.ini
 
-# Set permissions: appuser owns /app, read-only application code
+# Set permissions: appuser owns /app, read-only application code (550)
 RUN chown -R appuser:appgroup /app && \
     chmod -R 550 /app && \
     chmod -R 770 /app/backend/app/infrastructure
@@ -75,8 +78,8 @@ USER 10001:10001
 
 EXPOSE 8000
 
-# Standardized container health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health').read()" || exit 1
+# Standardized container liveness probe using Python standard library
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/live').read()" || exit 1
 
-ENTRYPOINT ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/usr/bin/tini", "--", "python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]

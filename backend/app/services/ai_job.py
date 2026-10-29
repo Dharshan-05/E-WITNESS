@@ -49,6 +49,7 @@ from backend.app.core.exceptions import (
 from backend.app.core.logging import get_logger
 from backend.app.infrastructure.storage import (
     InMemoryStorageClient,
+    get_local_storage_client,
     ObjectStorageClient,
     S3StorageClient,
 )
@@ -110,7 +111,11 @@ class AIAnalysisJobService:
         client = storage_client or (
             InMemoryStorageClient(settings.STORAGE_ENDPOINT_URL)
             if settings.ENVIRONMENT == "testing" and "test" in settings.STORAGE_ENDPOINT_URL
-            else S3StorageClient(settings)
+            else (
+                get_local_storage_client()
+                if settings.ENVIRONMENT == "development"
+                else S3StorageClient(settings)
+            )
         )
         return cls(
             job_repo=AIAnalysisJobRepository(session),
@@ -165,11 +170,15 @@ class AIAnalysisJobService:
                 code="UNSUPPORTED_MEDIA_FOR_AI_ANALYSIS",
             )
 
-        # Validate model provenance and prevent path traversal
-        from backend.app.core.ai import validate_model_provenance
+        # Validate model provenance and operational approval (DEF-03)
+        from backend.app.core.ai import validate_model_operational_approval
+        from backend.app.core.exceptions import ModelOperationalApprovalError
 
+        env = self.settings.ENVIRONMENT if self.settings else "production"
         try:
-            validate_model_provenance(payload.model_name, payload.model_version)
+            validate_model_operational_approval(payload.model_name, payload.model_version, environment=env)
+        except ModelOperationalApprovalError as exc:
+            raise BusinessRuleError(str(exc), code="UNAPPROVED_OPERATIONAL_MODEL") from exc
         except ValueError as exc:
             raise BusinessRuleError(str(exc), code="INVALID_AI_MODEL_PROVENANCE") from exc
 
@@ -293,7 +302,34 @@ class AIAnalysisJobService:
 
             sampling_plan = generate_frame_sampling_plan(metadata)
 
-            # 5. Run model classification
+            # 5. Validate operational approval & run model classification (DEF-03)
+            from backend.app.core.ai import validate_model_operational_approval
+            from backend.app.core.exceptions import ModelOperationalApprovalError
+
+            env = self.settings.ENVIRONMENT if self.settings else "production"
+            try:
+                validate_model_operational_approval(job.model_name, job.model_version, environment=env)
+            except (ModelOperationalApprovalError, ValueError) as exc:
+                logger.error("Job %s failed operational approval check: %s", job.id, exc)
+                job.status = AIJobStatus.FAILED.value
+                job.current_step = AIJobStep.FAILED.value
+                job.error_category = AIErrorCategory.MODEL_UNAVAILABLE.value
+                job.error_message = "AI model is not approved for operational case analysis."
+                job.completed_at = utc_now()
+                await self.job_repo.update(job)
+                if self.audit_repo:
+                    await self.audit_repo.append_event(
+                        action=AuditAction.AI_JOB_FAILED.value,
+                        actor_id=job.submitted_by_id,
+                        actor_role="system",
+                        department_id=job.department_id,
+                        target_type=AuditTargetType.AI_JOB.value,
+                        target_id=str(job.id),
+                        outcome=AuditOutcome.FAILURE.value,
+                        details={"reason": "UNAPPROVED_OPERATIONAL_MODEL"},
+                    )
+                return self._to_read_dto(job)
+
             job.current_step = AIJobStep.RUNNING_INFERENCE.value
             job.progress_percent = 85
             job = await self.job_repo.update(job)

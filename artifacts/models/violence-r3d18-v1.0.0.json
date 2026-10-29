@@ -40,5 +40,9 @@
   "device_used": "cpu",
   "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
   "saved_checkpoint": "violence-r3d18-v1.0.0.pt",
-  "evaluation_note": "Smoke-test checkpoint only"
+  "evaluation_note": "Smoke-test checkpoint only",
+  "is_synthetic": true,
+  "operational_status": "test_synthetic_only",
+  "operational_approval": false,
+  "disclaimer": "SYNTHETIC SMOKE-TEST CHECKPOINT ONLY. STRICTLY PROHIBITED FOR OPERATIONAL VIOLENCE DETECTION."
 }

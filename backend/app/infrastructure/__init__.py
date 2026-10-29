@@ -28,6 +28,8 @@ from backend.app.infrastructure.scanner import (
 )
 from backend.app.infrastructure.storage import (
     InMemoryStorageClient,
+    LocalStorageClient,
+    get_local_storage_client,
     ObjectStorageClient,
     PresignedUploadData,
     S3StorageClient,
@@ -39,6 +41,8 @@ __all__ = [
     "ClamAVScanner",
     "DatabaseSessionManager",
     "InMemoryStorageClient",
+    "LocalStorageClient",
+    "get_local_storage_client",
     "MalwareScanner",
     "MockMalwareScanner",
     "ObjectStorageClient",

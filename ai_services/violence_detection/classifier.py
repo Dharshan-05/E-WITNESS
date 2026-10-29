@@ -83,6 +83,8 @@ class PretrainedVideoClassifierProvider:
         expected_sha256: str | None = None,
         allowed_base_dir: Path | str | None = None,
         device: str | None = None,
+        is_synthetic: bool = True,
+        environment: str = "testing",
     ) -> None:
         self.model_name = model_name
         self.model_version = model_version
@@ -91,6 +93,8 @@ class PretrainedVideoClassifierProvider:
         self.expected_sha256 = expected_sha256.lower() if expected_sha256 else None
         self.allowed_base_dir = Path(allowed_base_dir).resolve() if allowed_base_dir else None
         self.device_str = device
+        self.is_synthetic = is_synthetic
+        self.environment = environment
         self._weights_loaded: bool = False
         self._runtime_available: bool = False
         self._integrity_verified: bool = False
@@ -162,6 +166,11 @@ class PretrainedVideoClassifierProvider:
         """
         if not self.is_ready():
             raise ModelUnavailableError(AI_MODEL_FALLBACK_DISCLAIMER)
+
+        if self.environment.lower() in ("production", "prod", "staging") and self.is_synthetic:
+            raise ModelUnavailableError(
+                "Operational violence detection is disabled: Model weights are synthetic smoke-test weights and are not approved for production use."
+            )
 
         # Production execution path (when weights and torch are installed)
         try:

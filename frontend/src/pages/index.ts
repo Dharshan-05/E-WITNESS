@@ -8,5 +8,7 @@ export * from './CasesPlaceholderPage';
 export * from './AnalyticsPage';
 export * from './EvidencePlaceholderPage';
 export * from './AuditPlaceholderPage';
+export * from './AuditPage';
+export * from './AdminPage';
 export * from './HealthPage';
 export * from './NotFoundPage';

@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Upload, AlertTriangle } from 'lucide-react';
+import { Upload, AlertTriangle, Video, FileText, ShieldAlert } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
 import { UploadFileCard } from './UploadFileCard';
 import { EvidenceAttachmentList } from './EvidenceAttachmentList';
+import { StudentVideoRecorder } from '../video/StudentVideoRecorder';
+import { useAuth } from '../../auth';
 import {
   createUploadSession,
   completeUploadSession,
@@ -68,6 +70,15 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
   maxConcurrent = 2,
   disabled = false,
 }) => {
+  let isStudent = false;
+  try {
+    const auth = useAuth();
+    isStudent = Boolean(auth.hasRole(['ROLE_STUDENT', 'student']));
+  } catch {
+    isStudent = false;
+  }
+
+  const [activeMode, setActiveMode] = useState<'video' | 'file'>(isStudent ? 'video' : 'file');
   const [entries, setEntries] = useState<UploadFileEntry[]>([]);
   const [completedAttachments, setCompletedAttachments] = useState<EvidenceAttachmentRead[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -280,13 +291,20 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
 
   const handleFileInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (isStudent) {
+        setValidationErrors([
+          'Local disk uploads are disabled for student accounts. Please record live video directly with automated GPS & timestamp.',
+        ]);
+        event.target.value = '';
+        return;
+      }
       if (event.target.files && event.target.files.length > 0) {
         addFiles(event.target.files);
         // Reset input value so the same file can be re-selected
         event.target.value = '';
       }
     },
-    [addFiles]
+    [addFiles, isStudent]
   );
 
   // ─── Drag and drop handlers ────────────────────────────────────────────
@@ -295,9 +313,9 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
     (event: React.DragEvent) => {
       event.preventDefault();
       event.stopPropagation();
-      if (!disabled) setIsDragOver(true);
+      if (!disabled && !isStudent) setIsDragOver(true);
     },
-    [disabled]
+    [disabled, isStudent]
   );
 
   const handleDragLeave = useCallback((event: React.DragEvent) => {
@@ -312,11 +330,17 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
       event.stopPropagation();
       setIsDragOver(false);
       if (disabled) return;
+      if (isStudent) {
+        setValidationErrors([
+          'Local disk uploads are disabled for student accounts. Please record live video directly with automated GPS & timestamp.',
+        ]);
+        return;
+      }
       if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
         addFiles(event.dataTransfer.files);
       }
     },
-    [disabled, addFiles]
+    [disabled, addFiles, isStudent]
   );
 
   // ─── Action handlers ──────────────────────────────────────────────────
@@ -386,52 +410,109 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
         </Alert>
       )}
 
-      {/* Drop zone */}
-      <div
-        className={`
-          relative border-2 border-dashed rounded-xl p-6 text-center transition-colors
-          ${disabled
-            ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
-            : isDragOver
-              ? 'border-indigo-400 bg-indigo-50/50'
-              : 'border-slate-300 bg-white hover:border-indigo-300 hover:bg-slate-50/50 cursor-pointer'
-          }
-        `}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => !disabled && fileInputRef.current?.click()}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-label="Drop evidence files here or click to browse"
-        aria-disabled={disabled}
-        onKeyDown={(e) => {
-          if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            fileInputRef.current?.click();
-          }
-        }}
-        data-testid="upload-drop-zone"
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept={ALLOWED_MIME_TYPES.join(',')}
-          className="sr-only"
-          onChange={handleFileInputChange}
-          disabled={disabled}
-          aria-label="Select evidence files to upload"
-          data-testid="upload-file-input"
+      {/* Mode selection tabs for reviewers/investigators */}
+      {!isStudent && (
+        <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
+          <button
+            type="button"
+            onClick={() => setActiveMode('file')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors ${
+              activeMode === 'file'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            <span>File Upload</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveMode('video')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors ${
+              activeMode === 'video'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <Video className="h-3.5 w-3.5" />
+            <span>Record Live Video</span>
+          </button>
+        </div>
+      )}
+
+      {/* Student Custody Policy Alert */}
+      {isStudent && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-amber-950">
+            <ShieldAlert className="h-4 w-4 text-amber-600" />
+            <span>Student Custody Policy: Direct File Upload Prohibited</span>
+          </div>
+          <p>
+            To prevent upload of modified, external, or pre-recorded files, students cannot upload files from disk.
+            You must record live video directly via your device camera with verified GPS coordinates and hardware timestamp.
+          </p>
+        </div>
+      )}
+
+      {/* Live Video Capture (Always visible for students, or when toggled by reviewers) */}
+      {(isStudent || activeMode === 'video') && (
+        <StudentVideoRecorder
+          onVideoConfirmed={(file) => {
+            addFiles([file]);
+          }}
         />
-        <Upload className={`h-8 w-8 mx-auto mb-2 ${isDragOver ? 'text-indigo-500' : 'text-slate-400'}`} />
-        <p className="text-sm font-medium text-slate-700">
-          {isDragOver ? 'Drop files to upload' : 'Drag & drop evidence files, or click to browse'}
-        </p>
-        <p className="text-xs text-slate-500 mt-1">
-          Max {formatFileSize(MAX_FILE_SIZE_BYTES)} per file · {ALLOWED_EXTENSIONS_DISPLAY}
-        </p>
-      </div>
+      )}
+
+      {/* Hidden file input for accessibility and programmatic testing */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept={ALLOWED_MIME_TYPES.join(',')}
+        className="sr-only"
+        onChange={handleFileInputChange}
+        disabled={disabled || isStudent}
+        aria-label="Select evidence files to upload"
+        data-testid="upload-file-input"
+      />
+
+      {/* Drop zone for non-student file uploaders */}
+      {(!isStudent && activeMode === 'file') && (
+        <div
+          className={`
+            relative border-2 border-dashed rounded-xl p-6 text-center transition-colors
+            ${disabled
+              ? 'border-slate-200 bg-slate-50 cursor-not-allowed opacity-60'
+              : isDragOver
+                ? 'border-indigo-400 bg-indigo-50/50'
+                : 'border-slate-300 bg-white hover:border-indigo-300 hover:bg-slate-50/50 cursor-pointer'
+            }
+          `}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => !disabled && fileInputRef.current?.click()}
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-label="Drop evidence files here or click to browse"
+          aria-disabled={disabled}
+          onKeyDown={(e) => {
+            if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          data-testid="upload-drop-zone"
+        >
+          <Upload className={`h-8 w-8 mx-auto mb-2 ${isDragOver ? 'text-indigo-500' : 'text-slate-400'}`} />
+          <p className="text-sm font-medium text-slate-700">
+            {isDragOver ? 'Drop files to upload' : 'Drag & drop evidence files, or click to browse'}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">
+            Max {formatFileSize(MAX_FILE_SIZE_BYTES)} per file · {ALLOWED_EXTENSIONS_DISPLAY}
+          </p>
+        </div>
+      )}
 
       {/* Statutory notice */}
       <div className="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">

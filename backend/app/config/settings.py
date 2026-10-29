@@ -83,6 +83,7 @@ DEFAULT_ALLOWED_MIME_TYPES: tuple[str, ...] = (
     "audio/mpeg",
     "audio/wav",
     "video/mp4",
+    "video/webm",
     "text/plain",
 )
 

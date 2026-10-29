@@ -339,7 +339,7 @@ export const VideoEvidenceReviewModal: React.FC<VideoEvidenceReviewModalProps> =
         {/* Footer */}
         <div className="p-4 bg-white border-t border-slate-200 flex items-center justify-between">
           <p className="text-xs text-slate-400">
-            Institutional Chain of Custody & Advisory AI Video Verification UI (Phase 116)
+            Institutional Chain of Custody & Advisory AI Video Verification UI
           </p>
           <Button variant="outline" size="sm" onClick={onClose}>
             Close Reviewer
